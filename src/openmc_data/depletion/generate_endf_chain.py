@@ -87,7 +87,7 @@ def main():
     neutron_files = list(neutron_dir.rglob("*endf"))
     decay_files = list(decay_dir.rglob("*endf"))
     nfy_files = list(nfy_dir.rglob("*endf"))
-    print(decay_files)
+
     if args.release == 'vii.1':
         # Remove erroneous Be7 evaluation from vii.1 that can cause problems
         decay_files.remove(decay_dir / "decay" / "dec-004_Be_007.endf")
