@@ -37,10 +37,10 @@ parser.add_argument(
 parser.add_argument(
     "-r",
     "--release",
-    choices=["b7.1"],
+    choices=["b7.1", "b8.0"],
     default="b7.1",
     help="The nuclear data library release version. The currently supported "
-         "options are b7.1",
+         "options are b7.1 and b8.0",
 )
 
 parser.set_defaults()
@@ -51,8 +51,6 @@ def main():
 
     library_name = 'nndc'
     details = all_chain_release_details[library_name][args.release]["chain"]
-
-    cwd = Path.cwd()
 
     if args.filename is None:
         args.filename = Path("-".join(["chain", library_name, args.release])+".xml")
