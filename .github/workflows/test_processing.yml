@@ -101,4 +101,5 @@ jobs:
         if: contains(steps.changed-files-specific.outputs.modified_files, 'openmc_data/download/download_nndc_chain.py')
         run: |
           echo "download_nndc_chain.py file has been modified."
-          download_nndc_chain
+          download_nndc_chain -r b7.1
+          download_nndc_chain -r b8.0
