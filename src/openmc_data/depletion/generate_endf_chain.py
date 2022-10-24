@@ -53,7 +53,7 @@ def main():
                 'base_url': ['https://www.nndc.bnl.gov/endf-b7.1/zips/'],
                 'compressed_files': ['ENDF-B-VII.1-decay.zip']
             },
-            'nfy':{
+            'nfy': {
                 'base_url': ['https://www.nndc.bnl.gov/endf-b7.1/zips/'],
                 'compressed_files': ['ENDF-B-VII.1-nfy.zip']
             }
@@ -67,7 +67,7 @@ def main():
                 'base_url': ['https://www.nndc.bnl.gov/endf-b8.0/zips/'],
                 'compressed_files': ['ENDF-B-VIII.0_decay.zip']
             },
-            'nfy':{
+            'nfy': {
                 'base_url': ['https://www.nndc.bnl.gov/endf-b8.0/zips/'],
                 'compressed_files': ['ENDF-B-VIII.0_nfy.zip']
             }
@@ -102,7 +102,7 @@ def main():
     chain = openmc.deplete.Chain.from_endf(decay_files, nfy_files, neutron_files)
 
     if args.destination is None:
-        args.destination=f'chain_{library_name}_{args.release}.xml'
+        args.destination = f'chain_{library_name}_{args.release}.xml'
 
     chain.export_to_xml(args.destination)
     print(f'Chain file written to {args.destination}')
