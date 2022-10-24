@@ -5,9 +5,6 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools_scm]
-write_to = "openmc_data/_version.py"
-
 
 [project]
 name = "openmc_data"
