@@ -23,8 +23,8 @@ jobs:
         uses: tj-actions/changed-files@v19
         with:
           files: |
-            openmc_data/convert/convert_*.py
-            openmc_data/download/download_*.py
+            src/openmc_data/convert/convert_*.py
+            src/openmc_data/download/download_*.py
 
       - name: Set up Python
         if: steps.changed-files-specific.outputs.any_changed == 'true'
@@ -53,7 +53,7 @@ jobs:
       # convert_lib80x.py convert_mcnp70.py convert_mcnp71.py files are not tested here
 
       - name: test default convert_fendl
-        if: contains(steps.changed-files-specific.outputs.modified_files, 'openmc_data/convert_fendl.py')
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert_fendl.py')
         run: |
           echo "convert_fendl.py file has been modified."
           convert_fendl --cleanup
@@ -61,44 +61,44 @@ jobs:
       # this running convert_jeff32 in with default arguments produces 49GB of
       # data. Hence the use of arguments to process just one temperature
       - name: test default convert_jeff32
-        if: contains(steps.changed-files-specific.outputs.modified_files, 'openmc_data/convert/convert_jeff32.py')
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert/convert_jeff32.py')
         run: |
           echo "convert_jeff32.py file has been modified."
           convert_jeff32 -r 3.2 -t 293 --cleanup
 
       - name: test default convert_jeff33
-        if: contains(steps.changed-files-specific.outputs.modified_files, 'openmc_data/convert/convert_jeff33.py')
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert/convert_jeff33.py')
         run: |
           echo "convert_jeff33.py file has been modified."
           convert_jeff33 -r 3.3 -t 293 --cleanup
 
       - name: test default convert_nndc71
-        if: contains(steps.changed-files-specific.outputs.modified_files, 'openmc_data/convert/convert_nndc71.py')
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert/convert_nndc71.py')
         run: |
           echo "convert_nndc71.py file has been modified."
           convert_nndc71 --cleanup
 
       - name: test default convert_tendl
-        if: contains(steps.changed-files-specific.outputs.modified_files, 'openmc_data/convert/convert_tendl.py')
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert/convert_tendl.py')
         run: |
           echo "convert_tendl.py file has been modified."
           convert_tendl --cleanup
 
       - name: test default convert_tendl_rand
-        if: contains(steps.changed-files-specific.outputs.modified_files, 'openmc_data/convert/convert_tendl_rand.py')
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert/convert_tendl_rand.py')
         run: |
           echo "convert_tendl_rand.py file has been modified."
           convert_tendl_rand --nuclides O16 --cleanup
 
       # download scripts
       - name: test default download_nndc
-        if: contains(steps.changed-files-specific.outputs.modified_files, 'openmc_data/download/download_nndc.py')
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/download/download_nndc.py')
         run: |
           echo "download_nndc.py file has been modified."
           download_nndc
 
       - name: test default download_nndc_chain
-        if: contains(steps.changed-files-specific.outputs.modified_files, 'openmc_data/download/download_nndc_chain.py')
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/download/download_nndc_chain.py')
         run: |
           echo "download_nndc_chain.py file has been modified."
           download_nndc_chain -r b7.1
