@@ -12,7 +12,7 @@ authors = [
   { name="Jonathan Shimwell", email="mail@jshimwell.com" },
 ]
 license = {file = "LICENSE"}
-description = "A Python packge containing a collection of scripts for producing and downloading data for OpenMC"
+description = "A Python package containing a collection of scripts for producing and downloading data for OpenMC"
 readme = "README.md"
 requires-python = ">=3.8"
 keywords = ["openmc", "nuclear", "data", "download", "process", "cross", "section"]
