@@ -8,5 +8,15 @@ all_h5_release_details = {
                 "uncompressed_file_size": 6.2,
             }
         },
+    },
+    "nndc": {
+        "b8.0": {
+            "neutron-photon": {
+                "base_url": "https://anl.box.com/shared/static/",
+                "compressed_files": ["uhbxlrx7hvxqw27psymfbhi7bx7s6u6a.xz"],
+                "compressed_file_size": 3.4,
+                "uncompressed_file_size": 13.7,
+            }
+        },
     }
 }

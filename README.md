@@ -117,7 +117,7 @@ A few categories of scripts are available:
 
 | Script name | Library | Release | Processed by |
 |-|-|-|-|
-|download_nndc_chain | ENDF/B | VII.1 | NNDC |
+|download_nndc_chain | ENDF/B | VII.1 VIII.0 | NNDC |
 
 <!-- | Sctipt name | Library | Release | Download available | Download ENDF files and generates XML chain files |
 |-|-|-|-|-|
