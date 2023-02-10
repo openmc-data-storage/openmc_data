@@ -85,7 +85,7 @@ A few categories of scripts are available:
 
 | Script name | Library | Release | Processed by |
 |-|-|-|-|
-| download_nndc | ENDF/B | VII.1 | NNDC |
+| download_nndc | ENDF/B | VII.1<br>VIII.0  | NNDC |
 
 <!-- | Script name | Library | Release | Processed by | Download available | Downloads ACE files and convert to HDF5 | Downloads ENDF files and convert to HDF5 | Convert local ACE files |
 |-|-|-|-|-|-|-|-|
@@ -117,7 +117,7 @@ A few categories of scripts are available:
 
 | Script name | Library | Release | Processed by |
 |-|-|-|-|
-|download_nndc_chain | ENDF/B | VII.1 VIII.0 | NNDC |
+|download_nndc_chain | ENDF/B | VII.1<br>VIII.0 | NNDC |
 
 <!-- | Sctipt name | Library | Release | Download available | Download ENDF files and generates XML chain files |
 |-|-|-|-|-|
