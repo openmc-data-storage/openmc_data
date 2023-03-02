@@ -54,7 +54,7 @@ def main():
 
     if args.filename is None:
         args.filename = Path("-".join(["chain", library_name, args.release])+".xml")
-    print(args.filename)
+        print(f'Using default filename {args.filename}')
 
     download(
         details["url"],
