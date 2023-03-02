@@ -107,7 +107,14 @@ def extract(
         rmtree(compressed_files, ignore_errors=True)
 
 
-def download(url, checksum=None, as_browser=False, output_path=None, output_filename=None, **kwargs):
+def download(
+    url: str,
+    checksum=None,
+    as_browser: bool=False,
+    output_path=None,
+    output_filename=None,
+    **kwargs
+):
     """Download file from a URL
 
     Parameters
@@ -132,6 +139,7 @@ def download(url, checksum=None, as_browser=False, output_path=None, output_file
         Name of file written locally
 
     """
+
     if as_browser:
         page = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     else:
@@ -142,24 +150,23 @@ def download(url, checksum=None, as_browser=False, output_path=None, output_file
         file_size = response.length
 
         if output_filename is None:
-            local_path = Path(Path(urlparse(url).path).name)
-        else:
-            if output_path is None:
-                local_path = Path(output_filename)
-            else:
-                local_path = Path(output_path)/Path(output_filename)
+            output_filename = Path(Path(urlparse(url).path).name)
+            print(f'Using default output_filename {output_filename}')
 
-        if output_path is not None:
+        if output_path is None:
+            local_path = Path(output_filename)
+        else:
             Path(output_path).mkdir(parents=True, exist_ok=True)
-            local_path = output_path / local_path
+            local_path = Path(output_path) / output_filename
+
         # Check if file already downloaded
         if local_path.is_file():
             if local_path.stat().st_size == file_size:
-                print('Skipping {}, already downloaded'.format(local_path))
+                print(f'Skipping {local_path}, already downloaded')
                 return local_path
 
         # Copy file to disk in chunks
-        print(f'Downloading {local_path}... ', end='')
+        print(f'Downloading URL {url} to {local_path}')
         downloaded = 0
         with open(local_path, 'wb') as fh:
             while True:
