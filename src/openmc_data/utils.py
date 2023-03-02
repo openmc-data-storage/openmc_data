@@ -139,9 +139,7 @@ def download(
         Name of file written locally
 
     """
-    print(f'downloading {url}')
-    print(f'output_path {output_path}')
-    print(f'output_filename {output_filename}')
+
     if as_browser:
         page = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     else:
@@ -168,7 +166,7 @@ def download(
                 return local_path
 
         # Copy file to disk in chunks
-        print(f'Downloading {local_path}... ', end='')
+        print(f'Downloading URL {url} to {local_path}')
         downloaded = 0
         with open(local_path, 'wb') as fh:
             while True:
