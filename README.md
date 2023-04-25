@@ -26,8 +26,6 @@ Currently the package can be installed from this temporary repository.
 pip install openmc_data
 ```
 
-In the future pip installing from PyPi or Conda could be provided
-
 # Usage
 
 Once installed several scripts are available in your terminal that are able to
