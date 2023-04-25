@@ -69,12 +69,12 @@ def main():
     library_name = 'nndc'
     details = all_h5_release_details[library_name][args.release]["neutron-photon"]
 
-    cwd = Path.cwd()
-
-    download_path = cwd.joinpath("-".join([library_name, args.release, "download"]))
-
     if args.destination is None:
-        args.destination = Path("-".join([library_name, args.release, "hdf5"]))
+        download_path = Path("-".join([library_name, args.release, "download"]))
+        destination = Path("-".join([library_name, args.release, "hdf5"]))
+    else:
+        download_path = args.destination / Path("-".join([library_name, args.release, "download"]))
+        destination = args.destination / Path("-".join([library_name, args.release, "hdf5"]))
 
     if args.download:
         state_download_size(
@@ -92,7 +92,7 @@ def main():
             compressed_files=[
                 download_path / f for f in details["compressed_files"]
             ],
-            extraction_dir=args.destination,
+            extraction_dir=destination,
             del_compressed_file=args.cleanup,
         )
 
