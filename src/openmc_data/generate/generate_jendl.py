@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Download JENDL 4.0 data from JAEA and convert it to a HDF5 library for
+Download JENDL data from JAEA and convert it to a HDF5 library for
 use with OpenMC.
 """
 
@@ -38,9 +38,9 @@ parser.add_argument('--libver', choices=['earliest', 'latest'],
                     default='latest', help="Output HDF5 versioning. Use "
                     "'earliest' for backwards compatibility or 'latest' for "
                     "performance")
-parser.add_argument('-r', '--release', choices=['4.0'], default='4.0',
+parser.add_argument('-r', '--release', choices=['4.0', '5.0'], default='4.0',
                     help="The nuclear data library release version. "
-                    "The only option currently supported is 4.0")
+                    "The options currently supported are 4.0 and 5.0")
 parser.add_argument('--cleanup', action='store_true',
                     help="Remove download directories when data has "
                     "been processed")

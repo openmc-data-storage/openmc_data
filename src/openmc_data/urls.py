@@ -318,6 +318,16 @@ all_release_details = {
                 'compressed_file_size': '0.2',
                 'uncompressed_file_size': '2'
             }
+        },
+        '5.0': {
+            'neutron': {
+                'base_url': 'https://wwwndc.jaea.go.jp/ftpnd/ftp/JENDL/',
+                'compressed_files': ['jendl5-n.tar.gz'],
+                'endf_files': 'jendl5-n/*.dat',
+                'metastables': 'jendl5-n/*m1.dat',
+                'compressed_file_size': '4.1',
+                'uncompressed_file_size': '16'
+            }
         }
     }
 }
