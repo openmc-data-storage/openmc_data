@@ -49,7 +49,7 @@ args = parser.parse_args()
 
 def main():
 
-    library_name = 'nndc'
+    library_name = 'endf'
     details = all_chain_release_details[library_name][args.release]["chain"]
 
     if args.filename is None:

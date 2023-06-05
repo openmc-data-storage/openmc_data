@@ -66,7 +66,7 @@ args = parser.parse_args()
 
 def main():
 
-    library_name = 'nndc'
+    library_name = 'endf'
     details = all_h5_release_details[library_name][args.release]["neutron-photon"]
 
     if args.destination is None:

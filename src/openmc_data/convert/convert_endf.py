@@ -29,7 +29,7 @@ parser.add_argument(
     "-d",
     "--destination",
     type=Path,
-    default="nndc-b7.1-hdf5",
+    default="endf-b7.1-hdf5",
     help="Directory to create new library in",
 )
 parser.add_argument(
@@ -81,7 +81,7 @@ args = parser.parse_args()
 
 def main():
 
-    library_name = "nndc"
+    library_name = "endf"
     release = "b7.1"
 
     cwd = Path.cwd()
