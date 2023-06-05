@@ -75,9 +75,11 @@ def main():
         state_download_size(details['compressed_file_size'], details['uncompressed_file_size'], 'GB')
         for f in details['compressed_files']:
             # Establish connection to URL
-            download(urljoin(details['base_url'], f),
-                    context=ssl._create_unverified_context(),
-                    output_path=download_path)
+            download(
+                urljoin(details['base_url'], f),
+                context=ssl._create_unverified_context(),
+                output_path=download_path
+            )
 
     # ==============================================================================
     # EXTRACT FILES FROM TGZ
@@ -87,7 +89,6 @@ def main():
             extraction_dir=endf_files_dir,
             del_compressed_file=args.cleanup
         )
-
 
     # ==============================================================================
     # GENERATE HDF5 LIBRARY -- NEUTRON FILES
@@ -99,7 +100,6 @@ def main():
     args.destination.mkdir(parents=True, exist_ok=True)
 
     library = openmc.data.DataLibrary()
-
 
     with Pool() as pool:
         results = []
