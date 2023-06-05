@@ -8,11 +8,9 @@ library should be used for decay and FPY evaluations and defaults to JEFF 3.3.
 """
 
 import json
-import tarfile
 from argparse import ArgumentParser
 from pathlib import Path
 from urllib.parse import urljoin
-from zipfile import ZipFile
 import openmc_data
 
 import openmc.data

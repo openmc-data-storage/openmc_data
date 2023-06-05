@@ -77,7 +77,7 @@ A few categories of scripts are available:
 |-|-|-|-|
 | generate_cendl | CENDL | 3.1<br>3.2 |  |
 | generate_endf | ENDF/B | VII.1<br>VIII.0 | NNDC |
-| generate_jendl | JENDL | 4.0 | |
+| generate_jendl | JENDL | 4.0<br>5.0 | |
 
 ### Download cross sections
 
