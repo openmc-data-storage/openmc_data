@@ -119,21 +119,11 @@ def main():
 
         extract(downloaded_file, neutron_dir)
 
-    # Get list of transport nuclides in TENDL
-    with open(
-        Path(openmc_data.__path__[0])
-        / "depletion"
-        / f"{library_name}{args.release}_nuclides.json",
-        "r",
-    ) as fh:
-        transport_nuclides = set(json.load(fh))
-
     neutron_files = [
         p
         for p in list(neutron_dir.rglob("*.tendl"))
-        if p.name[2:-6] in transport_nuclides  # filename is n-XXNNN.tendl
     ]
-
+    print(neutron_files)
     # ==========================================================================
     # Decay and fission product yield data
 
