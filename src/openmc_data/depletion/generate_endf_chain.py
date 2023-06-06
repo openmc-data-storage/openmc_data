@@ -8,15 +8,15 @@ from urllib.parse import urljoin
 import openmc.deplete
 
 from openmc_data.utils import download, extract
-
+from openmc_data import all_decay_release_details
 
 
 # Parse command line arguments
 parser = ArgumentParser()
-parser.add_argument('-r', '--release', choices=['vii.1', 'viii.0'],
-                    default='viii.0', help="The nuclear data library release "
-                    "version. The currently supported options are vii.1, "
-                    "viii.0")
+parser.add_argument('-r', '--release', choices=['b7.1', 'b8.0'],
+                    default='b8.0', help="The nuclear data library release "
+                    "version. The currently supported options are n7.1, "
+                    "b8.0")
 parser.add_argument(
     "-d",
     "--destination",
@@ -43,39 +43,9 @@ def main():
 
     # This dictionary contains all the unique information about each release.
     # This can be extended to accommodated new releases
-    release_details = {
-        'vii.1': {
-            'neutron': {
-                'base_url': ['https://www.nndc.bnl.gov/endf-b7.1/zips/'],
-                'compressed_files': ['ENDF-B-VII.1-neutrons.zip'],
-            },
-            'decay': {
-                'base_url': ['https://www.nndc.bnl.gov/endf-b7.1/zips/'],
-                'compressed_files': ['ENDF-B-VII.1-decay.zip']
-            },
-            'nfy': {
-                'base_url': ['https://www.nndc.bnl.gov/endf-b7.1/zips/'],
-                'compressed_files': ['ENDF-B-VII.1-nfy.zip']
-            }
-        },
-        'viii.0': {
-            'neutron': {
-                'base_url': ['https://www.nndc.bnl.gov/endf-b8.0/zips/'],
-                'compressed_files': ['ENDF-B-VIII.0_neutrons.zip'],
-            },
-            'decay': {
-                'base_url': ['https://www.nndc.bnl.gov/endf-b8.0/zips/'],
-                'compressed_files': ['ENDF-B-VIII.0_decay.zip']
-            },
-            'nfy': {
-                'base_url': ['https://www.nndc.bnl.gov/endf-b8.0/zips/'],
-                'compressed_files': ['ENDF-B-VIII.0_nfy.zip']
-            }
-        }
-    }
 
     for file_type, extract_dir in zip(['neutron', 'decay', 'nfy'], [neutron_dir, decay_dir, nfy_dir]):
-        details = release_details[args.release][file_type]
+        details = all_decay_release_details[library_name][args.release][file_type]
         for base_url, file in zip(details['base_url'], details['compressed_files']):
             downloaded_file = download(
                 url=urljoin(base_url, file),
@@ -106,6 +76,7 @@ def main():
 
     chain.export_to_xml(args.destination)
     print(f'Chain file written to {args.destination}')
+
 
 if __name__ == '__main__':
     main()

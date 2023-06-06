@@ -32,7 +32,7 @@ parser.add_argument("-n", "--nuclides", nargs="+",
 parser.add_argument("-d", "--destination", default=None, 
                     help="Directory to create new library in")
 parser.add_argument("-l", "--libdir", default=None, 
-                    help="Directory of endf library to sample eg. nndc-b7.1-endf folder")
+                    help="Directory of endf library to sample")
 parser.add_argument("-x", "--xlib", default=None, 
                     help="cross_section.xml library to add random evaluations to. Default is OPENMC_CROSS_SECTIONS")
 parser.add_argument("-s", "--samples", default=200, 
@@ -60,7 +60,7 @@ def main():
 
     libdir = args.libdir
     if libdir == None:
-        raise Exception("Directory of ENDF library required for sampling, eg. nndc-b7.1-endf folder. Use -l prefix to specify")
+        raise Exception("Directory of ENDF library required for sampling. Use -l prefix to specify")
     else:
         libdir = Path(libdir).resolve()
 

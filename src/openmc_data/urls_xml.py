@@ -1,5 +1,5 @@
 all_chain_release_details = {
-    "nndc": {
+    "endf": {
         "b7.1": {
             "chain": {
                 "url": "https://github.com/openmc-data-storage/openmc_data/raw/main/src/openmc_data/depletion/chain_endf_vii.1.xml",

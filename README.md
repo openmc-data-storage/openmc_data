@@ -35,7 +35,7 @@ The scripts accept input arguments, to find out the input arguments available
 for a particular script run the script name with ```--help``` after the name.
 For example:
 
-```convert_nndc71 --help```
+```convert_endf --help```
 
 Some scripts (mainly the generate scripts) require NJOY to be installed and
 added to your path.
@@ -64,7 +64,7 @@ A few categories of scripts are available:
 |-|-|-|-|
 |convert_mcnp70 | ENDF/B | VII.0 | LANL |
 |convert_mcnp71 | ENDF/B | VII.1 | LANL |
-|convert_nndc | ENDF/B | VII.1 | NNDC |
+|convert_endf | ENDF/B | VII.1 | NNDC |
 |convert_lib80x | ENDF/B | VIII.0 | LANL |
 |convert_fendl | FENDL | 2.1<br>3.0<br>3.1a<br>3.1d<br>3.2|
 |convert_jeff32 | JEFF | 3.2 |
@@ -83,7 +83,7 @@ A few categories of scripts are available:
 
 | Script name | Library | Release | Processed by |
 |-|-|-|-|
-| download_nndc | ENDF/B | VII.1<br>VIII.0  | NNDC |
+| download_endf | ENDF/B | VII.1<br>VIII.0  | NNDC |
 
 <!-- | Script name | Library | Release | Processed by | Download available | Downloads ACE files and convert to HDF5 | Downloads ENDF files and convert to HDF5 | Convert local ACE files |
 |-|-|-|-|-|-|-|-|
@@ -91,7 +91,7 @@ A few categories of scripts are available:
 |convert_mcnp70| ENDF/B | VII.0 | LANL | [openmc.org](https://anl.box.com/shared/static/t25g7g6v0emygu50lr2ych1cf6o7454b.xz) |  |  | :heavy_check_mark: |
 |convert_mcnp71| ENDF/B | VII.1 | LANL | [openmc.org](https://anl.box.com/shared/static/d359skd2w6wrm86om2997a1bxgigc8pu.xz) |  |  | :heavy_check_mark: |
 |generate_endf| ENDF/B | VII.1 | NNDC | [openmc.org](https://anl.box.com/shared/static/9igk353zpy8fn9ttvtrqgzvw1vtejoz6.xz) |  | :heavy_check_mark: |  |
-|convert_nndc71| ENDF/B | VII.1 | NNDC | [openmc.org](https://anl.box.com/shared/static/9igk353zpy8fn9ttvtrqgzvw1vtejoz6.xz) | :heavy_check_mark: | :heavy_check_mark: |  |
+|convert_endf| ENDF/B | VII.1 | NNDC | [openmc.org](https://anl.box.com/shared/static/9igk353zpy8fn9ttvtrqgzvw1vtejoz6.xz) | :heavy_check_mark: | :heavy_check_mark: |  |
 |convert_lib80x| ENDF/B | VIII.0 | LANL | [openmc.org](https://anl.box.com/shared/static/nd7p4jherolkx4b1rfaw5uqp58nxtstr.xz) |  |  | :heavy_check_mark: |
 |generate_endf| ENDF/B | VIII.0 | NNDC | [openmc.org](https://anl.box.com/shared/static/uhbxlrx7hvxqw27psymfbhi7bx7s6u6a.xz) |  | :heavy_check_mark: |  |
 |convert_fendl| FENDL | 2.1<br>3.0<br>3.1a<br>3.1d<br>3.2 |  | [openmc.org 3.2](https://anl.box.com/shared/static/3cb7jetw7tmxaw6nvn77x6c578jnm2ey.xz) | :heavy_check_mark: |  |  |
@@ -115,7 +115,7 @@ A few categories of scripts are available:
 
 | Script name | Library | Release | Processed by |
 |-|-|-|-|
-|download_nndc_chain | ENDF/B | VII.1<br>VIII.0 | NNDC |
+|download_endf_chain | ENDF/B | VII.1<br>VIII.0 | NNDC |
 
 <!-- | Sctipt name | Library | Release | Download available | Download ENDF files and generates XML chain files |
 |-|-|-|-|-|

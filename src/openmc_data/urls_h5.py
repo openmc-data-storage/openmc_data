@@ -1,5 +1,5 @@
 all_h5_release_details = {
-    "nndc": {
+    "endf": {
         "b7.1": {
             "neutron-photon": {
                 "base_url": "https://anl.box.com/shared/static/",

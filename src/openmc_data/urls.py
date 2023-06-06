@@ -205,7 +205,7 @@ all_release_details = {
             },
         },
     },
-    'nndc': {
+    'endf': {
         "b7.1": {
             "neutron": {
                 "base_url": "http://www.nndc.bnl.gov/endf-b7.1/aceFiles/",
