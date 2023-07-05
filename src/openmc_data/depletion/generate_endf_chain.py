@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import os
 from argparse import ArgumentParser
 from pathlib import Path
 from urllib.parse import urljoin
@@ -15,8 +14,7 @@ from openmc_data import all_decay_release_details
 parser = ArgumentParser()
 parser.add_argument('-r', '--release', choices=['b7.1', 'b8.0'],
                     default='b8.0', help="The nuclear data library release "
-                    "version. The currently supported options are n7.1, "
-                    "b8.0")
+                    "version. The currently supported options are b7.1, b8.0")
 parser.add_argument(
     "-d",
     "--destination",
@@ -67,7 +65,7 @@ def main():
     for flist, ftype in [(decay_files, "decay"), (neutron_files, "neutron"),
                          (fpy_files, "neutron fission product yield")]:
         if not flist:
-            raise IOError("No {} endf files found in {}".format(ftype, endf_files_dir))
+            raise IOError(f"No {ftype} endf files found in {endf_files_dir}")
 
     chain = openmc.deplete.Chain.from_endf(
         decay_files=decay_files,
