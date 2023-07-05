@@ -7,11 +7,9 @@ be borrowed from another library. The --lib flag for this script indicates what
 library should be used for decay and FPY evaluations and defaults to JEFF 3.3.
 """
 
-import json
 from argparse import ArgumentParser
 from pathlib import Path
 from urllib.parse import urljoin
-import openmc_data
 
 import openmc.data
 import openmc.deplete as dep
