@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import os
 from argparse import ArgumentParser
 from pathlib import Path
 from urllib.parse import urljoin
@@ -15,8 +14,7 @@ from openmc_data import all_decay_release_details
 parser = ArgumentParser()
 parser.add_argument('-r', '--release', choices=['b7.1', 'b8.0'],
                     default='b8.0', help="The nuclear data library release "
-                    "version. The currently supported options are n7.1, "
-                    "b8.0")
+                    "version. The currently supported options are b7.1, b8.0")
 parser.add_argument(
     "-d",
     "--destination",
@@ -56,7 +54,7 @@ def main():
 
     neutron_files = list(neutron_dir.rglob("*endf"))
     decay_files = list(decay_dir.rglob("*endf"))
-    nfy_files = list(nfy_dir.rglob("*endf"))
+    fpy_files = list(nfy_dir.rglob("*endf"))
 
     if args.release == 'vii.1':
         # Remove erroneous Be7 evaluation from vii.1 that can cause problems
@@ -65,11 +63,16 @@ def main():
 
     # check files exist
     for flist, ftype in [(decay_files, "decay"), (neutron_files, "neutron"),
-                         (nfy_files, "neutron fission product yield")]:
+                         (fpy_files, "neutron fission product yield")]:
         if not flist:
-            raise IOError("No {} endf files found in {}".format(ftype, endf_files_dir))
+            raise IOError(f"No {ftype} endf files found in {endf_files_dir}")
 
-    chain = openmc.deplete.Chain.from_endf(decay_files, nfy_files, neutron_files)
+    chain = openmc.deplete.Chain.from_endf(
+        decay_files=decay_files,
+        fpy_files=fpy_files,
+        neutron_files=neutron_files,
+        reactions=list(openmc.deplete.chain.REACTIONS.keys())
+    )
 
     if args.destination is None:
         args.destination = f'chain_{library_name}_{args.release}.xml'
