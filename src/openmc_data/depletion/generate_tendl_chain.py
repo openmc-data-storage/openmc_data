@@ -112,17 +112,17 @@ def main():
     print(neutron_files)
     # ==========================================================================
     # Decay and fission product yield data
-
+    print(release_details)
     decay_zip = download(
         urljoin(
-            release_details["decay"]["base_url"],
+            release_details["decay"]["base_url"][0],
             release_details["decay"]["compressed_files"][0],
         ),
         output_path=decay_dir,
     )
     nfy_zip = download(
         urljoin(
-            release_details["nfy"]["base_url"],
+            release_details["nfy"]["base_url"][0],
             release_details["nfy"]["compressed_files"][0],
         ),
         output_path=nfy_dir,
