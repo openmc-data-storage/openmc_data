@@ -5,7 +5,7 @@ from typing import Iterable
 import warnings
 import zipfile
 from pathlib import Path
-from shutil import rmtree
+import shutil
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 import warnings
@@ -99,13 +99,13 @@ def extract(
                     print(f'Extracting {f} to {extraction_dir}')
                 tgz.extractall(path=extraction_dir)
         elif str(f).endswith('.asc'):
-            pass  #not a compressed file
+            shutil.copy(f, extraction_dir)
         else:
             raise ValueError('File type not currently supported by extraction '
                              f'function {str(f)}')
 
     if del_compressed_file:
-        rmtree(compressed_files, ignore_errors=True)
+        shutil.rmtree(compressed_files, ignore_errors=True)
 
 
 def download(

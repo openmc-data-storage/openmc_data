@@ -32,7 +32,7 @@ def main():
 
     cwd = Path.cwd()
 
-    endf_files_dir = cwd.joinpath('-'.join([library_name, args.release, 'jeff']))
+    endf_files_dir = cwd.joinpath('-'.join([library_name, args.release, 'endf']))
     download_path = cwd.joinpath('-'.join([library_name, args.release, 'download']))
 
     neutron_dir = endf_files_dir / "neutrons"
@@ -52,9 +52,9 @@ def main():
 
         extract(downloaded_file, extract_dir)
 
-    neutron_files = list(neutron_dir.rglob("*endf"))
-    decay_files = list(decay_dir.rglob("*endf"))
-    fpy_files = list(nfy_dir.rglob("*endf"))
+    neutron_files = list(neutron_dir.rglob("*.jeff33"))
+    decay_files = list(decay_dir.rglob("*.ASC"))
+    fpy_files = list(nfy_dir.rglob("*.asc"))
 
     # check files exist
     for flist, ftype in [(decay_files, "decay"), (neutron_files, "neutron"),
