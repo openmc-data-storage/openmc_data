@@ -33,15 +33,15 @@ all_decay_release_details = {
         '3.3': {
             'neutron': {
                 'base_url': ['https://www.oecd-nea.org/dbdata/jeff/jeff33/downloads/temperatures/'],
-                'compressed_files': ['ace_293.tar.gz'],
+                'compressed_files': ['ace_293.tar.gz']
             },
             'decay': {
                 'base_url': ['https://www.oecd-nea.org/dbdata/jeff/jeff33/downloads/'],
                 'compressed_files': ['JEFF33-rdd.zip']
             },
             'nfy': {
-                'base_url': [''],
-                'compressed_files': ['']
+                'base_url': ['https://www.oecd-nea.org/dbdata/jeff/jeff33/downloads/'],
+                'compressed_files': ['JEFF33-nfy.asc']
             }       
         }
     },
