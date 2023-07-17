@@ -98,7 +98,8 @@ def extract(
                 if verbose:
                     print(f'Extracting {f} to {extraction_dir}')
                 tgz.extractall(path=extraction_dir)
-
+        elif str(f).endswith('.asc'):
+            pass  #not a compressed file
         else:
             raise ValueError('File type not currently supported by extraction '
                              f'function {str(f)}')
