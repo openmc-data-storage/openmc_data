@@ -85,23 +85,11 @@ def main():
 
     # adds in either jeff or endf neutron fission yields and decay data
     if args.lib == "jeff33":
-        release_details["decay"] = {
-            "base_url": "https://www.oecd-nea.org/dbdata/jeff/jeff33/downloads/",
-            "compressed_files": ["JEFF33-rdd.zip"],
-        }
-        release_details["nfy"] = {
-            "base_url": "https://www.oecd-nea.org/dbdata/jeff/jeff33/downloads/",
-            "compressed_files": ["JEFF33-nfy.asc"],
-        }
+        release_details["decay"] = all_decay_release_details['jeff']['3.3']["decay"]
+        release_details["nfy"] = all_decay_release_details['jeff']['3.3']["nfy"]
     elif args.lib == "endf80":
-        release_details["decay"] = {
-            "base_url": "https://www.nndc.bnl.gov/endf-b8.0/zips/",
-            "compressed_files": ["ENDF-B-VIII.0_decay.zip"],
-        }
-        release_details["nfy"] = {
-            "base_url": "https://www.nndc.bnl.gov/endf-b8.0/zips/",
-            "compressed_files": ["ENDF-B-VIII.0_nfy.zip"],
-        }
+        release_details["decay"] = all_decay_release_details['endf']['b8.0']["decay"]
+        release_details["nfy"] = all_decay_release_details['endf']['b8.0']["nfy"]
     else:
         raise ValueError(
             f"lib argument must be either jeff33 or endf80 and can not be {args.lib}"
@@ -124,17 +112,17 @@ def main():
     print(neutron_files)
     # ==========================================================================
     # Decay and fission product yield data
-
+    print(release_details)
     decay_zip = download(
         urljoin(
-            release_details["decay"]["base_url"],
+            release_details["decay"]["base_url"][0],
             release_details["decay"]["compressed_files"][0],
         ),
         output_path=decay_dir,
     )
     nfy_zip = download(
         urljoin(
-            release_details["nfy"]["base_url"],
+            release_details["nfy"]["base_url"][0],
             release_details["nfy"]["compressed_files"][0],
         ),
         output_path=nfy_dir,
