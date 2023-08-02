@@ -5,7 +5,7 @@ except (ModuleNotFoundError, ImportError):
     # this works for python 3.8 and higher
     from importlib_metadata import version, PackageNotFoundError
 try:
-    __version__ = version("stl_to_h5m")
+    __version__ = version("openmc_data")
 except PackageNotFoundError:
     from setuptools_scm import get_version
 
