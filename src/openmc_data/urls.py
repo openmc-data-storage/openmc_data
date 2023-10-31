@@ -65,7 +65,7 @@ all_release_details = {
                 "base_url": "https://www-nds.iaea.org/fendl31/data/neutron/",
                 "compressed_files": ["fendl31a-neutron-ace.zip"],
                 "file_type": "ace",
-                "ace_files": "*.ace",
+                "ace_files": "*[0-9]",
                 "compressed_file_size": 384,
                 "uncompressed_file_size": 2250,
             },

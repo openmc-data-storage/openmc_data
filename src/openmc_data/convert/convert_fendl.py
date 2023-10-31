@@ -158,7 +158,6 @@ def main():
                 "uncompressed_file_size"
             ]
 
-
     # Warnings to be printed at the end of the script.
     output_warnings = []
 
