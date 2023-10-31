@@ -97,6 +97,13 @@ jobs:
           echo "download_endf.py file has been modified."
           download_endf
 
+      - name: test default download_tendl
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/download/download_tendl.py')
+        run: |
+          echo "download_tendl.py file has been modified."
+          download_tendl -r 2019
+          download_tendl -r 2021
+
       - name: test default download_endf_chain
         if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/download/download_endf_chain.py')
         run: |
