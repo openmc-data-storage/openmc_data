@@ -84,6 +84,7 @@ A few categories of scripts are available:
 | Script name | Library | Release | Processed by |
 |-|-|-|-|
 | download_endf | ENDF/B | VII.1<br>VIII.0  | NNDC |
+| download_tendl | TENDL | 2019<br>2021  |  |
 
 <!-- | Script name | Library | Release | Processed by | Download available | Downloads ACE files and convert to HDF5 | Downloads ENDF files and convert to HDF5 | Convert local ACE files |
 |-|-|-|-|-|-|-|-|

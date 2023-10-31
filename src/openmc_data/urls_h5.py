@@ -16,5 +16,23 @@ all_h5_release_details = {
                 "uncompressed_file_size": 13.7,
             }
         },
+    },
+    "tendl": {
+        "2019": {
+            "neutron": {
+                "base_url": "https://tendl.web.psi.ch/tendl_2019/tar_files/",
+                "compressed_files": ["tendl19_hdf5.tar.bz2"],
+                "compressed_file_size": 1.3,
+                "uncompressed_file_size": 2.5,
+            }
+        },
+        "2021": {
+            "neutron": {
+                "base_url": "https://tendl.web.psi.ch/tendl_2021/tar_files/",
+                "compressed_files": ["tendl21_hdf5.tar.bz2"],
+                "compressed_file_size": 1.3,
+                "uncompressed_file_size": 2.5,
+            }
+        },
     }
 }
