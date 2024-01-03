@@ -25,6 +25,7 @@ jobs:
           files: |
             src/openmc_data/convert/convert_*.py
             src/openmc_data/download/download_*.py
+            src/openmc_data/depletion/add_branching_ratios.py
 
       - name: Set up Python
         if: steps.changed-files-specific.outputs.any_changed == 'true'
