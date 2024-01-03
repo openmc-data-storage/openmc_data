@@ -14,7 +14,7 @@ jobs:
     run_scripts:
       runs-on: ubuntu-latest
       steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
 
@@ -25,6 +25,7 @@ jobs:
           files: |
             src/openmc_data/convert/convert_*.py
             src/openmc_data/download/download_*.py
+            src/openmc_data/depletion/add_branching_ratios.py
 
       - name: Set up Python
         if: steps.changed-files-specific.outputs.any_changed == 'true'
@@ -110,3 +111,11 @@ jobs:
           echo "download_endf_chain.py file has been modified."
           download_endf_chain -r b7.1
           download_endf_chain -r b8.0
+
+      - name: test default add_branching_ratios
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/depletion/add_branching_ratios.py')
+        run: |
+          echo "add_branching_ratios.py file has been modified."
+          download_endf_chain -r b8.0
+          add_branching_ratios -i chain-endf-b8.0.xml -o chain_endf_b8.0_sfr.xml -b fsr
+          add_branching_ratios -i chain-endf-b8.0.xml -o chain_endf_b8.0_pwr.xml -b pwr
