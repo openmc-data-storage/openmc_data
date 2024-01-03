@@ -105,19 +105,21 @@ A few categories of scripts are available:
 
 ### Generate chain files
 
-| Script name | Library | Release | Processed by |
-|-|-|-|-|
-|generate_endf71_chain_casl | ENDF/B |  |  |
-|generate_endf_chain | ENDF/B | VII.1<br>VIII.0  |  |
-|generate_jeff_chain | JEFF | 3.3  |  |
-|generate_serpent_fissq | |  |  |
-|generate_tendl_chain | TENDL | 2019<br>2021 | |
+| Script name | Library | Release |
+|-|-|-|
+|generate_endf_chain | ENDF/B | VII.1<br>VIII.0  |
+|generate_jeff_chain | JEFF | 3.3  |
+|generate_serpent_fissq | |  |
+|generate_tendl_chain | TENDL | 2019<br>2021 |
+|generate_endf71_chain_casl | ENDF/B |  |
+
+```add_branching_ratios``` can add branching ratios for n,gamma reactions to the chain files produced by the above scripts.
 
 ### Download chain files
 
-| Script name | Library | Release | Processed by |
-|-|-|-|-|
-|download_endf_chain | ENDF/B | VII.1<br>VIII.0 | NNDC |
+| Script name | Library | Release |
+|-|-|-|
+|download_endf_chain | ENDF/B | VII.1<br>VIII.0 |
 
 <!-- | Sctipt name | Library | Release | Download available | Download ENDF files and generates XML chain files |
 |-|-|-|-|-|

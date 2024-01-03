@@ -110,3 +110,11 @@ jobs:
           echo "download_endf_chain.py file has been modified."
           download_endf_chain -r b7.1
           download_endf_chain -r b8.0
+
+      - name: test default add_branching_ratios
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/download/add_branching_ratios.py')
+        run: |
+          echo "add_branching_ratios.py file has been modified."
+          download_endf_chain -r b8.0
+          add_branching_ratios -i chain_endf_b8.0.xml -o chain_endf_b8.0_sfr.xml -b sfr
+          add_branching_ratios -i chain_endf_b8.0.xml -o chain_endf_b8.0_pwr.xml -b pwr
