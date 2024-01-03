@@ -15,7 +15,7 @@ parser.add_argument(
     "--branching_ratios",
     type=str,
     required=True,
-    help='Path of the input branching ratios JSON file or the type of reactor for the branching ratio "FSR" or "PWR"',
+    help='Path of the input branching ratios JSON file or the type of reactor for the branching ratio "SFR" or "PWR"',
 )
 parser.add_argument(
     "-o",
@@ -31,7 +31,7 @@ def update_chain(chain_in, branching_ratios, chain_out):
     # Load existing chain
     chain = openmc.deplete.Chain.from_xml(chain_in)
 
-    if branching_ratios.lower() == "fsr":
+    if branching_ratios.lower() == "sfr":
         branching_ratios = Path(__file__).parent / "branching_ratios_sfr.json"
     elif branching_ratios.lower() == "pwr":
         branching_ratios = Path(__file__).parent / "branching_ratios_pwr.json"

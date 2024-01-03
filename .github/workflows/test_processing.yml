@@ -117,5 +117,5 @@ jobs:
         run: |
           echo "add_branching_ratios.py file has been modified."
           download_endf_chain -r b8.0
-          add_branching_ratios -i chain-endf-b8.0.xml -o chain_endf_b8.0_sfr.xml -b fsr
+          add_branching_ratios -i chain-endf-b8.0.xml -o chain_endf_b8.0_sfr.xml -b sfr
           add_branching_ratios -i chain-endf-b8.0.xml -o chain_endf_b8.0_pwr.xml -b pwr
