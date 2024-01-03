@@ -46,11 +46,12 @@ def test_xml_urls():
 
     print("library, release, particle, responce.status_code")
     for library, releases in all_chain_release_details.items():
-        for release, chains in releases.items():
-            url = chains['chain']['url']
-            print(library, release, url)
-            responce = requests.get(url, stream=True)
-            print(library, release, url, responce.status_code)
-            # printing output so that in the event of a failure the
-            # failing url can be identified
-            assert responce.status_code == 200
+        for release, branching_ratios in releases.items():
+            for branching_ratio in branching_ratios:
+                url = all_chain_release_details[library][release][branching_ratio]['chain']['url']
+                print(library, release, branching_ratio, url)
+                responce = requests.get(url, stream=True)
+                print(library, release, url, branching_ratio, responce.status_code)
+                # printing output so that in the event of a failure the
+                # failing url can be identified
+                assert responce.status_code == 200
