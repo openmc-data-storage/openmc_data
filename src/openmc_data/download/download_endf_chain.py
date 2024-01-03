@@ -42,6 +42,15 @@ parser.add_argument(
     help="The nuclear data library release version. The currently supported "
          "options are b7.1 and b8.0",
 )
+parser.add_argument(
+    "-b",
+    "--branching_ratios",
+    choices=["None", "SFR", "PWR"],
+    default="SFR",
+    help="The nuclear data library release version. The currently supported "
+         "options are b7.1 and b8.0 with branching ratio options of None, SFR "
+         "or PWR",
+)
 
 parser.set_defaults()
 args = parser.parse_args()
@@ -50,7 +59,7 @@ args = parser.parse_args()
 def main():
 
     library_name = 'endf'
-    details = all_chain_release_details[library_name][args.release]["chain"]
+    details = all_chain_release_details[library_name][args.release][args.branching_ratios]["chain"]
 
     if args.filename is None:
         args.filename = Path("-".join(["chain", library_name, args.release])+".xml")

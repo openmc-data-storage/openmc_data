@@ -113,13 +113,11 @@ A few categories of scripts are available:
 |generate_tendl_chain | TENDL | 2019<br>2021 |
 |generate_endf71_chain_casl | ENDF/B |  |
 
-```add_branching_ratios``` can add branching ratios for n,gamma reactions to the chain files produced by the above scripts.
-
 ### Download chain files
 
-| Script name | Library | Release |
-|-|-|-|
-|download_endf_chain | ENDF/B | VII.1<br>VIII.0 |
+| Script name | Library | Release | Branching options|
+|-|-|-|-|
+|download_endf_chain | ENDF/B | VII.1<br>VIII.0 | None<br>SFR<br>PWR
 
 <!-- | Sctipt name | Library | Release | Download available | Download ENDF files and generates XML chain files |
 |-|-|-|-|-|
@@ -136,6 +134,6 @@ A few categories of scripts are available:
 | sample_sandy | This scripts generates random (gaussian) evaluations of a nuclear data file following its covariance matrix using SANDY, and converts them to HDF5 for use in OpenMC. Script generates a cross_sections_sandy.xml file with the standard library plus the sampled evaluations. |
 | make_compton | |
 | make_stopping_powers | |
-| add_branching_ratios | Writes a depletion chain XML file from a depletion chain XML file and branching ratios |
+| add_branching_ratios | add branching ratios for n,gamma reactions to a preexisting chain files. |
 | reduce_chain | |
-| combine_libraries | Combines multiple cross_section.xml files into a single cross_section.xml |
+| combine_libraries | Combines multiple cross_section.xml files into a single cross_section.xml. |
