@@ -26,6 +26,7 @@ jobs:
             src/openmc_data/convert/convert_*.py
             src/openmc_data/download/download_*.py
             src/openmc_data/depletion/add_branching_ratios.py
+            src/openmc_data/depletion/reduce_chain.py
 
       - name: Set up Python
         if: steps.changed-files-specific.outputs.any_changed == 'true'
@@ -123,3 +124,10 @@ jobs:
           download_endf_chain -r b8.0
           add_branching_ratios -i chain-endf-b8.0.xml -o chain_endf_b8.0_sfr.xml -b sfr
           add_branching_ratios -i chain-endf-b8.0.xml -o chain_endf_b8.0_pwr.xml -b pwr
+
+      - name: test default reduce_chain
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/depletion/reduce_chain.py')
+        run: |
+          echo "reduce_chain.py file has been modified."
+          download_endf_chain -r b8.0
+          reduce_chain -i chain-endf-b8.0.xml -o chain_endf_b8.0_sfr.xml -hl 1e15
