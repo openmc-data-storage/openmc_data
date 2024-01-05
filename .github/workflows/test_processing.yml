@@ -130,4 +130,4 @@ jobs:
         run: |
           echo "reduce_chain.py file has been modified."
           download_endf_chain -r b8.0
-          reduce_chain -i chain-endf-b8.0.xml -o chain_endf_b8.0_sfr.xml -h 1e15
+          reduce_chain -i chain-endf-b8.0.xml -o chain_endf_b8.0_sfr.xml -hl 1e15
