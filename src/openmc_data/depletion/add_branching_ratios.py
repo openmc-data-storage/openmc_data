@@ -1,12 +1,13 @@
 import argparse
 import json
-import typing
 from pathlib import Path
 
 import openmc.deplete
 
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(prog="add_branching_ratio",
+    description="Adds branching ratios to n,gamma reactions in OpenMC chain files",
+)
 parser.add_argument(
     "-i", "--chain_in", type=Path, required=True, help="Path of the input chain file"
 )

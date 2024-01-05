@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from argparse import ArgumentParser
+import argparse
 from pathlib import Path
 from urllib.parse import urljoin
 
@@ -11,7 +11,9 @@ from openmc_data import all_decay_release_details
 
 
 # Parse command line arguments
-parser = ArgumentParser()
+parser = argparse.ArgumentParser(prog="generate_jeff_chain",
+    description="Generates a OpenMC chain file from JEFF nuclear data files",
+)
 parser.add_argument('-r', '--release', choices=['3.3'],
                     default='3.3', help="The nuclear data library release "
                     "version. The currently supported options are 3.3")

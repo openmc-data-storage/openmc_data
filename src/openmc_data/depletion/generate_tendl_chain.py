@@ -7,7 +7,7 @@ be borrowed from another library. The --lib flag for this script indicates what
 library should be used for decay and FPY evaluations and defaults to JEFF 3.3.
 """
 
-from argparse import ArgumentParser
+import argparse
 from pathlib import Path
 from urllib.parse import urljoin
 
@@ -18,7 +18,9 @@ from openmc_data.utils import download, extract
 from openmc_data import all_decay_release_details
 
 # Parse command line arguments
-parser = ArgumentParser()
+parser = argparse.ArgumentParser(prog="generate_tendl_chain",
+    description="Generates a OpenMC chain file from TENDL nuclear data files",
+)
 parser.add_argument(
     "--lib",
     choices=("jeff33", "endf80"),
