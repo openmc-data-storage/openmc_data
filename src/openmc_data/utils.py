@@ -1,5 +1,4 @@
 import hashlib
-import imp
 import tarfile
 from typing import Iterable
 import warnings
