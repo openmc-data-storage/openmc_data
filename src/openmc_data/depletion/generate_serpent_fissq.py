@@ -4,14 +4,16 @@
 Determine Q values equivalent to the defaults in Serpent
 """
 
-from argparse import ArgumentParser
+import argparse
 from pathlib import Path
 import json
 
 import openmc.data
 
 # Get command line argument
-parser = ArgumentParser()
+parser = argparse.ArgumentParser(prog="generate_serpent_fissq",
+    description="Generates Q values for fission reactions",
+)
 parser.add_argument('dir', type=Path, help='Directory containing ENDF neutron sublibrary files')
 parser.add_argument(
     "-d",

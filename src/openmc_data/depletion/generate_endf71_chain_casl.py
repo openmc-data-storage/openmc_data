@@ -2,7 +2,7 @@
 
 import glob
 import os
-from argparse import ArgumentParser
+import argparse
 from pathlib import Path
 from zipfile import ZipFile
 from collections import defaultdict
@@ -30,7 +30,9 @@ URLS = [
 ]
 
 # Parse command line arguments
-parser = ArgumentParser()
+parser = argparse.ArgumentParser(prog="generate_endf71_chain_casl",
+    description="Generates a CASL OpenMC chain file",
+)
 parser.add_argument(
     "-d",
     "--destination",
