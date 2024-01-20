@@ -76,13 +76,13 @@ parser.add_argument(
 parser.add_argument(
     "--cleanup",
     action="store_true",
-    help="Remove download directories when data has " "been processed",
+    help="Remove download directories when data has been processed",
 )
 parser.add_argument(
     "--no-cleanup",
     dest="cleanup",
     action="store_false",
-    help="Do not remove download directories when data has " "been processed",
+    help="Do not remove download directories when data has been processed",
 )
 parser.set_defaults(download=True, extract=True, cleanup=False)
 args = parser.parse_args()
