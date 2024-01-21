@@ -15,7 +15,7 @@ from textwrap import dedent
 from urllib.parse import urljoin
 
 import openmc.data
-from openmc_data import download, state_download_size, all_release_details
+from openmc_data import download, all_release_details, get_file_types, calculate_download_size
 
 
 class CustomFormatter(
@@ -144,30 +144,29 @@ def main():
 
     # todo refactor this into the release dictionary
     if args.release == "3.0":
-        release_details[args.release]["neutron"]["special_cases"] = {
+        release_details[args.release]["neutron"]['ace']["special_cases"] = {
             "process": {"19K_039.ace": fendl30_k39}
         }
 
     # Warnings to be printed at the end of the script.
     output_warnings = []
 
+    file_types = get_file_types(args.particles)
+
     # ==============================================================================
     # DOWNLOAD FILES FROM IAEA SITE
 
     if args.download:
-        state_download_size(compressed_file_size, uncompressed_file_size, 'MB')
+        calculate_download_size(library_name, args.release, args.particles, file_types)
 
-        for particle in args.particles:
-            # Create a directory to hold the downloads
-            particle_download_path = download_path / particle
-
-            particle_details = release_details[args.release][particle]
+        for ft, particle in zip(file_types, args.particles):
+            particle_details = release_details[args.release][particle][ft]
             for f in particle_details["compressed_files"]:
                 download(
                     urljoin(particle_details["base_url"], f),
                     as_browser=True,
                     context=ssl._create_unverified_context(),
-                    output_path=particle_download_path,
+                    output_path=download_path / particle,
                 )
 
     # ==============================================================================

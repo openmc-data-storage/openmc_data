@@ -102,14 +102,13 @@ def main():
     if args.download:
         calculate_download_size(library_name, release, args.particles, file_types)
         for ft, particle in zip(file_types, args.particles):
-            particle_download_path = download_path / particle
             for f, checksum in zip(
                 release_details[particle][ft]["compressed_files"],
                 release_details[particle][ft]["checksums"],
             ):
                 # Establish connection to URL
                 url = release_details[particle][ft]["base_url"] + f
-                download(url, output_path=particle_download_path, checksum=checksum)
+                download(url, output_path=download_path / particle, checksum=checksum)
 
     # ==============================================================================
     # EXTRACT FILES FROM TGZ
