@@ -148,16 +148,6 @@ def main():
             "process": {"19K_039.ace": fendl30_k39}
         }
 
-    compressed_file_size = uncompressed_file_size = 0
-    for p in ("neutron", "photon"):
-        if p in args.particles:
-            compressed_file_size += release_details[args.release][p][
-                "compressed_file_size"
-            ]
-            uncompressed_file_size += release_details[args.release][p][
-                "uncompressed_file_size"
-            ]
-
     # Warnings to be printed at the end of the script.
     output_warnings = []
 

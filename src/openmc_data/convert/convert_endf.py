@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 import openmc.data
-from openmc_data import download, extract, state_download_size, all_release_details
+from openmc_data import download, extract, all_release_details, get_file_types, calculate_download_size
 
 # Make sure Python version is sufficient
 assert sys.version_info >= (3, 6), "Python 3.6+ is required"
@@ -94,48 +94,34 @@ def main():
     # can be exstened to accommodated new releases
     release_details = all_release_details[library_name][release]
 
-    compressed_file_size, uncompressed_file_size = 0, 0
-    for p in ("neutron", "photon"):
-        compressed_file_size += release_details[p]["compressed_file_size"]
-        uncompressed_file_size += release_details[p]["uncompressed_file_size"]
+    file_types = get_file_types(args.particles)
 
     # ==============================================================================
     # DOWNLOAD FILES FROM NNDC SITE
 
     if args.download:
-        state_download_size(
-            compressed_file_size,
-            uncompressed_file_size,
-            'MB'
-        )
-        for particle in args.particles:
+        calculate_download_size(library_name, release, args.particles, file_types)
+        for ft, particle in zip(file_types, args.particles):
             particle_download_path = download_path / particle
             for f, checksum in zip(
-                release_details[particle]["compressed_files"],
-                release_details[particle]["checksums"],
+                release_details[particle][ft]["compressed_files"],
+                release_details[particle][ft]["checksums"],
             ):
                 # Establish connection to URL
-                url = release_details[particle]["base_url"] + f
-                downloaded_file = download(
-                    url, output_path=particle_download_path, checksum=checksum
-                )
+                url = release_details[particle][ft]["base_url"] + f
+                download(url, output_path=particle_download_path, checksum=checksum)
 
     # ==============================================================================
     # EXTRACT FILES FROM TGZ
 
     if args.extract:
-        for particle in args.particles:
-            if release_details[particle]["file_type"] == "ace":
-                extraction_dir = ace_files_dir
-            elif release_details[particle]["file_type"] == "endf":
-                extraction_dir = endf_files_dir
-
+        for ft, particle in zip(file_types, args.particles):
             extract(
                 compressed_files=[
                     download_path / particle / f
-                    for f in release_details[particle]["compressed_files"]
+                    for f in release_details[particle][ft]["compressed_files"]
                 ],
-                extraction_dir=extraction_dir,
+                extraction_dir=Path("-".join([library_name, release, ft])),
                 del_compressed_file=args.cleanup,
             )
 
