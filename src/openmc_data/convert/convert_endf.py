@@ -101,26 +101,26 @@ def main():
 
     if args.download:
         calculate_download_size(library_name, release, args.particles, file_types)
-        for ft, particle in zip(file_types, args.particles):
+        for particle in args.particles:
             for f, checksum in zip(
-                release_details[particle][ft]["compressed_files"],
-                release_details[particle][ft]["checksums"],
+                release_details[particle][file_types[particle]]["compressed_files"],
+                release_details[particle][file_types[particle]]["checksums"],
             ):
                 # Establish connection to URL
-                url = release_details[particle][ft]["base_url"] + f
+                url = release_details[particle][file_types[particle]]["base_url"] + f
                 download(url, output_path=download_path / particle, checksum=checksum)
 
     # ==============================================================================
     # EXTRACT FILES FROM TGZ
 
     if args.extract:
-        for ft, particle in zip(file_types, args.particles):
+        for particle in args.particles:
             extract(
                 compressed_files=[
                     download_path / particle / f
-                    for f in release_details[particle][ft]["compressed_files"]
+                    for f in release_details[particle][file_types[particle]]["compressed_files"]
                 ],
-                extraction_dir=Path("-".join([library_name, release, ft])),
+                extraction_dir=Path("-".join([library_name, release, file_types[particle]])),
                 del_compressed_file=args.cleanup,
             )
 
@@ -149,7 +149,7 @@ def main():
     library = openmc.data.DataLibrary()
 
     for particle in args.particles:
-        details = release_details[particle]
+        details = release_details[particle][file_types[particle]]
         if particle == "neutron":
             for cls, files in [
                 (openmc.data.IncidentNeutron, ace_files_dir.rglob(details["ace_files"])),

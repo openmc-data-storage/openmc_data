@@ -128,10 +128,6 @@ def main():
 
     library_name = "fendl"
     file_types = get_file_types(args.particles)
-    print(file_types)
-    print(file_types)
-    print(file_types)
-    print(file_types)
     cwd = Path.cwd()
 
     ace_files_dir = cwd.joinpath("-".join([library_name, args.release, "ace"]))
