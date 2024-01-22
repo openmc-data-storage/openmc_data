@@ -18,9 +18,9 @@ _BLOCK_SIZE = 16384
 def get_file_types(particles, script_type='convert'):
     if script_type == 'convert':
 
-        ft = []
+        ft = {}
         for particle in particles:
-            ft.append({'photon':'endf', 'neutron':'ace'}[particle])
+            ft[particle] = {'photon':'endf', 'neutron':'ace'}[particle]
     return ft
 
 def calculate_download_size(library_name, release, particles, file_type,units='MB'):
@@ -31,9 +31,9 @@ def calculate_download_size(library_name, release, particles, file_type,units='M
 
     compressed_file_size = 0
     uncompressed_file_size = 0
-    for ft, p in zip(file_type, particles):
-        compressed_file_size += release_details[p][ft]["compressed_file_size"]
-        uncompressed_file_size += release_details[p][ft]["uncompressed_file_size"]
+    for p in particles:
+        compressed_file_size += release_details[p][file_type[p]]["compressed_file_size"]
+        uncompressed_file_size += release_details[p][file_type[p]]["uncompressed_file_size"]
     msg = (f"WARNING: This script will download up to {compressed_file_size} {units} "
            "of data. Extracting and processing the data may require as much "
            f"as {uncompressed_file_size} {units} of additional free disk space.")
