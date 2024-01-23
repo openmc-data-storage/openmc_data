@@ -7,8 +7,8 @@ all_release_details = {
                     "compressed_files": ["ACE-n.tgz"],
                     "neutron_files": "neutron_file/*/*/lib/endf/*-n.ace",
                     "metastables": "neutron_file/*/*/lib/endf/*m-n.ace",
-                    "compressed_file_size": "5.1",
-                    "uncompressed_file_size": "40",
+                    "compressed_file_size": 5.1,
+                    "uncompressed_file_size": 40,
                 }
             }
         },
@@ -19,8 +19,8 @@ all_release_details = {
                     "compressed_files": ["tendl17c.tar.bz2"],
                     "neutron_files": "ace-17/*",
                     "metastables": "ace-17/*m",
-                    "compressed_file_size": "2.1",
-                    "uncompressed_file_size": "14",
+                    "compressed_file_size": 2.1,
+                    "uncompressed_file_size": 14,
                 }
             }
         },
@@ -31,8 +31,8 @@ all_release_details = {
                     "compressed_files": ["tendl19c.tar.bz2"],
                     "neutron_files": "tendl19c/*",
                     "metastables": "tendl19c/*m",
-                    "compressed_file_size": "2.3",
-                    "uncompressed_file_size": "10.1",
+                    "compressed_file_size": 2.3,
+                    "uncompressed_file_size": 10.1,
                 }
             }
         },
@@ -43,8 +43,8 @@ all_release_details = {
                     "compressed_files": ["tendl21c.tar.bz2"],
                     "neutron_files": "tendl21c/*",
                     "metastables": "tendl21c/*m",
-                    "compressed_file_size": "2.2",
-                    "uncompressed_file_size": "10.5",
+                    "compressed_file_size": 2.2,
+                    "uncompressed_file_size": 10.5,
                 }
             }
         },

@@ -11,7 +11,7 @@ from pathlib import Path
 from urllib.parse import urljoin
 
 import openmc.data
-from openmc_data import download, extract, state_download_size, all_release_details
+from openmc_data import download, extract, calculate_download_size, all_release_details, get_file_types
 
 
 # Make sure Python version is sufficient
@@ -81,7 +81,7 @@ args = parser.parse_args()
 def main():
 
     library_name = "tendl"
-
+    file_types = get_file_types(["neutron"])
     cwd = Path.cwd()
 
     ace_files_dir = cwd.joinpath("-".join([library_name, args.release, "ace"]))
@@ -93,17 +93,15 @@ def main():
 
     # This dictionary contains all the unique information about each release.
     # This can be extended to accommodated new releases
-    release_details = all_release_details[library_name][args.release]["neutron"]
+    release_details = all_release_details[library_name][args.release]["neutron"][file_types['neutron']]
+    print(release_details)
+    print(file_types)
 
     # ==============================================================================
     # DOWNLOAD FILES FROM WEBSITE
 
     if args.download:
-        state_download_size(
-            release_details['compressed_file_size'],
-            release_details['uncompressed_file_size'],
-            'GB'
-        )
+        calculate_download_size(library_name, args.release, ['neutron'], file_types, 'GB')
         for f in release_details["compressed_files"]:
             # Establish connection to URL
             download(urljoin(release_details["base_url"], f), output_path=download_path)
@@ -125,7 +123,7 @@ def main():
 
     metastables = ace_files_dir.glob(release_details["metastables"])
     for path in metastables:
-        print("    Fixing {} (ensure metastable)...".format(path))
+        print(f"    Fixing {path} (ensure metastable)...")
         text = open(path, "r").read()
         mass_first_digit = int(text[3])
         if mass_first_digit <= 2:
@@ -159,7 +157,7 @@ def main():
 
         # Export HDF5 file
         h5_file = args.destination / f"{data.name}.h5"
-        print("Writing {}...".format(h5_file))
+        print(f"Writing {h5_file}...")
         data.export_to_hdf5(h5_file, "w", libver=args.libver)
 
         # Register with library
