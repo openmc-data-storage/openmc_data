@@ -14,6 +14,15 @@ import openmc.data
 
 _BLOCK_SIZE = 16384
 
+def state_download_size(compressed_file_size, uncompressed_file_size, units):
+    """Prints a standard message to users displaying the amount of storage
+    space required to run the script"""
+
+    msg = (f"WARNING: This script will download up to {compressed_file_size} {units} "
+           "of data. Extracting and processing the data may require as much "
+           f"as {uncompressed_file_size} {units} of additional free disk space.")
+    warnings.warn(msg)
+
 
 def get_file_types(particles, script_type='convert'):
     if script_type == 'convert':
@@ -34,12 +43,8 @@ def calculate_download_size(library_name, release, particles, file_type,units='G
     for p in particles:
         compressed_file_size += release_details[p][file_type[p]]["compressed_file_size"]
         uncompressed_file_size += release_details[p][file_type[p]]["uncompressed_file_size"]
-    msg = (f"WARNING: This script will download up to {compressed_file_size} {units} "
-           "of data. Extracting and processing the data may require as much "
-           f"as {uncompressed_file_size} {units} of additional free disk space.")
-    warnings.warn(msg)
-
-   
+    state_download_size(compressed_file_size, uncompressed_file_size, units)
+ 
 
 def process_neutron(path, output_dir, libver, temperatures=None):
     """Process ENDF neutron sublibrary file into HDF5 and write into a
