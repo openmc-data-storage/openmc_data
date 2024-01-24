@@ -166,6 +166,8 @@ def download(
         page = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     else:
         page = url
+    
+    print(f"downloading {url}")
 
     with urlopen(page, **kwargs) as response:
         # Get file size from header

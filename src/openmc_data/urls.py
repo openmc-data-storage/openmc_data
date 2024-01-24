@@ -58,6 +58,13 @@ all_release_details = {
                     "ace_files": "neutron/ace/*[!.xsd]",
                     "compressed_file_size": 0.565,
                     "uncompressed_file_size": 4.226,
+                },
+                "endf": {
+                    "base_url": "https://www-nds.iaea.org/fendl_library/websites/fendl32/data/neutron/",
+                    "compressed_files": ["fendl32-neutron-endf.zip"],
+                    "endf_files": "neutron/endf/*.endf",
+                    "compressed_file_size": 0,
+                    "uncompressed_file_size": 0,
                 }
             },
             "photon": {
