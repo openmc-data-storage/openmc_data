@@ -113,7 +113,7 @@ args = parser.parse_args()
 def main():
 
     library_name = "jeff"
-    file_types = get_file_types(args.particles)
+    file_types = get_file_types(['neutron'])
     cwd = Path.cwd()
 
     ace_files_dir = cwd.joinpath("-".join([library_name, args.release, "ace"]))
@@ -123,13 +123,13 @@ def main():
         args.destination = Path("-".join([library_name, args.release, "hdf5"]))
 
     # This dictionary contains all the unique information about each release. This can be exstened to accommodated new releases
-    details = all_release_details[library_name][args.release][file_types[args.particles]]['neutron']
+    details = all_release_details[library_name][args.release]['neutron'][file_types['neutron']]
 
     # ==============================================================================
     # DOWNLOAD FILES FROM OECD SITE
 
     if args.download:
-        calculate_download_size(library_name, args.release, args.particles, file_types, 'GB')
+        calculate_download_size(library_name, args.release, ['neutron'], file_types, 'GB')
         for f, t in zip(details["compressed_files"], details["temperatures"]):
             if t in args.temperatures or t is None:
                 download(

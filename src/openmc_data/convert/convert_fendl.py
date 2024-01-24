@@ -156,7 +156,7 @@ def main():
     # DOWNLOAD FILES FROM IAEA SITE
 
     if args.download:
-        calculate_download_size(library_name, args.release, args.particles, file_types)
+        calculate_download_size(library_name, args.release, args.particles, file_types, 'GB')
 
         for particle in args.particles:
             particle_details = release_details[args.release][particle][file_types[particle]]

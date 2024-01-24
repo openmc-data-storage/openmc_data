@@ -23,7 +23,7 @@ def get_file_types(particles, script_type='convert'):
             ft[particle] = {'photon':'endf', 'neutron':'ace'}[particle]
     return ft
 
-def calculate_download_size(library_name, release, particles, file_type,units='MB'):
+def calculate_download_size(library_name, release, particles, file_type,units='GB'):
     """Prints a standard message to users displaying the amount of storage
     space required to run the script"""
 
