@@ -213,11 +213,13 @@ all_release_details = {
                 },
             },
             "photon": {
-                "base_url": "https://www-nds.iaea.org/fendl21/fendl21e/",
-                "compressed_files": ["FENDLEP.zip"],
-                "endf_files": "*.endf",
-                "compressed_file_size": 0.002,
-                "uncompressed_file_size": 0.005,
+                "endf": {
+                    "base_url": "https://www-nds.iaea.org/fendl21/fendl21e/",
+                    "compressed_files": ["FENDLEP.zip"],
+                    "endf_files": "*.endf",
+                    "compressed_file_size": 0.002,
+                    "uncompressed_file_size": 0.005,
+                }
             },
         },
     },
