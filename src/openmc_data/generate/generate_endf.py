@@ -230,13 +230,9 @@ def main():
                 url = details['base_url'] + f
                 if 'checksums' in details.keys():
                     checksum = details['checksums'][i]
-                    downloaded_file = download(url,
-                                            output_path=download_path / particle,
-                                            checksum=checksum)
+                    download(url, output_path=download_path / particle, checksum=checksum)
                 else:
-                    downloaded_file = download(url,
-                                            output_path=download_path / particle,
-                                            )
+                    download(url, output_path=download_path / particle)
 
     # ==============================================================================
     # EXTRACT FILES FROM TGZ

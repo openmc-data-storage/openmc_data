@@ -15,7 +15,7 @@ from textwrap import dedent
 from urllib.parse import urljoin
 
 import openmc.data
-from openmc_data import download, state_download_size, all_release_details
+from openmc_data import download, all_release_details, calculate_download_size, get_file_types
 
 
 class CustomFormatter(
@@ -76,13 +76,13 @@ parser.add_argument(
 parser.add_argument(
     "--cleanup",
     action="store_true",
-    help="Remove download directories when data has " "been processed",
+    help="Remove download directories when data has been processed",
 )
 parser.add_argument(
     "--no-cleanup",
     dest="cleanup",
     action="store_false",
-    help="Do not remove download directories when data has " "been processed",
+    help="Do not remove download directories when data has been processed",
 )
 parser.set_defaults(download=True, extract=True, cleanup=False)
 args = parser.parse_args()
@@ -127,6 +127,7 @@ def check_special_case(particle_details, script_step):
 def main():
 
     library_name = "fendl"
+    file_types = get_file_types(args.particles)
     cwd = Path.cwd()
 
     ace_files_dir = cwd.joinpath("-".join([library_name, args.release, "ace"]))
@@ -144,19 +145,9 @@ def main():
 
     # todo refactor this into the release dictionary
     if args.release == "3.0":
-        release_details[args.release]["neutron"]["special_cases"] = {
+        release_details[args.release]["neutron"]['ace']["special_cases"] = {
             "process": {"19K_039.ace": fendl30_k39}
         }
-
-    compressed_file_size = uncompressed_file_size = 0
-    for p in ("neutron", "photon"):
-        if p in args.particles:
-            compressed_file_size += release_details[args.release][p][
-                "compressed_file_size"
-            ]
-            uncompressed_file_size += release_details[args.release][p][
-                "uncompressed_file_size"
-            ]
 
     # Warnings to be printed at the end of the script.
     output_warnings = []
@@ -165,19 +156,16 @@ def main():
     # DOWNLOAD FILES FROM IAEA SITE
 
     if args.download:
-        state_download_size(compressed_file_size, uncompressed_file_size, 'MB')
+        calculate_download_size(library_name, args.release, args.particles, file_types, 'GB')
 
         for particle in args.particles:
-            # Create a directory to hold the downloads
-            particle_download_path = download_path / particle
-
-            particle_details = release_details[args.release][particle]
+            particle_details = release_details[args.release][particle][file_types[particle]]
             for f in particle_details["compressed_files"]:
                 download(
                     urljoin(particle_details["base_url"], f),
                     as_browser=True,
                     context=ssl._create_unverified_context(),
-                    output_path=particle_download_path,
+                    output_path=download_path / particle,
                 )
 
     # ==============================================================================
@@ -185,13 +173,13 @@ def main():
     if args.extract:
         for particle in args.particles:
 
-            particle_details = release_details[args.release][particle]
+            particle_details = release_details[args.release][particle][file_types[particle]]
 
             special_cases = check_special_case(particle_details, "extract")
 
-            if particle_details["file_type"] == "ace":
+            if file_types[particle] == "ace":
                 extraction_dir = ace_files_dir
-            elif particle_details["file_type"] == "endf":
+            elif file_types[particle] == "endf":
                 extraction_dir = endf_files_dir
 
             for f in particle_details["compressed_files"]:
@@ -223,7 +211,7 @@ def main():
         particle_destination = args.destination / particle
         particle_destination.mkdir(parents=True, exist_ok=True)
 
-        particle_details = release_details[args.release][particle]
+        particle_details = release_details[args.release][particle][file_types[particle]]
 
         # Get dictionary of special cases for particle
         special_cases = check_special_case(particle_details, "process")
@@ -231,7 +219,7 @@ def main():
         if particle == "neutron":
             # Get a list of all ACE files
             neutron_files = ace_files_dir.glob(
-                release_details[args.release]["neutron"]["ace_files"]
+                release_details[args.release]["neutron"][file_types[particle]]["ace_files"]
             )
 
             # excluding files ending with _ that are
@@ -269,7 +257,7 @@ def main():
         elif particle == "photon":
 
             photon_files = endf_files_dir.glob(
-                release_details[args.release]["photon"]["endf_files"]
+                release_details[args.release]["photon"][file_types[particle]]["endf_files"]
             )
 
             for photo_path in sorted(photon_files):

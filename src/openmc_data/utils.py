@@ -8,21 +8,43 @@ import shutil
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 import warnings
+from .urls import all_release_details
 
 import openmc.data
 
 _BLOCK_SIZE = 16384
 
-
-def state_download_size(download_size, uncompressed_size, units):
+def state_download_size(compressed_file_size, uncompressed_file_size, units):
     """Prints a standard message to users displaying the amount of storage
     space required to run the script"""
 
-    msg = (f"WARNING: This script will download up to {download_size} {units} "
+    msg = (f"WARNING: This script will download up to {compressed_file_size} {units} "
            "of data. Extracting and processing the data may require as much "
-           f"as {uncompressed_size} {units} of additional free disk space.")
+           f"as {uncompressed_file_size} {units} of additional free disk space.")
     warnings.warn(msg)
 
+
+def get_file_types(particles, script_type='convert'):
+    if script_type == 'convert':
+
+        ft = {}
+        for particle in particles:
+            ft[particle] = {'photon':'endf', 'neutron':'ace'}[particle]
+    return ft
+
+def calculate_download_size(library_name, release, particles, file_type,units='GB'):
+    """Prints a standard message to users displaying the amount of storage
+    space required to run the script"""
+
+    release_details = all_release_details[library_name][release]
+
+    compressed_file_size = 0
+    uncompressed_file_size = 0
+    for p in particles:
+        compressed_file_size += release_details[p][file_type[p]]["compressed_file_size"]
+        uncompressed_file_size += release_details[p][file_type[p]]["uncompressed_file_size"]
+    state_download_size(compressed_file_size, uncompressed_file_size, units)
+ 
 
 def process_neutron(path, output_dir, libver, temperatures=None):
     """Process ENDF neutron sublibrary file into HDF5 and write into a

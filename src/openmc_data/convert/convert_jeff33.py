@@ -13,7 +13,7 @@ from urllib.parse import urljoin
 
 import openmc.data
 
-from openmc_data import download, extract, state_download_size, all_release_details
+from openmc_data import download, extract, calculate_download_size, all_release_details, get_file_types
 
 
 # Make sure Python version is sufficient
@@ -112,7 +112,7 @@ def key(p):
 def main():
 
     library_name = "jeff"
-
+    file_types = get_file_types(['neutron'])
     cwd = Path.cwd()
 
     ace_files_dir = cwd.joinpath("-".join([library_name, args.release, "ace"]))
@@ -120,13 +120,13 @@ def main():
 
     # This dictionary contains all the unique information about each release.
     # This can be extended to accommodate new releases
-    details = all_release_details[library_name][args.release]['neutron']
+    details = all_release_details[library_name][args.release]['neutron'][file_types['neutron']]
 
     # ==============================================================================
     # DOWNLOAD FILES FROM WEBSITE
 
     if args.download:
-        state_download_size(details["compressed_file_size"], details["uncompressed_file_size"], 'GB')
+        calculate_download_size(library_name, args.release, ['neutron'], file_types, 'GB')
         for f, t in zip(details["compressed_files"], details["temperatures"]):
             if t in args.temperatures or t is None:
                 download(urljoin(details["base_url"], f), output_path=download_path)
