@@ -94,8 +94,6 @@ def main():
     # This dictionary contains all the unique information about each release.
     # This can be extended to accommodated new releases
     release_details = all_release_details[library_name][args.release]["neutron"][file_types['neutron']]
-    print(release_details)
-    print(file_types)
 
     # ==============================================================================
     # DOWNLOAD FILES FROM WEBSITE
