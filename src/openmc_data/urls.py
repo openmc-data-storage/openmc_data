@@ -166,7 +166,7 @@ all_release_details = {
                 "endf": {
                     "base_url": "https://www-nds.iaea.org/fendl30/data/neutron/",
                     "compressed_files": ["fendl30-neutron-endf.zip"],
-                    "endf_files": "ace/*.ace",
+                    "endf_files": "endf/*.txt",
                     "compressed_file_size": 0,
                     "uncompressed_file_size": 0,
                 }
