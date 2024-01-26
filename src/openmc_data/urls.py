@@ -130,14 +130,14 @@ all_release_details = {
         "3.1a": {
             "neutron": {
                 "ace": {
-                    "base_url": "https://www-nds.iaea.org/fendl31/data/neutron/fendl31a-neutron-ace.zip",
+                    "base_url": "https://www-nds.iaea.org/fendl31/data/neutron/",
                     "compressed_files": ["fendl31a-neutron-ace.zip"],
                     "ace_files": "*[0-9]",
                     "compressed_file_size": 0.384,
                     "uncompressed_file_size": 2.250,
                 },
                 "endf": {
-                    "base_url": "https://www-nds.iaea.org/fendl31/data/neutron/fendl31a-neutron-ace.zip",
+                    "base_url": "https://www-nds.iaea.org/fendl31/data/neutron/",
                     "compressed_files": ["fendl31a-neutron-endf.zip"],
                     "endf_files": "*.txt",
                     "compressed_file_size": 0,
