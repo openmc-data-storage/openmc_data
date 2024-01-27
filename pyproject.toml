@@ -1,0 +1,79 @@
+[build-system]
+requires = [
+    "setuptools >= 65.5.0",
+    "setuptools_scm[toml] >= 7.0.5",
+]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "openmc_data"
+authors = [
+  { name="Jonathan Shimwell", email="mail@jshimwell.com" },
+]
+license = {file = "LICENSE"}
+description = "A Python package containing a collection of scripts for producing and downloading data for OpenMC"
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = ["openmc", "nuclear", "data", "download", "process", "cross", "section"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy>=1.21.1",
+]
+dynamic = ["version"]
+
+
+[tool.setuptools_scm]
+write_to = "src/openmc_data/_version.py"
+
+
+[project.optional-dependencies]
+tests = [
+    "pytest",
+    "requests"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/fusion-energy/openmc_data"
+"Bug Tracker" = "https://github.com/fusion-energy/openmc_data/issues"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[project.scripts]
+convert_fendl = "openmc_data.convert.convert_fendl:main"
+convert_jeff32 = "openmc_data.convert.convert_jeff32:main"
+convert_jeff33 = "openmc_data.convert.convert_jeff33:main"
+convert_lib80x = "openmc_data.convert.convert_lib80x:main"
+convert_mcnp70 = "openmc_data.convert.convert_mcnp70:main"
+convert_mcnp71 = "openmc_data.convert.convert_mcnp71:main"
+convert_endf = "openmc_data.convert.convert_endf:main"
+convert_tendl = "openmc_data.convert.convert_tendl:main"
+
+generate_cendl = "openmc_data.generate.generate_cendl:main"
+generate_endf = "openmc_data.generate.generate_endf:main"
+generate_jeff33 = "openmc_data.generate.generate_jeff33:main"
+generate_jendl = "openmc_data.generate.generate_jendl:main"
+generate_fendl = "openmc_data.generate.generate_fendl:main"
+
+generate_endf71_chain_casl = "openmc_data.depletion.generate_endf71_chain_casl:main"
+generate_endf_chain = "openmc_data.depletion.generate_endf_chain:main"
+generate_jeff_chain = "openmc_data.depletion.generate_jeff_chain:main"
+generate_serpent_fissq = "openmc_data.depletion.generate_serpent_fissq:main"
+generate_tendl_chain = "openmc_data.depletion.generate_tendl_chain:main"
+
+convert_tendl_rand = "openmc_data.other.convert_tendl_rand:main"
+make_compton = "openmc_data.other.make_compton:main"
+make_stopping_powers = "openmc_data.other.make_stopping_powers:main"
+add_branching_ratios = "openmc_data.depletion.add_branching_ratios:main"
+combine_libraries = "openmc_data.other.combine_libraries:main"
+sample_sandy = "openmc_data.other.sample_sandy:main"
+reduce_chain = "openmc_data.depletion.reduce_chain:main"
+
+download_endf = "openmc_data.download.download_endf:main"
+download_tendl = "openmc_data.download.download_tendl:main"
+download_endf_chain = "openmc_data.download.download_endf_chain:main"

@@ -1,0 +1,133 @@
+
+name: test_convert_scripts
+on:  
+  workflow_dispatch:
+  pull_request:    
+    branches:
+    - main  
+  push:
+    branches:
+    - main
+
+
+jobs:
+    run_scripts:
+      runs-on: ubuntu-latest
+      steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
+
+      - name: Get specific changed files
+        id: changed-files-specific
+        uses: tj-actions/changed-files@v19
+        with:
+          files: |
+            src/openmc_data/convert/convert_*.py
+            src/openmc_data/download/download_*.py
+            src/openmc_data/depletion/add_branching_ratios.py
+            src/openmc_data/depletion/reduce_chain.py
+
+      - name: Set up Python
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install testing dependencies
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
+        run: |
+          sudo apt-get install libhdf5-serial-dev
+          git clone --single-branch --branch develop --depth 1 https://github.com/openmc-dev/openmc.git
+          cd openmc
+          mkdir build
+          cd build
+          cmake ..
+          make -j2
+          sudo make -j2 install
+          cd ..
+          pip install .
+          cd ..
+          pip install .
+
+      # convert scripts that require mcnp nuclear data are not tested when the
+      # contents change as the CI doesn't contain that nuclear data.
+      # convert_lib80x.py convert_mcnp70.py convert_mcnp71.py files are not tested here
+
+      - name: test default convert_fendl
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert_fendl.py')
+        run: |
+          echo "convert_fendl.py file has been modified."
+          convert_fendl --cleanup
+
+      # this running convert_jeff32 in with default arguments produces 49GB of
+      # data. Hence the use of arguments to process just one temperature
+      - name: test default convert_jeff32
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert/convert_jeff32.py')
+        run: |
+          echo "convert_jeff32.py file has been modified."
+          convert_jeff32 -r 3.2 -t 293 --cleanup
+
+      - name: test default convert_jeff33
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert/convert_jeff33.py')
+        run: |
+          echo "convert_jeff33.py file has been modified."
+          convert_jeff33 -r 3.3 -t 293 --cleanup
+
+      - name: test default convert_endf
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert/convert_endf.py')
+        run: |
+          echo "convert_endf.py file has been modified."
+          convert_endf --cleanup
+
+      - name: test default convert_tendl
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert/convert_tendl.py')
+        run: |
+          echo "convert_tendl.py file has been modified."
+          convert_tendl --cleanup
+
+      - name: test default convert_tendl_rand
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert/convert_tendl_rand.py')
+        run: |
+          echo "convert_tendl_rand.py file has been modified."
+          convert_tendl_rand --nuclides O16 --cleanup
+
+      # download scripts
+      - name: test default download_endf
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/download/download_endf.py')
+        run: |
+          echo "download_endf.py file has been modified."
+          download_endf
+
+      - name: test default download_tendl
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/download/download_tendl.py')
+        run: |
+          echo "download_tendl.py file has been modified."
+          download_tendl -r 2019
+          download_tendl -r 2021
+
+      - name: test default download_endf_chain
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/download/download_endf_chain.py')
+        run: |
+          echo "download_endf_chain.py file has been modified."
+          download_endf_chain -r b7.1 -b None
+          download_endf_chain -r b8.0 -b None
+          download_endf_chain -r b7.1 -b SFR
+          download_endf_chain -r b8.0 -b SFR
+          download_endf_chain -r b7.1 -b PWR
+          download_endf_chain -r b8.0 -b PWR
+
+      - name: test default add_branching_ratios
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/depletion/add_branching_ratios.py')
+        run: |
+          echo "add_branching_ratios.py file has been modified."
+          download_endf_chain -r b8.0
+          add_branching_ratios -i chain-endf-b8.0.xml -o chain_endf_b8.0_sfr.xml -b sfr
+          add_branching_ratios -i chain-endf-b8.0.xml -o chain_endf_b8.0_pwr.xml -b pwr
+
+      - name: test default reduce_chain
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/depletion/reduce_chain.py')
+        run: |
+          echo "reduce_chain.py file has been modified."
+          download_endf_chain -r b8.0
+          reduce_chain -i chain-endf-b8.0.xml -o chain_endf_b8.0_sfr.xml -hl 1e15
