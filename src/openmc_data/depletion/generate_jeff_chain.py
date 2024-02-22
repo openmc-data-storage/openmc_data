@@ -56,7 +56,17 @@ def main():
 
     neutron_files = list(neutron_dir.rglob("*.jeff33"))
     decay_files = list(decay_dir.rglob("*.ASC"))
-    fpy_files = list(nfy_dir.rglob("*.asc"))
+
+    nfy_file = download_path / all_decay_release_details[library_name][args.release]["nfy"]["compressed_files"][0]
+    assert nfy_file.suffix == ".asc"
+    fixed_nfy_file = nfy_file.parent / (nfy_file.stem + "-fixed.asc")
+
+    with open(nfy_file, "r") as original:
+        with open(fixed_nfy_file, "w") as fixed:
+            fixed.write(" " * 70 + " 1  0    0\n")
+            fixed.write(original.read())
+
+    fpy_files = [fixed_nfy_file]
 
     # check files exist
     for flist, ftype in [(decay_files, "decay"), (neutron_files, "neutron"),
