@@ -85,10 +85,15 @@ def main():
     # EXTRACT FILES FROM TGZ
     if args.extract:
         extract(
-            compressed_files=[download_path/ f for f in details['compressed_files']],
+            compressed_files=[download_path / f for f in details['compressed_files']],
             extraction_dir=endf_files_dir,
             del_compressed_file=args.cleanup
         )
+    for erratum in details["errata"]:
+        files = Path('.').rglob(erratum)
+        for p in files:
+            p.rename((endf_files_dir / details["endf_files"]).parent / p.name)
+            
 
     # ==============================================================================
     # GENERATE HDF5 LIBRARY -- NEUTRON FILES
