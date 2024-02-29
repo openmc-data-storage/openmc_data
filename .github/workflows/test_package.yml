@@ -43,9 +43,6 @@ jobs:
           convert_fendl --help
           convert_jeff32 --help
           convert_jeff33 --help
-          convert_lib80x --help
-          convert_mcnp70 --help
-          convert_mcnp71 --help
           convert_endf --help
           convert_tendl --help
 

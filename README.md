@@ -62,8 +62,6 @@ A few categories of scripts are available:
 
 | Script name | Library | Release | Processed by |
 |-|-|-|-|
-|convert_mcnp70 | ENDF/B | VII.0 | LANL |
-|convert_mcnp71 | ENDF/B | VII.1 | LANL |
 |convert_endf | ENDF/B | VII.1 | NNDC |
 |convert_lib80x | ENDF/B | VIII.0 | LANL |
 |convert_fendl | FENDL | 2.1<br>3.0<br>3.1a<br>3.1d<br>3.2|
@@ -89,8 +87,6 @@ A few categories of scripts are available:
 <!-- | Script name | Library | Release | Processed by | Download available | Downloads ACE files and convert to HDF5 | Downloads ENDF files and convert to HDF5 | Convert local ACE files |
 |-|-|-|-|-|-|-|-|
 |generate_cendl| CENDL | 3.1<br>3.2 |  |  |  | :heavy_check_mark: |  |
-|convert_mcnp70| ENDF/B | VII.0 | LANL | [openmc.org](https://anl.box.com/shared/static/t25g7g6v0emygu50lr2ych1cf6o7454b.xz) |  |  | :heavy_check_mark: |
-|convert_mcnp71| ENDF/B | VII.1 | LANL | [openmc.org](https://anl.box.com/shared/static/d359skd2w6wrm86om2997a1bxgigc8pu.xz) |  |  | :heavy_check_mark: |
 |generate_endf| ENDF/B | VII.1 | NNDC | [openmc.org](https://anl.box.com/shared/static/9igk353zpy8fn9ttvtrqgzvw1vtejoz6.xz) |  | :heavy_check_mark: |  |
 |convert_endf| ENDF/B | VII.1 | NNDC | [openmc.org](https://anl.box.com/shared/static/9igk353zpy8fn9ttvtrqgzvw1vtejoz6.xz) | :heavy_check_mark: | :heavy_check_mark: |  |
 |convert_lib80x| ENDF/B | VIII.0 | LANL | [openmc.org](https://anl.box.com/shared/static/nd7p4jherolkx4b1rfaw5uqp58nxtstr.xz) |  |  | :heavy_check_mark: |

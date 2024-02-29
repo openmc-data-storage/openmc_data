@@ -48,9 +48,6 @@ package-dir = {"" = "src"}
 convert_fendl = "openmc_data.convert.convert_fendl:main"
 convert_jeff32 = "openmc_data.convert.convert_jeff32:main"
 convert_jeff33 = "openmc_data.convert.convert_jeff33:main"
-convert_lib80x = "openmc_data.convert.convert_lib80x:main"
-convert_mcnp70 = "openmc_data.convert.convert_mcnp70:main"
-convert_mcnp71 = "openmc_data.convert.convert_mcnp71:main"
 convert_endf = "openmc_data.convert.convert_endf:main"
 convert_tendl = "openmc_data.convert.convert_tendl:main"
 
