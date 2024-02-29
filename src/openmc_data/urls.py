@@ -459,8 +459,12 @@ all_release_details = {
             'neutron': {
                 'endf':{
                     'base_url': 'https://wwwndc.jaea.go.jp/ftpnd/ftp/JENDL/',
-                    'compressed_files': ['jendl5-n.tar.gz'],
+                    'compressed_files': ['jendl5-n.tar.gz', 'jendl5-n_upd1.tar.gz',
+                                         'jendl5-n_upd6.tar.gz', 'jendl5-n_upd7.tar.gz',
+                                         'jendl5-n_upd10.tar.gz', 'jendl5-n_upd11.tar.gz',
+                                         'jendl5-n_upd12.tar.gz'],
                     'endf_files': 'jendl5-n/*.dat',
+                    'errata': ['jendl5-n_upd1/*.dat', 'jendl-n_upd6/*.dat', '*.dat'],
                     'metastables': 'jendl5-n/*m1.dat',
                     'compressed_file_size': 4.1,
                     'uncompressed_file_size': 16
