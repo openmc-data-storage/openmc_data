@@ -70,5 +70,28 @@ all_decay_release_details = {
                 'compressed_files': ['TENDL-n.tgz'],
             }
         }
+    },
+    'jendl': {
+        '5.0': {
+            'neutron': {
+                'base_url': 'https://wwwndc.jaea.go.jp/ftpnd/ftp/JENDL/',
+                'compressed_files': ['jendl5-n.tar.gz', 'jendl5-n_upd1.tar.gz',
+                                        'jendl5-n_upd6.tar.gz', 'jendl5-n_upd7.tar.gz',
+                                        'jendl5-n_upd10.tar.gz', 'jendl5-n_upd11.tar.gz',
+                                        'jendl5-n_upd12.tar.gz'],
+                'endf_files': 'jendl5-n/*.dat',
+                'errata': ['jendl5-n_upd1/*.dat', 'jendl-n_upd6/*.dat', '*.dat'],
+            },
+            'decay': {
+                'base_url': ['https://wwwndc.jaea.go.jp/ftpnd/ftp/JENDL/'],
+                'compressed_files': ['jendl5-dec_upd5.tar.gz'],
+                'decay_files': 'jendl5-dec_upd5/*.dat' 
+            },
+            'nfy': {
+                'base_url': ['https://wwwndc.jaea.go.jp/ftpnd/ftp/JENDL/'],
+                'compressed_files': ['jendl5-fpy_upd8.tar.gz'],
+                'nfy_files': ['jendl5-fpy_upd8/*.dat']
+            }       
+        }
     }
 }
