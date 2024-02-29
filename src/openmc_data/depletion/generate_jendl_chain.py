@@ -56,10 +56,10 @@ def main():
     cwd = Path.cwd()
 
     # DOWNLOAD NEUTRON DATA
+    endf_files_dir = cwd.joinpath('-'.join([library_name, args.release, 'endf']))
+    download_path = cwd.joinpath('-'.join([library_name, args.release, 'download']))
     neutron_files = args.neutron
     if not neutron_files:
-        endf_files_dir = cwd.joinpath('-'.join([library_name, args.release, 'endf']))
-        download_path = cwd.joinpath('-'.join([library_name, args.release, 'download']))
         details = all_decay_release_details[library_name][args.release]['neutron']
 
         for f in details['compressed_files']:
@@ -72,7 +72,7 @@ def main():
         extract(
             compressed_files=[download_path / f for f in details['compressed_files']],
             extraction_dir=endf_files_dir,
-            del_compressed_file=args.cleanup
+            del_compressed_file=False
         )
         for erratum in details["errata"]:
             files = Path('.').rglob(erratum)
@@ -86,11 +86,11 @@ def main():
         for base_url, file in zip(details['base_url'], details['compressed_files']):
             downloaded_file = download(
                 url=urljoin(base_url, file),
-                output_path=download_path
+                output_path=Path(".")
             )
 
-        extract(downloaded_file, ".")
-        decay_files = Path('.').rglob(details["decay_files"])
+            extract([file], Path("."))
+        decay_files = list(Path('.').rglob(details["decay_files"]))
 
     fpy_files = args.fpy
     if not fpy_files:
@@ -98,11 +98,11 @@ def main():
         for base_url, file in zip(details['base_url'], details['compressed_files']):
             downloaded_file = download(
                 url=urljoin(base_url, file),
-                output_path=download_path
+                output_path=Path(".")
             )
 
-        extract(downloaded_file, ".")
-        decay_files = Path('.').rglob(details["nfy_files"])
+            extract([file], Path("."))
+        fpy_files = list(Path('.').rglob(details["nfy_files"]))
 
     # check files exist
     for flist, ftype in [(decay_files, "decay"), (neutron_files, "neutron"),

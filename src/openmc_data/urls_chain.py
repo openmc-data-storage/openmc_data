@@ -90,7 +90,7 @@ all_decay_release_details = {
             'nfy': {
                 'base_url': ['https://wwwndc.jaea.go.jp/ftpnd/ftp/JENDL/'],
                 'compressed_files': ['jendl5-fpy_upd8.tar.gz'],
-                'nfy_files': ['jendl5-fpy_upd8/*.dat']
+                'nfy_files': 'jendl5-fpy_upd8/*.dat'
             }       
         }
     }

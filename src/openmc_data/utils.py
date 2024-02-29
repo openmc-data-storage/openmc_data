@@ -104,6 +104,7 @@ def extract(
     """
     Path.mkdir(extraction_dir, parents=True, exist_ok=True)
 
+    print(compressed_files)
     if not isinstance(compressed_files, Iterable):
         compressed_files = [compressed_files]
 
