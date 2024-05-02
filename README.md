@@ -111,8 +111,9 @@ A few categories of scripts are available:
 |-|-|-|
 |generate_endf_chain | ENDF/B | VII.1<br>VIII.0  |
 |generate_jeff_chain | JEFF | 3.3  |
-|generate_serpent_fissq | |  |
+|generate_jendl_chain | JENDL | 5.0 |
 |generate_tendl_chain | TENDL | 2019<br>2021 |
+|generate_serpent_fissq | |  |
 |generate_endf71_chain_casl | ENDF/B |  |
 
 ### Download chain files
