@@ -89,7 +89,7 @@ def main():
                 output_path=Path(".")
             )
 
-            extract([file], Path("."))
+            extract([downloaded_file], Path("."))
         decay_files = list(Path('.').rglob(details["decay_files"]))
 
     fpy_files = args.fpy
@@ -101,7 +101,7 @@ def main():
                 output_path=Path(".")
             )
 
-            extract([file], Path("."))
+            extract([downloaded_file], Path("."))
         fpy_files = list(Path('.').rglob(details["nfy_files"]))
 
     # check files exist
