@@ -4,10 +4,16 @@ on:
   workflow_dispatch:
   pull_request:    
     branches:
-    - main  
+      - main
+    paths-ignore:
+      - "**.md"
+      - "**.txt"
+      - "**.cff"
+      - 'docs/**'
+      - '.gitignore'
   push:
     branches:
-    - main
+      - main
 
 
 jobs:

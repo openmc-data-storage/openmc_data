@@ -1,18 +1,12 @@
 [![test_urls](https://github.com/shimwell/data/actions/workflows/test_urls.yml/badge.svg)](https://github.com/shimwell/data/actions/workflows/test_urls.yml)
-
 [![test_package](https://github.com/openmc-data-storage/openmc_data/actions/workflows/test_package.yml/badge.svg)](https://github.com/openmc-data-storage/openmc_data/actions/workflows/test_package.yml)
-
 [![test_convert_scripts](https://github.com/openmc-data-storage/openmc_data/actions/workflows/test_processing.yml/badge.svg)](https://github.com/openmc-data-storage/openmc_data/actions/workflows/test_processing.yml)
 
 
-# OpenMC Data Scripts
+# OpenMC Data
 
-This repository contains a collection of scripts for generating HDF5 data
-libraries and xml chain files that can be used with OpenMC. Some of these
-scripts convert existing ACE libraries (such as those produced by LANL) whereas
-generate scripts use NJOY to process ENDF files directly.
-
-Another source of data libraries for OpenMC is the [Windowed Multipole Library](https://github.com/mit-crpg/WMP_Library) repository which enables on-the-fly Doppler broadening to an arbitrary temperature.
+Aims to facilitate the use of different nuclear data libraries with OpenMC by
+providing command line tools that process and download nuclear data automatically.
 
 # Prerequisites
 
@@ -20,7 +14,7 @@ You should have already installed OpenMC, see the [docs](https://docs.openmc.org
 
 # Installation
 
-Currently the package can be installed from this temporary repository.
+The package is distributed on [PYPI](https://pypi.org/project/openmc-data/) and can be installed with pip.
 
 ```bash
 pip install openmc_data
@@ -37,7 +31,7 @@ For example:
 
 ```convert_endf --help```
 
-Some scripts (mainly the generate scripts) require NJOY to be installed and
+Some scripts (mainly the generate scripts) require [NJOY](https://github.com/njoy/NJOY2016) to be installed and
 added to your path.
 
 A few categories of scripts are available:
