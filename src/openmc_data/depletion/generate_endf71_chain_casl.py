@@ -97,7 +97,7 @@ def main():
     reactions = {}
     for f in neutron_files:
         evaluation = openmc.data.endf.Evaluation(f)
-        nuc_name = evaluation.gnd_name
+        nuc_name = evaluation.gnds_name
         if nuc_name in CASL_CHAIN:
             reactions[nuc_name] = {}
             for mf, mt, nc, mod in evaluation.reaction_list:
