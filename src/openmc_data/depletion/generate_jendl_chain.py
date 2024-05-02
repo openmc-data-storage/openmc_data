@@ -8,16 +8,16 @@ from urllib.parse import urljoin
 import openmc.deplete
 
 from openmc_data.utils import download, extract
-from openmc_data import all_decay_release_details, state_download_size
+from openmc_data import all_decay_release_details
 
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(prog="generate_jeff_chain",
-    description="Generates a OpenMC chain file from JEFF nuclear data files",
+    description="Generates a OpenMC chain file from JENDL nuclear data files",
 )
 parser.add_argument('-r', '--release', choices=['5.0'],
                     default='5.0', help="The nuclear data library release "
-                    "version. The currently supported options are 5.0")
+                    "version. The only currently supported option is 5.0.")
 parser.add_argument(
     "-d",
     "--destination",
@@ -31,21 +31,21 @@ parser.add_argument(
     type=Path,
     default=[],
     nargs="+",
-    help="Path to neutron endf files",
+    help="Path to neutron endf files, if not provided, neutron files will be downloaded.",
 )
 parser.add_argument(
     "--decay",
     type=Path,
     default=[],
     nargs="+",
-    help="Path to decay data files",
+    help="Path to decay data files, if not provided, decay files will be downloaded.",
 )
 parser.add_argument(
     "--fpy",
     type=Path,
     default=[],
     nargs="+",
-    help="Path to neutron fission product yield files",
+    help="Path to neutron fission product yield files, if not provided, fission yield files will be downloaded.",
 )
 args = parser.parse_args()
 
