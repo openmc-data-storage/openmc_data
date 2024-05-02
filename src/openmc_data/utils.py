@@ -97,13 +97,14 @@ def extract(
     extraction_dir : str
         The directory to extract the files to.
     del_compressed_file : bool
-        Wheather the compressed file should be deleted (True) or not (False)
+        Whether the compressed file should be deleted (True) or not (False)
     verbose : bool
         Controls the printing to terminal, if True filenames of the extracted
         files will be printed.
     """
     Path.mkdir(extraction_dir, parents=True, exist_ok=True)
 
+    print(f'Extracting {compressed_files} to {extraction_dir}')
     if not isinstance(compressed_files, Iterable):
         compressed_files = [compressed_files]
 
