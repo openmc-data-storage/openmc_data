@@ -50,6 +50,33 @@ all_release_details = {
         },
     },
     "fendl": {
+        "3.2c": {
+            "neutron": {
+                "endf": {
+                    "base_url": "https://www-nds.iaea.org/fendl/data/neutron/",
+                    "compressed_files": ["fendl-FENDL-3.2c-neutron-endf.zip"],
+                    "endf_files": "neutron/endf/*.endf",
+                    "compressed_file_size": 0,
+                    "uncompressed_file_size": 0,
+                },
+                "ace": {
+                    "base_url": "https://www-nds.iaea.org/fendl/data/neutron/",
+                    "compressed_files": ["fendl-FENDL-3.2c-neutron-ace.zip"],
+                    "ace_files": "neutron/ace/*",
+                    "compressed_file_size": 0,
+                    "uncompressed_file_size": 0,
+                }
+            },
+            "photon": {
+                "endf": {
+                    "base_url": "https://www-nds.iaea.org/fendl/data/atom/",
+                    "compressed_files": ["fendl-FENDL-3.2c-atom-endf.zip"],
+                    "endf_files": "atom/endf/*.endf",
+                    "compressed_file_size": 0,
+                    "uncompressed_file_size": 0,
+                }
+            },
+        },
         "3.2b": {
             "neutron": {
                 "endf": {
