@@ -36,9 +36,9 @@ jobs:
 
       - name: Set up Python
         if: steps.changed-files-specific.outputs.any_changed == 'true'
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: 3.12
 
       - name: Install testing dependencies
         if: steps.changed-files-specific.outputs.any_changed == 'true'
