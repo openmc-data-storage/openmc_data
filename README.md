@@ -60,7 +60,7 @@ A few categories of scripts are available:
 |convert_mcnp71 | ENDF/B | VII.1 | LANL |
 |convert_endf | ENDF/B | VII.1 | NNDC |
 |convert_lib80x | ENDF/B | VIII.0 | LANL |
-|convert_fendl | FENDL | 3.2b<br>3.2a<br>3.2<br>3.1d<br>3.1a<br>3.1<br>3.0<br>2.1 |
+|convert_fendl | FENDL | 3.2c<br>3.2b<br>3.2a<br>3.2<br>3.1d<br>3.1a<br>3.1<br>3.0<br>2.1 |
 |convert_jeff32 | JEFF | 3.2 |
 |convert_jeff33 | JEFF | 3.3 |
 |convert_tendl | TENDL | 2015<br>2017<br>2019<br>2021 |

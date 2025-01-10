@@ -58,10 +58,10 @@ parser.add_argument(
 parser.add_argument(
     "-r",
     "--release",
-    choices=["3.2b", "3.2a", "3.2", "3.1d", "3.1a", "3.1", "3.0", "2.1"],
-    default="3.2b",
+    choices=["3.2c", "3.2b", "3.2a", "3.2", "3.1d", "3.1a", "3.1", "3.0", "2.1"],
+    default="3.2c",
     help="The nuclear data library release version. The currently supported "
-    "options are 3.2b, 3.2a, 3.2, 3.1d, 3.1a, 3.1, 3.0, and 2.1",
+    "options are 3.2c 3.2b, 3.2a, 3.2, 3.1d, 3.1a, 3.1, 3.0, and 2.1",
 )
 parser.add_argument(
     "-p",
