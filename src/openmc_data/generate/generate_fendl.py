@@ -38,7 +38,7 @@ parser.add_argument('--libver', choices=['earliest', 'latest'],
                     default='latest', help="Output HDF5 versioning. Use "
                     "'earliest' for backwards compatibility or 'latest' for "
                     "performance")
-parser.add_argument('-r', '--release', choices=["3.2c", "3.2b", "3.2a", "3.2", "3.1d", "3.1a", "3.0"], default="3.2b",
+parser.add_argument('-r', '--release', choices=["3.2c", "3.2b", "3.2a", "3.2", "3.1d", "3.1a", "3.0"], default="3.2c",
                     help="The nuclear data library release version. "
                     "The options currently supported are 3.2b, 3.2a, 3.2, 3.1d, 3.1a, 3.0")
 parser.add_argument('--cleanup', action='store_true',
