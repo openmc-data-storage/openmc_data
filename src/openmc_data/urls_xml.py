@@ -32,6 +32,11 @@ all_chain_release_details = {
                 "chain": {
                     "url": "https://github.com/openmc-data-storage/openmc_data/raw/main/src/openmc_data/depletion/chain_endf_b8.0_pwr.xml"
                 }
+            },
+            "FNS": {
+                "chain": {
+                    "url": "https://github.com/jbae11/openmc_activator/raw/refs/heads/main/fns_spectrum.chain.xml"
+                }
             }
         }
     }
