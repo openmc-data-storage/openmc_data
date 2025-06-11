@@ -114,7 +114,7 @@ A few categories of scripts are available:
 
 | Script name | Library | Release | Branching options|
 |-|-|-|-|
-|download_endf_chain | ENDF/B | VII.1<br>VIII.0 | None<br>SFR<br>PWR
+|download_chain | ENDF/B<br><br><br>TENDL | VII.1<br>VIII.0<br><br>2019 | None<br>SFR<br>PWR<br><br>FNS |
 
 <!-- | Sctipt name | Library | Release | Download available | Download ENDF files and generates XML chain files |
 |-|-|-|-|-|
