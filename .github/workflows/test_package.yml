@@ -69,7 +69,7 @@ jobs:
 
       - name: Test download chain files scripts exist
         run: |
-          download_endf_chain --help
+          download_chain --help
    
       - name: Test other scripts exist
         run: |

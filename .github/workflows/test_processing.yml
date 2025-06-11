@@ -112,22 +112,23 @@ jobs:
           download_tendl -r 2019
           download_tendl -r 2021
 
-      - name: test default download_endf_chain
-        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/download/download_endf_chain.py')
+      - name: test default download_chain
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/download/download_chain.py')
         run: |
-          echo "download_endf_chain.py file has been modified."
-          download_endf_chain -r b7.1 -b None
-          download_endf_chain -r b8.0 -b None
-          download_endf_chain -r b7.1 -b SFR
-          download_endf_chain -r b8.0 -b SFR
-          download_endf_chain -r b7.1 -b PWR
-          download_endf_chain -r b8.0 -b PWR
+          echo "download_chain.py file has been modified."
+          download_chain -l endf -r b7.1 -b None
+          download_chain -l endf -r b8.0 -b None
+          download_chain -l endf -r b7.1 -b SFR
+          download_chain -l endf -r b8.0 -b SFR
+          download_chain -l endf -r b7.1 -b PWR
+          download_chain -l endf -r b8.0 -b PWR
+          download_chain -l endf -r b8.0 -b PWR
 
       - name: test default add_branching_ratios
         if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/depletion/add_branching_ratios.py')
         run: |
           echo "add_branching_ratios.py file has been modified."
-          download_endf_chain -r b8.0
+          download_chain -l endf -r b8.0
           add_branching_ratios -i chain-endf-b8.0.xml -o chain_endf_b8.0_sfr.xml -b sfr
           add_branching_ratios -i chain-endf-b8.0.xml -o chain_endf_b8.0_pwr.xml -b pwr
 
@@ -135,5 +136,5 @@ jobs:
         if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/depletion/reduce_chain.py')
         run: |
           echo "reduce_chain.py file has been modified."
-          download_endf_chain -r b8.0
+          download_chain -l endf -r b8.0
           reduce_chain -i chain-endf-b8.0.xml -o chain_endf_b8.0_sfr.xml -hl 1e15

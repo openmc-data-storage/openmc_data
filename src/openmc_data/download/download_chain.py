@@ -37,10 +37,17 @@ parser.add_argument(
 parser.add_argument(
     "-r",
     "--release",
-    choices=["b7.1", "b8.0"],
-    default="b8.0",
+    choices=["b7.1", "b8.0", "2019"],
+    default="2019",
     help="The nuclear data library release version. The currently supported "
          "options are b7.1 and b8.0.",
+)
+parser.add_argument(
+    "-l",
+    "--library",
+    choices=["endf", "tendl"],
+    default="tendl",
+    help="The nuclear data library. The currently supported options are endf and tendl",
 )
 parser.add_argument(
     "-b",
@@ -48,9 +55,12 @@ parser.add_argument(
     choices=["None", "SFR", "PWR", "FNS"],
     default="FNS",
     help="The nuclear data library release version. The currently supported "
-         "options are b7.1 and b8.0 with branching ratio options of None, SFR "
-         "(sodium fast reactor), PWR (pressurized water reactor) or FNS "
-         "(fusion neutron source)",
+         "options are endf b7.1 and b8.0 with branching ratio options of None, "
+         "SFR (sodium fast reactor), PWR (pressurized water reactor) or tendl "
+         "2019 with FNS (fusion neutron source) branching ratio. The tendl "
+         "chains are processed with neutron induced fission yields from"
+         "ENDF/B-VIII.0. There is an option to use JEFF 3.3 if you generate"
+         "your own chain file with the generate_tendl_chain command line tool.",
 )
 
 parser.set_defaults()
@@ -59,11 +69,10 @@ args = parser.parse_args()
 
 def main():
 
-    library_name = 'endf'
-    details = all_chain_release_details[library_name][args.release][args.branching_ratios]["chain"]
+    details = all_chain_release_details[args.library][args.release][args.branching_ratios]["chain"]
 
     if args.filename is None:
-        args.filename = Path("-".join(["chain", library_name, args.release])+".xml")
+        args.filename = Path("-".join(["chain", args.library, args.release])+".xml")
         print(f'Using default filename {args.filename}')
 
     download(

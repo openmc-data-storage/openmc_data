@@ -77,4 +77,4 @@ reduce_chain = "openmc_data.depletion.reduce_chain:main"
 
 download_endf = "openmc_data.download.download_endf:main"
 download_tendl = "openmc_data.download.download_tendl:main"
-download_endf_chain = "openmc_data.download.download_endf_chain:main"
+download_chain = "openmc_data.download.download_chain:main"
