@@ -40,7 +40,7 @@ parser.add_argument('--libver', choices=['earliest', 'latest'],
                     "performance")
 parser.add_argument('-r', '--release', choices=["3.2c", "3.2b", "3.2a", "3.2", "3.1d", "3.1a", "3.0"], default="3.2c",
                     help="The nuclear data library release version. "
-                    "The options currently supported are 3.2b, 3.2a, 3.2, 3.1d, 3.1a, 3.0")
+                    "The options currently supported are 3.2c, 3.2b, 3.2a, 3.2, 3.1d, 3.1a, 3.0")
 parser.add_argument('--cleanup', action='store_true',
                     help="Remove download directories when data has "
                     "been processed")
