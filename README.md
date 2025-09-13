@@ -73,6 +73,7 @@ A few categories of scripts are available:
 | generate_endf | ENDF/B | VII.1<br>VIII.0 | NNDC |
 | generate_fendl | FENDL | 3.2c<br>3.2b<br>3.2a<br>3.2<br>3.1d<br>3.1a<br>3.0 | |
 | generate_jendl | JENDL | 4.0<br>5.0 | |
+| generate_tendl | TENDL | 2023 | |
 
 
 ### Download cross sections

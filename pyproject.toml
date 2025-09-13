@@ -59,6 +59,7 @@ generate_endf = "openmc_data.generate.generate_endf:main"
 generate_jeff33 = "openmc_data.generate.generate_jeff33:main"
 generate_jendl = "openmc_data.generate.generate_jendl:main"
 generate_fendl = "openmc_data.generate.generate_fendl:main"
+generate_tendl = "openmc_data.generate.generate_tendl:main"
 
 generate_endf71_chain_casl = "openmc_data.depletion.generate_endf71_chain_casl:main"
 generate_endf_chain = "openmc_data.depletion.generate_endf_chain:main"
