@@ -33,13 +33,13 @@ parser.add_argument(
     help="Directory to create new library in",
 )
 parser.add_argument(
-    "--download", action="store_true", help="Download tarball from NNDC-BNL"
+    "--download", action="store_true", help="Download files"
 )
 parser.add_argument(
     "--no-download",
     dest="download",
     action="store_false",
-    help="Do not download tarball from NNDC-BNL",
+    help="Do not download files",
 )
 parser.add_argument("--extract", action="store_true", help="Extract compressed files")
 parser.add_argument(
