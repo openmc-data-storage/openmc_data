@@ -42,9 +42,9 @@ parser.add_argument('--libver', choices=['earliest', 'latest'],
                     "'earliest' for backwards compatibility or 'latest' for "
                     "performance")
 parser.add_argument('--download', action='store_true',
-                    help='Download zip files from NNDC')
+                    help='Download files')
 parser.add_argument('--no-download', dest='download', action='store_false',
-                    help='Do not download zip files from NNDC')
+                    help='Do not download files')
 parser.add_argument('--use-tmpdir', dest='tmpdir', action='store_true',
                     help='Use temporary directory while processing')
 parser.add_argument('--no-use-tmpdir', dest='tmpdir', action='store_false',

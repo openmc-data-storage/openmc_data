@@ -32,13 +32,13 @@ parser.add_argument(
     help="Directory to create new library in",
 )
 parser.add_argument(
-    "--download", action="store_true", help="Download files from OECD-NEA"
+    "--download", action="store_true", help="Download files files"
 )
 parser.add_argument(
     "--no-download",
     dest="download",
     action="store_false",
-    help="Do not download files from OECD-NEA",
+    help="Do not download files files",
 )
 parser.add_argument("--extract", action="store_true", help="Extract tar/zip files")
 parser.add_argument(
