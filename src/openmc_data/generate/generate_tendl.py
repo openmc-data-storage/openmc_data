@@ -95,7 +95,7 @@ def main():
     # GENERATE HDF5 LIBRARY -- NEUTRON FILES
 
     # Get a list of all ENDF files
-    neutron_files = endf_files_dir.glob('*.tendl')
+    neutron_files = endf_files_dir.glob(details['endf_files'])
 
     # Create output directory if it doesn't exist
     args.destination.mkdir(parents=True, exist_ok=True)

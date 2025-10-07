@@ -53,9 +53,9 @@ all_release_details = {
                 "endf": {
                     "base_url": "https://tendl.web.psi.ch/tendl_2023/tar_files/",
                     "compressed_files": ["TENDL-n.2024new.tgz"],
-                    "neutron_files": "tendl24c/*",
-                    "metastables": "tendl24c/*m",
-                    "compressed_file_size": 3.1,
+                    "endf_files": "n-*.tendl",
+                    "metastables": "n-*m.tendl",
+                    "compressed_file_size": 3.5,
                     "uncompressed_file_size": 20,
                 }
             }
@@ -65,10 +65,10 @@ all_release_details = {
                 "endf": {
                     "base_url": "https://tendl.web.psi.ch/tendl_2025/tar_files/",
                     "compressed_files": ["TENDL-n.tgz"],
-                    "neutron_files": "tendl24c/*",
-                    "metastables": "tendl24c/*m",
+                    "endf_files": "n-*.tendl",
+                    "metastables": "n-*m.tendl",
                     "compressed_file_size": 3.1,
-                    "uncompressed_file_size": 20,
+                    "uncompressed_file_size": 13.9,
                 }
             }
         },
