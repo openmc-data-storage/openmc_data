@@ -60,6 +60,18 @@ all_release_details = {
                 }
             }
         },
+        "2025": {
+            "neutron": {
+                "endf": {
+                    "base_url": "https://tendl.web.psi.ch/tendl_2025/tar_files/",
+                    "compressed_files": ["TENDL-n.tgz"],
+                    "neutron_files": "tendl24c/*",
+                    "metastables": "tendl24c/*m",
+                    "compressed_file_size": 3.1,
+                    "uncompressed_file_size": 20,
+                }
+            }
+        },
     },
     "fendl": {
         "3.2c": {

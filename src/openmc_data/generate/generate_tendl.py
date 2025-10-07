@@ -38,9 +38,9 @@ parser.add_argument('--libver', choices=['earliest', 'latest'],
                     default='latest', help="Output HDF5 versioning. Use "
                     "'earliest' for backwards compatibility or 'latest' for "
                     "performance")
-parser.add_argument('-r', '--release', choices=["2023"], default="2023",
+parser.add_argument('-r', '--release', choices=["2023", "2025"], default="2025",
                     help="The nuclear data library release version. "
-                    "The options currently supported are 2023")
+                    "The options currently supported are 2023 and 2025")
 parser.add_argument('--cleanup', action='store_true',
                     help="Remove download directories when data has "
                     "been processed")
