@@ -100,11 +100,48 @@ def main():
     # Create output directory if it doesn't exist
     args.destination.mkdir(parents=True, exist_ok=True)
 
+    # Get list of already processed files (existing .h5 files)
+    existing_h5_files = set(p.stem for p in args.destination.glob('*.h5'))
+    
+    # Function to convert ENDF filename to expected HDF5 filename
+    def endf_to_h5_name(endf_filename):
+        # Convert n-Zr089.tendl -> Zr89.h5
+        # Convert n-Zr089m.tendl -> Zr89_m1.h5
+        stem = endf_filename.stem  # removes .tendl extension
+        if stem.startswith('n-'):
+            stem = stem[2:]  # remove 'n-' prefix
+        
+        # Handle metastable states (m suffix)
+        if stem.endswith('m'):
+            # Convert Zr089m -> Zr89_m1
+            element_mass = stem[:-1]  # remove 'm'
+            # Remove leading zeros from mass number
+            element = ''.join([c for c in element_mass if not c.isdigit()])
+            mass = ''.join([c for c in element_mass if c.isdigit()]).lstrip('0')
+            return f"{element}{mass}_m1"
+        else:
+            # Convert Zr089 -> Zr89
+            element = ''.join([c for c in stem if not c.isdigit()])
+            mass = ''.join([c for c in stem if c.isdigit()]).lstrip('0')
+            return f"{element}{mass}"
+    
+    # Filter neutron files to only process those not already converted
+    neutron_files_to_process = []
+    skipped_count = 0
+    for filename in sorted(neutron_files):
+        expected_h5_name = endf_to_h5_name(filename)
+        if expected_h5_name not in existing_h5_files:
+            neutron_files_to_process.append(filename)
+        else:
+            skipped_count += 1
+    
+    print(f"Found {len(neutron_files_to_process)} files to process, skipping {skipped_count} already processed files")
+
     library = openmc.data.DataLibrary()
 
     with Pool() as pool:
         results = []
-        for filename in sorted(neutron_files):
+        for filename in neutron_files_to_process:
             func_args = (filename, args.destination, args.libver)
             r = pool.apply_async(process_neutron, func_args)
             results.append(r)
