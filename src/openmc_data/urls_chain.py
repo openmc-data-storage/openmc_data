@@ -48,25 +48,25 @@ all_decay_release_details = {
     'tendl': {
         '2015': {
             'neutron':{
-                'base_url': 'https://tendl.web.psi.ch/tendl_2015/tar_files/',
+                'base_url': 'https://tendl.imperial.ac.uk/tendl_2015/tar_files/',
                 'compressed_files': ['TENDL-n.tgz'],
             }
         },
         '2017': {
             'neutron':{
-                'base_url': 'https://tendl.web.psi.ch/tendl_2017/tar_files/',
+                'base_url': 'https://tendl.imperial.ac.uk/tendl_2017/tar_files/',
                 'compressed_files': ['TENDL-n.tgz'],
             }
         },
         '2019': {
             'neutron':{
-                'base_url': 'https://tendl.web.psi.ch/tendl_2019/tar_files/',
+                'base_url': 'https://tendl.imperial.ac.uk/tendl_2019/tar_files/',
                 'compressed_files': ['TENDL-n.tgz'],
             }
         },
         '2021': {
             'neutron':{
-                'base_url': 'https://tendl.web.psi.ch/tendl_2021/tar_files/',
+                'base_url': 'https://tendl.imperial.ac.uk/tendl_2021/tar_files/',
                 'compressed_files': ['TENDL-n.tgz'],
             }
         }

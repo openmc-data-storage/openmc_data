@@ -79,9 +79,11 @@ def main():
         (base_endf, 'ENDF-B-VIII.0_atomic_relax.zip', 'e04d50098cb2a7e4fe404ec4071611cc'),
     ]
 
+    # TODO: these individual TENDL neutron file endpoints return 404 on the
+    # new tendl.imperial.ac.uk site. Re-enable once the files are available.
     tendl_files = [
-        'https://tendl.web.psi.ch/tendl_2019/neutron_file/C/C013/lib/endf/n-C013.tendl',
-        'https://tendl.web.psi.ch/tendl_2019/neutron_file/O/O017/lib/endf/n-O017.tendl',
+        # 'https://tendl.imperial.ac.uk/tendl_2019/neutron_file/C/C013/lib/endf/n-C013.tendl',
+        # 'https://tendl.imperial.ac.uk/tendl_2019/neutron_file/O/O017/lib/endf/n-O017.tendl',
     ]
 
     neutron_dir = Path('endf6')
