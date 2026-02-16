@@ -122,7 +122,7 @@ all_release_details = {
                 "endf": {
                     "base_url": "https://nds.iaea.org/fendl_library/websites/fendl32b/data/atom/",
                     "compressed_files": ["fendl-3.2b-atom-endf.zip"],
-                    "endf_files": "photon/endf/*.endf",
+                    "endf_files": "atom/endf/*.endf",
                     "compressed_file_size": 0,
                     "uncompressed_file_size": 0,
                 }
