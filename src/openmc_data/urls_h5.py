@@ -20,7 +20,7 @@ all_h5_release_details = {
     "tendl": {
         "2019": {
             "neutron": {
-                "base_url": "https://tendl.web.psi.ch/tendl_2019/tar_files/",
+                "base_url": "https://tendl.imperial.ac.uk/tendl_2019/tar_files/",
                 "compressed_files": ["tendl19_hdf5.tar.bz2"],
                 "compressed_file_size": 1.3,
                 "uncompressed_file_size": 2.5,
@@ -28,7 +28,7 @@ all_h5_release_details = {
         },
         "2021": {
             "neutron": {
-                "base_url": "https://tendl.web.psi.ch/tendl_2021/tar_files/",
+                "base_url": "https://tendl.imperial.ac.uk/tendl_2021/tar_files/",
                 "compressed_files": ["tendl21_hdf5.tar.bz2"],
                 "compressed_file_size": 1.3,
                 "uncompressed_file_size": 2.5,
