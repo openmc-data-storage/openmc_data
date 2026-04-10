@@ -1,6 +1,9 @@
 import tarfile
 
+import pytest
+
 import openmc_data
+from openmc_data import utils
 
 
 def test_extract_deletes_compressed_files(tmp_path):
@@ -18,3 +21,11 @@ def test_extract_deletes_compressed_files(tmp_path):
 
     assert (extraction_dir / "payload.txt").read_text() == "payload"
     assert not archive.exists()
+
+
+def test_process_neutron_requires_openmc():
+    if utils.openmc is not None:
+        pytest.skip("openmc is installed in this environment")
+
+    with pytest.raises(ModuleNotFoundError, match="openmc is required"):
+        openmc_data.process_neutron("dummy.endf", "out", "latest")
