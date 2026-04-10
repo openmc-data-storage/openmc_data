@@ -30,9 +30,11 @@ jobs:
         with:
           files: |
             src/openmc_data/convert/convert_*.py
+            src/openmc_data/other/convert_tendl_rand.py
             src/openmc_data/download/download_*.py
             src/openmc_data/depletion/add_branching_ratios.py
             src/openmc_data/depletion/reduce_chain.py
+            src/openmc_data/utils.py
 
       - name: Set up Python
         if: steps.changed-files-specific.outputs.any_changed == 'true'
@@ -61,7 +63,7 @@ jobs:
       # convert_lib80x.py convert_mcnp70.py convert_mcnp71.py files are not tested here
 
       - name: test default convert_fendl
-        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert_fendl.py')
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert/convert_fendl.py') || contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/utils.py')
         run: |
           echo "convert_fendl.py file has been modified."
           convert_fendl --cleanup
@@ -69,51 +71,51 @@ jobs:
       # this running convert_jeff32 in with default arguments produces 49GB of
       # data. Hence the use of arguments to process just one temperature
       - name: test default convert_jeff32
-        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert/convert_jeff32.py')
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert/convert_jeff32.py') || contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/utils.py')
         run: |
           echo "convert_jeff32.py file has been modified."
           convert_jeff32 -r 3.2 -t 293 --cleanup
 
       - name: test default convert_jeff33
-        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert/convert_jeff33.py')
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert/convert_jeff33.py') || contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/utils.py')
         run: |
           echo "convert_jeff33.py file has been modified."
           convert_jeff33 -r 3.3 -t 293 --cleanup
 
       - name: test default convert_endf
-        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert/convert_endf.py')
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert/convert_endf.py') || contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/utils.py')
         run: |
           echo "convert_endf.py file has been modified."
           convert_endf --cleanup
 
       - name: test default convert_tendl
-        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert/convert_tendl.py')
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert/convert_tendl.py') || contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/utils.py')
         run: |
           echo "convert_tendl.py file has been modified."
           convert_tendl --cleanup
 
       - name: test default convert_tendl_rand
-        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/convert/convert_tendl_rand.py')
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/other/convert_tendl_rand.py') || contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/utils.py')
         run: |
           echo "convert_tendl_rand.py file has been modified."
           convert_tendl_rand --nuclides O16 --cleanup
 
       # download scripts
       - name: test default download_endf
-        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/download/download_endf.py')
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/download/download_endf.py') || contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/utils.py')
         run: |
           echo "download_endf.py file has been modified."
           download_endf
 
       - name: test default download_tendl
-        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/download/download_tendl.py')
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/download/download_tendl.py') || contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/utils.py')
         run: |
           echo "download_tendl.py file has been modified."
           download_tendl -r 2019
           download_tendl -r 2021
 
       - name: test default download_chain
-        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/download/download_chain.py')
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/download/download_chain.py') || contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/utils.py')
         run: |
           echo "download_chain.py file has been modified."
           download_chain -l endf -r b7.1 -b None
@@ -125,7 +127,7 @@ jobs:
           download_chain -l endf -r b8.0 -b PWR
 
       - name: test default add_branching_ratios
-        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/depletion/add_branching_ratios.py')
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/depletion/add_branching_ratios.py') || contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/utils.py')
         run: |
           echo "add_branching_ratios.py file has been modified."
           download_chain -l endf -r b8.0
@@ -133,7 +135,7 @@ jobs:
           add_branching_ratios -i chain-endf-b8.0.xml -o chain_endf_b8.0_pwr.xml -b pwr
 
       - name: test default reduce_chain
-        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/depletion/reduce_chain.py')
+        if: contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/depletion/reduce_chain.py') || contains(steps.changed-files-specific.outputs.modified_files, 'src/openmc_data/utils.py')
         run: |
           echo "reduce_chain.py file has been modified."
           download_chain -l endf -r b8.0
