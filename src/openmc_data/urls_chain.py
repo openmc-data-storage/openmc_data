@@ -27,6 +27,20 @@ all_decay_release_details = {
                     'base_url': ['https://www.nndc.bnl.gov/endf-b8.0/zips/'],
                     'compressed_files': ['ENDF-B-VIII.0_nfy.zip']
                 }
+            },
+            'b8.1': {
+                'neutron': {
+                    'base_url': ['https://www.nndc.bnl.gov/endf-releases/releases/B-VIII.1/neutrons/'],
+                    'compressed_files': ['neutrons-version.VIII.1.tar.gz'],
+                },
+                'decay': {
+                    'base_url': ['https://www.nndc.bnl.gov/endf-releases/releases/B-VIII.1/decay/'],
+                    'compressed_files': ['decay-version.VIII.1.tar.gz']
+                },
+                'nfy': {
+                    'base_url': ['https://www.nndc.bnl.gov/endf-releases/releases/B-VIII.1/nfy/'],
+                    'compressed_files': ['nfy-version.VIII.1.tar.gz']
+                }
             }
         },
     'jeff': {

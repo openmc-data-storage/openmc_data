@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 """
-Download ENDF/B-VIII.0 or ENDF/B-VII.1 library for use in OpenMC by first
-processing ENDF files using NJOY. The resulting library will contain incident
-neutron, incident photon, and thermal scattering data.
+Download ENDF/B-VIII.1, ENDF/B-VIII.0 or ENDF/B-VII.1 library for use in OpenMC
+by first processing ENDF files using NJOY. The resulting library will contain
+incident neutron, incident photon, and thermal scattering data.
 """
 
 
@@ -46,10 +46,10 @@ parser.add_argument('--libver', choices=['earliest', 'latest'],
                     default='earliest', help="Output HDF5 versioning. Use "
                     "'earliest' for backwards compatibility or 'latest' for "
                     "performance")
-parser.add_argument('-r', '--release', choices=['vii.1', 'viii.0'],
-                    default='viii.0', help="The nuclear data library release "
+parser.add_argument('-r', '--release', choices=['vii.1', 'viii.0', 'viii.1'],
+                    default='viii.1', help="The nuclear data library release "
                     "version. The currently supported options are vii.1, "
-                    "viii.0")
+                    "viii.0, viii.1")
 parser.add_argument('-p', '--particles', choices=['neutron', 'photon', 'wmp'],
                     nargs='+', default=['neutron', 'photon'],
                     help="Incident particles to include, wmp is not available "
@@ -207,6 +207,155 @@ def main():
                 'file_type': 'endf',
                 'photo_files': endf_files_dir.joinpath('photoat').rglob('*.endf'),
                 'atom_files': endf_files_dir.joinpath('atom').rglob('*.endf'),
+                'compressed_file_size': 1.2+35,
+                'uncompressed_file_size': 999999
+            }
+        },
+        'viii.1': {
+            'neutron': {
+                'base_url': 'https://www.nndc.bnl.gov/endf-releases/releases/B-VIII.1/',
+                'compressed_files': [
+                    'neutrons/neutrons-version.VIII.1.tar.gz',
+                    'thermal_scatt/thermal_scatt-version.VIII.1.tar.gz',
+                ],
+                'checksums': [
+                    'dc622c0f1c3c4477433e698266e0fc80',
+                    'f7bcae02b2da577e28a3a083e07a3a3a',
+                ],
+                'file_type': 'endf',
+                'endf_files': neutron_dir.rglob('n-*.endf'),
+                'sab_files': [
+                    (neutron_dir / 'n-001_H_001.endf', neutron_dir / 'tsl-H1inCaH2.endf'),
+                    (neutron_dir / 'n-001_H_001.endf', neutron_dir / 'tsl-H2inCaH2.endf'),
+                    (neutron_dir / 'n-001_H_001.endf', neutron_dir / 'tsl-Hin7LiH-mixed.endf'),
+                    (neutron_dir / 'n-001_H_001.endf', neutron_dir / 'tsl-HinC5O2H8.endf'),
+                    (neutron_dir / 'n-001_H_001.endf', neutron_dir / 'tsl-HinC8H8.endf'),
+                    (neutron_dir / 'n-001_H_001.endf', neutron_dir / 'tsl-HinCH2.endf'),
+                    (neutron_dir / 'n-001_H_001.endf', neutron_dir / 'tsl-HinH2O.endf'),
+                    (neutron_dir / 'n-001_H_001.endf', neutron_dir / 'tsl-HinHF.endf'),
+                    (neutron_dir / 'n-001_H_001.endf', neutron_dir / 'tsl-HinIceIh.endf'),
+                    (neutron_dir / 'n-001_H_001.endf', neutron_dir / 'tsl-HinParaffinicOil.endf'),
+                    (neutron_dir / 'n-001_H_001.endf', neutron_dir / 'tsl-HinUH3.endf'),
+                    (neutron_dir / 'n-001_H_001.endf', neutron_dir / 'tsl-HinYH2.endf'),
+                    (neutron_dir / 'n-001_H_001.endf', neutron_dir / 'tsl-HinZrH2.endf'),
+                    (neutron_dir / 'n-001_H_001.endf', neutron_dir / 'tsl-HinZrH.endf'),
+                    (neutron_dir / 'n-001_H_001.endf', neutron_dir / 'tsl-HinZrHx.endf'),
+                    (neutron_dir / 'n-001_H_001.endf', neutron_dir / 'tsl-ortho-H.endf'),
+                    (neutron_dir / 'n-001_H_001.endf', neutron_dir / 'tsl-para-H.endf'),
+                    (neutron_dir / 'n-001_H_001.endf', neutron_dir / 'tsl-benzene.endf'),
+                    (neutron_dir / 'n-001_H_001.endf', neutron_dir / 'tsl-l-CH4.endf'),
+                    (neutron_dir / 'n-001_H_001.endf', neutron_dir / 'tsl-s-CH4.endf'),
+                    (neutron_dir / 'n-001_H_002.endf', neutron_dir / 'tsl-Din7LiD-mixed.endf'),
+                    (neutron_dir / 'n-001_H_002.endf', neutron_dir / 'tsl-DinD2O.endf'),
+                    (neutron_dir / 'n-001_H_002.endf', neutron_dir / 'tsl-ortho-D.endf'),
+                    (neutron_dir / 'n-001_H_002.endf', neutron_dir / 'tsl-para-D.endf'),
+                    (neutron_dir / 'n-003_Li_007.endf', neutron_dir / 'tsl-7Liin7LiD-mixed.endf'),
+                    (neutron_dir / 'n-003_Li_007.endf', neutron_dir / 'tsl-7Liin7LiH-mixed.endf'),
+                    (neutron_dir / 'n-003_Li_007.endf', neutron_dir / 'tsl-LiinFLiBe.endf'),
+                    (neutron_dir / 'n-004_Be_009.endf', neutron_dir / 'tsl-BeinBe2C.endf'),
+                    (neutron_dir / 'n-004_Be_009.endf', neutron_dir / 'tsl-BeinBeF2.endf'),
+                    (neutron_dir / 'n-004_Be_009.endf', neutron_dir / 'tsl-BeinBeO.endf'),
+                    (neutron_dir / 'n-004_Be_009.endf', neutron_dir / 'tsl-BeinFLiBe.endf'),
+                    (neutron_dir / 'n-004_Be_009.endf', neutron_dir / 'tsl-Be-metal.endf'),
+                    (neutron_dir / 'n-004_Be_009.endf', neutron_dir / 'tsl-Be-metal+Sd.endf'),
+                    (neutron_dir / 'n-006_C_012.endf', neutron_dir / 'tsl-CinBe2C.endf'),
+                    (neutron_dir / 'n-006_C_012.endf', neutron_dir / 'tsl-CinC5O2H8.endf'),
+                    (neutron_dir / 'n-006_C_012.endf', neutron_dir / 'tsl-CinC8H8.endf'),
+                    (neutron_dir / 'n-006_C_012.endf', neutron_dir / 'tsl-CinCF2.endf'),
+                    (neutron_dir / 'n-006_C_012.endf', neutron_dir / 'tsl-CinSiC.endf'),
+                    (neutron_dir / 'n-006_C_012.endf', neutron_dir / 'tsl-CinUC-100P.endf'),
+                    (neutron_dir / 'n-006_C_012.endf', neutron_dir / 'tsl-CinUC-10P.endf'),
+                    (neutron_dir / 'n-006_C_012.endf', neutron_dir / 'tsl-CinUC-5P.endf'),
+                    (neutron_dir / 'n-006_C_012.endf', neutron_dir / 'tsl-CinUC.endf'),
+                    (neutron_dir / 'n-006_C_012.endf', neutron_dir / 'tsl-CinUC-HALEU.endf'),
+                    (neutron_dir / 'n-006_C_012.endf', neutron_dir / 'tsl-CinUC-HEU.endf'),
+                    (neutron_dir / 'n-006_C_012.endf', neutron_dir / 'tsl-CinZrC.endf'),
+                    (neutron_dir / 'n-006_C_012.endf', neutron_dir / 'tsl-crystalline-graphite.endf'),
+                    (neutron_dir / 'n-006_C_012.endf', neutron_dir / 'tsl-graphiteSd.endf'),
+                    (neutron_dir / 'n-006_C_012.endf', neutron_dir / 'tsl-reactor-graphite-10P.endf'),
+                    (neutron_dir / 'n-006_C_012.endf', neutron_dir / 'tsl-reactor-graphite-20P.endf'),
+                    (neutron_dir / 'n-006_C_012.endf', neutron_dir / 'tsl-reactor-graphite-30P.endf'),
+                    (neutron_dir / 'n-007_N_014.endf', neutron_dir / 'tsl-NinUN-100P.endf'),
+                    (neutron_dir / 'n-007_N_014.endf', neutron_dir / 'tsl-NinUN-10P.endf'),
+                    (neutron_dir / 'n-007_N_014.endf', neutron_dir / 'tsl-NinUN-5P.endf'),
+                    (neutron_dir / 'n-007_N_014.endf', neutron_dir / 'tsl-NinUN.endf'),
+                    (neutron_dir / 'n-007_N_014.endf', neutron_dir / 'tsl-NinUN-HALEU.endf'),
+                    (neutron_dir / 'n-007_N_014.endf', neutron_dir / 'tsl-NinUN-HEU.endf'),
+                    (neutron_dir / 'n-008_O_016.endf', neutron_dir / 'tsl-OinAl2O3.endf'),
+                    (neutron_dir / 'n-008_O_016.endf', neutron_dir / 'tsl-OinBeO.endf'),
+                    (neutron_dir / 'n-008_O_016.endf', neutron_dir / 'tsl-OinC5O2H8.endf'),
+                    (neutron_dir / 'n-008_O_016.endf', neutron_dir / 'tsl-OinD2O.endf'),
+                    (neutron_dir / 'n-008_O_016.endf', neutron_dir / 'tsl-OinIceIh.endf'),
+                    (neutron_dir / 'n-008_O_016.endf', neutron_dir / 'tsl-OinMgO.endf'),
+                    (neutron_dir / 'n-008_O_016.endf', neutron_dir / 'tsl-OinPuO2.endf'),
+                    (neutron_dir / 'n-008_O_016.endf', neutron_dir / 'tsl-OinSiO2-alpha.endf'),
+                    (neutron_dir / 'n-008_O_016.endf', neutron_dir / 'tsl-OinUO2-100P.endf'),
+                    (neutron_dir / 'n-008_O_016.endf', neutron_dir / 'tsl-OinUO2-10P.endf'),
+                    (neutron_dir / 'n-008_O_016.endf', neutron_dir / 'tsl-OinUO2-5P.endf'),
+                    (neutron_dir / 'n-008_O_016.endf', neutron_dir / 'tsl-OinUO2.endf'),
+                    (neutron_dir / 'n-008_O_016.endf', neutron_dir / 'tsl-OinUO2-HALEU.endf'),
+                    (neutron_dir / 'n-008_O_016.endf', neutron_dir / 'tsl-OinUO2-HEU.endf'),
+                    (neutron_dir / 'n-009_F_019.endf', neutron_dir / 'tsl-FinBeF2.endf'),
+                    (neutron_dir / 'n-009_F_019.endf', neutron_dir / 'tsl-FinCF2.endf'),
+                    (neutron_dir / 'n-009_F_019.endf', neutron_dir / 'tsl-FinFLiBe.endf'),
+                    (neutron_dir / 'n-009_F_019.endf', neutron_dir / 'tsl-FinHF.endf'),
+                    (neutron_dir / 'n-009_F_019.endf', neutron_dir / 'tsl-FinMgF2.endf'),
+                    (neutron_dir / 'n-012_Mg_024.endf', neutron_dir / 'tsl-MginMgF2.endf'),
+                    (neutron_dir / 'n-012_Mg_024.endf', neutron_dir / 'tsl-MginMgO.endf'),
+                    (neutron_dir / 'n-013_Al_027.endf', neutron_dir / 'tsl-013_Al_027.endf'),
+                    (neutron_dir / 'n-013_Al_027.endf', neutron_dir / 'tsl-AlinAl2O3.endf'),
+                    (neutron_dir / 'n-026_Fe_056.endf', neutron_dir / 'tsl-026_Fe_056.endf'),
+                    (neutron_dir / 'n-014_Si_028.endf', neutron_dir / 'tsl-SiinSiC.endf'),
+                    (neutron_dir / 'n-014_Si_028.endf', neutron_dir / 'tsl-SiinSiO2-alpha.endf'),
+                    (neutron_dir / 'n-014_Si_028.endf', neutron_dir / 'tsl-SiO2-beta.endf'),
+                    (neutron_dir / 'n-020_Ca_040.endf', neutron_dir / 'tsl-CainCaH2.endf'),
+                    (neutron_dir / 'n-039_Y_089.endf', neutron_dir / 'tsl-YinYH2.endf'),
+                    (neutron_dir / 'n-040_Zr_090.endf', neutron_dir / 'tsl-ZrinZrC.endf'),
+                    (neutron_dir / 'n-040_Zr_090.endf', neutron_dir / 'tsl-ZrinZrH2.endf'),
+                    (neutron_dir / 'n-040_Zr_090.endf', neutron_dir / 'tsl-ZrinZrH.endf'),
+                    (neutron_dir / 'n-040_Zr_090.endf', neutron_dir / 'tsl-ZrinZrHx.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-UinUC-100P.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-UinUC-10P.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-UinUC-5P.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-UinUC.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-UinUC-HALEU.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-UinUC-HEU.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-UinUN-100P.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-UinUN-10P.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-UinUN-5P.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-UinUN.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-UinUN-HALEU.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-UinUN-HEU.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-UinUO2-100P.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-UinUO2-10P.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-UinUO2-5P.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-UinUO2.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-UinUO2-HALEU.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-UinUO2-HEU.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-U-metal-100P.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-U-metal-10P.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-U-metal-5P.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-U-metal.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-U-metal-HALEU.endf'),
+                    (neutron_dir / 'n-092_U_238.endf', neutron_dir / 'tsl-U-metal-HEU.endf'),
+                    (neutron_dir / 'n-094_Pu_239.endf', neutron_dir / 'tsl-PuinPuO2.endf'),
+                ],
+                'compressed_file_size': 300+250,
+                'uncompressed_file_size': 999999
+            },
+            'photon': {
+                'base_url': 'https://www.nndc.bnl.gov/endf-releases/releases/B-VIII.1/',
+                'compressed_files': [
+                    'photoat/photoat-version.VIII.1.tar.gz',
+                    'atomic_relax/atomic_relax-version.VIII.1.tar.gz',
+                ],
+                'checksums': [
+                    '6d5f4830f6290d6c618803a8391ba0cf',
+                    '70e9ca0c481236499b7a3e0a490f4ef2',
+                ],
+                'file_type': 'endf',
+                'photo_files': endf_files_dir.joinpath('photon').rglob('photoat*.endf'),
+                'atom_files': endf_files_dir.joinpath('photon').rglob('atom*.endf'),
                 'compressed_file_size': 1.2+35,
                 'uncompressed_file_size': 999999
             }
