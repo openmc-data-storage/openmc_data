@@ -7,13 +7,24 @@ except (ModuleNotFoundError, ImportError):
 try:
     __version__ = version("openmc_data")
 except PackageNotFoundError:
-    from setuptools_scm import get_version
-
-    __version__ = get_version(root="..", relative_to=__file__)
+    try:
+        from setuptools_scm import get_version
+    except ModuleNotFoundError:
+        __version__ = "develop"
+    else:
+        __version__ = get_version(root="..", relative_to=__file__)
 
 __all__ = ["__version__"]
 
-from .utils import download, extract, process_neutron, process_thermal, calculate_download_size, get_file_types, state_download_size
+from .utils import (
+    calculate_download_size,
+    download,
+    extract,
+    get_file_types,
+    process_neutron,
+    process_thermal,
+    state_download_size,
+)
 from .urls import all_release_details
 from .urls_h5 import all_h5_release_details
 from .urls_xml import all_chain_release_details

@@ -1,18 +1,29 @@
 import hashlib
+import shutil
 import tarfile
 from typing import Iterable
 import warnings
 import zipfile
 from pathlib import Path
-import shutil
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
-import warnings
+
 from .urls import all_release_details
 
-import openmc.data
+try:
+    import openmc.data
+except ModuleNotFoundError:
+    openmc = None
 
 _BLOCK_SIZE = 16384
+
+
+def _require_openmc():
+    if openmc is None:
+        raise ModuleNotFoundError(
+            "openmc is required for neutron and thermal data processing. "
+            "Install openmc before calling this function."
+        )
 
 def state_download_size(compressed_file_size, uncompressed_file_size, units):
     """Prints a standard message to users displaying the amount of storage
@@ -49,6 +60,7 @@ def calculate_download_size(library_name, release, particles, file_type,units='G
 def process_neutron(path, output_dir, libver, temperatures=None):
     """Process ENDF neutron sublibrary file into HDF5 and write into a
     specified output directory."""
+    _require_openmc()
     print(f'Converting: {path}')
     try:
         with warnings.catch_warnings():
@@ -67,6 +79,7 @@ def process_neutron(path, output_dir, libver, temperatures=None):
 def process_thermal(path_neutron, path_thermal, output_dir, libver):
     """Process ENDF thermal scattering sublibrary file into HDF5 and write into a
     specified output directory."""
+    _require_openmc()
     print(f'Converting: {path_thermal}')
     try:
         with warnings.catch_warnings():
@@ -105,7 +118,7 @@ def extract(
     Path.mkdir(extraction_dir, parents=True, exist_ok=True)
 
     print(f'Extracting {compressed_files} to {extraction_dir}')
-    if not isinstance(compressed_files, Iterable):
+    if isinstance(compressed_files, (str, Path)) or not isinstance(compressed_files, Iterable):
         compressed_files = [compressed_files]
 
     for f in compressed_files:
@@ -127,7 +140,8 @@ def extract(
                              f'function {str(f)}')
 
     if del_compressed_file:
-        shutil.rmtree(compressed_files, ignore_errors=True)
+        for compressed_file in compressed_files:
+            Path(compressed_file).unlink(missing_ok=True)
 
 
 def download(
