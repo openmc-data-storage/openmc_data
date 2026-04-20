@@ -14,9 +14,10 @@ from openmc_data import all_decay_release_details
 parser = argparse.ArgumentParser(prog="generate_endf_chain",
     description="Generates a OpenMC chain file from ENDF nuclear data files",
 )
-parser.add_argument('-r', '--release', choices=['b7.1', 'b8.0'],
-                    default='b8.0', help="The nuclear data library release "
-                    "version. The currently supported options are b7.1, b8.0")
+parser.add_argument('-r', '--release', choices=['b7.1', 'b8.0', 'b8.1'],
+                    default='b8.1', help="The nuclear data library release "
+                    "version. The currently supported options are b7.1, b8.0, "
+                    "b8.1")
 parser.add_argument(
     "-d",
     "--destination",
