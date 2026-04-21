@@ -70,7 +70,7 @@ A few categories of scripts are available:
 | Script name | Library | Release | Processed by |
 |-|-|-|-|
 | generate_cendl | CENDL | 3.1<br>3.2 |  |
-| generate_endf | ENDF/B | VII.1<br>VIII.0 | NNDC |
+| generate_endf | ENDF/B | VII.1<br>VIII.0<br>VIII.1 | NNDC |
 | generate_fendl | FENDL | 3.2c<br>3.2b<br>3.2a<br>3.2<br>3.1d<br>3.1a<br>3.0 | |
 | generate_jendl | JENDL | 4.0<br>5.0 | |
 | generate_tendl | TENDL | 2023<br>2025 | |
@@ -80,7 +80,7 @@ A few categories of scripts are available:
 
 | Script name | Library | Release | Processed by |
 |-|-|-|-|
-| download_endf | ENDF/B | VII.1<br>VIII.0  | NNDC |
+| download_endf | ENDF/B | VII.1<br>VIII.0<br>VIII.1  | NNDC |
 | download_tendl | TENDL | 2019<br>2021  |  |
 
 <!-- | Script name | Library | Release | Processed by | Download available | Downloads ACE files and convert to HDF5 | Downloads ENDF files and convert to HDF5 | Convert local ACE files |
@@ -104,7 +104,7 @@ A few categories of scripts are available:
 
 | Script name | Library | Release |
 |-|-|-|
-|generate_endf_chain | ENDF/B | VII.1<br>VIII.0  |
+|generate_endf_chain | ENDF/B | VII.1<br>VIII.0<br>VIII.1  |
 |generate_jeff_chain | JEFF | 3.3  |
 |generate_jendl_chain | JENDL | 5.0 |
 |generate_tendl_chain | TENDL | 2019<br>2021 |
@@ -115,7 +115,7 @@ A few categories of scripts are available:
 
 | Script name | Library | Release | Branching options|
 |-|-|-|-|
-|download_chain | ENDF/B<br><br><br>TENDL | VII.1<br>VIII.0<br><br>2019 | None<br>SFR<br>PWR<br><br>FNS |
+|download_chain | ENDF/B<br><br><br><br>TENDL | VII.1<br>VIII.0<br>VIII.1<br><br>2019 | None<br>SFR<br>PWR<br><br>FNS |
 
 <!-- | Sctipt name | Library | Release | Download available | Download ENDF files and generates XML chain files |
 |-|-|-|-|-|

@@ -16,6 +16,14 @@ all_h5_release_details = {
                 "uncompressed_file_size": 13.7,
             }
         },
+        "b8.1": {
+            "neutron-photon": {
+                "base_url": "https://anl.box.com/shared/static/",
+                "compressed_files": ["6qr7jezzihkj9p9esl5jn19qgpujyjyz.xz"],
+                "compressed_file_size": 3.4,
+                "uncompressed_file_size": 13.7,
+            }
+        },
     },
     "tendl": {
         "2019": {
