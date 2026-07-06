@@ -107,7 +107,7 @@ A few categories of scripts are available:
 |generate_endf_chain | ENDF/B | VII.1<br>VIII.0<br>VIII.1  |
 |generate_jeff_chain | JEFF | 3.3  |
 |generate_jendl_chain | JENDL | 5.0 |
-|generate_tendl_chain | TENDL | 2019<br>2021 |
+|generate_tendl_chain | TENDL | 2019<br>2021<br>2023<br>2025 |
 |generate_serpent_fissq | |  |
 |generate_endf71_chain_casl | ENDF/B |  |
 

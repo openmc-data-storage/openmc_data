@@ -83,6 +83,18 @@ all_decay_release_details = {
                 'base_url': 'https://tendl.imperial.ac.uk/tendl_2021/tar_files/',
                 'compressed_files': ['TENDL-n.tgz'],
             }
+        },
+        '2023': {
+            'neutron':{
+                'base_url': 'https://tendl.imperial.ac.uk/tendl_2023/tar_files/',
+                'compressed_files': ['TENDL-n.2024new.tgz'],
+            }
+        },
+        '2025': {
+            'neutron':{
+                'base_url': 'https://tendl.imperial.ac.uk/tendl_2025/tar_files/',
+                'compressed_files': ['TENDL-n.tgz'],
+            }
         }
     },
     'jendl': {
