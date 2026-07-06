@@ -30,11 +30,11 @@ parser.add_argument(
 parser.add_argument(
     "-r",
     "--release",
-    choices=["2015", "2017", "2019", "2021"],
+    choices=["2015", "2017", "2019", "2021", "2023", "2025"],
     default="2021",
     help="The nuclear data library release "
-    "version. The currently supported options are 2019, "
-    "and 2021.",
+    "version. The currently supported options are 2015, 2017, 2019, "
+    "2021, 2023, and 2025.",
 )
 parser.add_argument(
     "-d",

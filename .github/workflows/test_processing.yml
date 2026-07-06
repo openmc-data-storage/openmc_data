@@ -45,6 +45,7 @@ jobs:
       - name: Install testing dependencies
         if: steps.changed-files-specific.outputs.any_changed == 'true'
         run: |
+          sudo apt-get update
           sudo apt-get install libhdf5-serial-dev
           git clone --single-branch --branch develop --depth 1 https://github.com/openmc-dev/openmc.git
           cd openmc
