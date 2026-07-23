@@ -13,6 +13,8 @@ import sys
 
 import openmc.data
 
+from openmc_data import ProgressTracker
+
 
 # Make sure Python version is sufficient
 assert sys.version_info >= (3, 6), "Python 3.6+ is required"
@@ -76,10 +78,12 @@ def main():
 
     library = openmc.data.DataLibrary()
 
-    for name, paths in sorted(tables.items()):
+    sorted_tables = sorted(tables.items())
+    tracker = ProgressTracker(len(sorted_tables))
+    for name, paths in sorted_tables:
         # Convert first temperature for the table
         p = paths[0]
-        print(f'Converting: {p}')
+        tracker.starting(p)
         if p.name.endswith('t'):
             data = openmc.data.ThermalScattering.from_ace(p)
         else:

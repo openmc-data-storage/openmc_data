@@ -12,7 +12,7 @@ from pathlib import Path
 from urllib.parse import urljoin
 
 import openmc.data
-from openmc_data import download, extract, process_neutron, state_download_size, all_release_details
+from openmc_data import download, extract, process_neutron, state_download_size, all_release_details, ProgressTracker
 
 
 class CustomFormatter(argparse.ArgumentDefaultsHelpFormatter,
@@ -141,9 +141,14 @@ def main():
 
     with Pool() as pool:
         results = []
+        tracker = ProgressTracker(len(neutron_files_to_process), verb='Processed')
         for filename in neutron_files_to_process:
             func_args = (filename, args.destination, args.libver)
-            r = pool.apply_async(process_neutron, func_args)
+            r = pool.apply_async(
+                process_neutron, func_args,
+                callback=tracker.callback(filename.name),
+                error_callback=tracker.callback(filename.name),
+            )
             results.append(r)
 
         for r in results:

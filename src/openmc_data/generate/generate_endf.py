@@ -16,7 +16,7 @@ from pathlib import Path
 from shutil import rmtree, copy, copyfileobj
 
 import openmc.data
-from openmc_data import download, process_neutron, process_thermal, state_download_size
+from openmc_data import download, process_neutron, process_thermal, state_download_size, ProgressTracker
 
 # Make sure Python version is sufficient
 assert sys.version_info >= (3, 6), "Python 3.6+ is required"
@@ -442,21 +442,29 @@ def main():
         with Pool() as pool:
             details = release_details[args.release][particle]
             results = []
-            for filename in details['endf_files']:
-
-                # Skip neutron evaluation that fails the processing stage
-                if filename.name == 'n-000_n_001.endf':
-                    continue
-
+            # Skip neutron evaluation that fails the processing stage
+            endf_files = [f for f in details['endf_files']
+                          if f.name != 'n-000_n_001.endf']
+            tracker = ProgressTracker(
+                len(endf_files) + len(details['sab_files']), verb='Processed')
+            for filename in endf_files:
                 func_args = (filename, args.destination / particle, args.libver,
                             args.temperatures)
-                r = pool.apply_async(process_neutron, func_args)
+                r = pool.apply_async(
+                    process_neutron, func_args,
+                    callback=tracker.callback(filename.name),
+                    error_callback=tracker.callback(filename.name),
+                )
                 results.append(r)
 
             for path_neutron, path_thermal in details['sab_files']:
                 func_args = (path_neutron, path_thermal,
                             args.destination / particle, args.libver)
-                r = pool.apply_async(process_thermal, func_args)
+                r = pool.apply_async(
+                    process_thermal, func_args,
+                    callback=tracker.callback(path_thermal.name),
+                    error_callback=tracker.callback(path_thermal.name),
+                )
                 results.append(r)
 
             for r in results:
@@ -472,10 +480,12 @@ def main():
     if 'photon' in args.particles:
         particle = 'photon'
         details = release_details[args.release][particle]
-        for photo_path, atom_path in zip(sorted(details['photo_files']),
-                                        sorted(details['atom_files'])):
+        photon_pairs = list(zip(sorted(details['photo_files']),
+                                sorted(details['atom_files'])))
+        tracker = ProgressTracker(len(photon_pairs))
+        for photo_path, atom_path in photon_pairs:
             # Generate instance of IncidentPhoton
-            print('Converting:', photo_path.name, atom_path.name)
+            tracker.starting(f'{photo_path.name} {atom_path.name}')
             data = openmc.data.IncidentPhoton.from_endf(photo_path, atom_path)
 
             # Export HDF5 file

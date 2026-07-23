@@ -13,7 +13,7 @@ from urllib.parse import urljoin
 
 import openmc.data
 
-from openmc_data import download, extract, calculate_download_size, all_release_details, get_file_types
+from openmc_data import download, extract, calculate_download_size, all_release_details, get_file_types, ProgressTracker
 
 
 # Make sure Python version is sufficient
@@ -153,8 +153,10 @@ def main():
 
     lib = openmc.data.DataLibrary()
 
-    for p in sorted(ace_files_dir.glob(details['neutron_files']), key=key):
-        print(f"Converting: {p}")
+    neutron_paths = sorted(ace_files_dir.glob(details['neutron_files']), key=key)
+    tracker = ProgressTracker(len(neutron_paths))
+    for p in neutron_paths:
+        tracker.starting(p)
         temp, z, a, m = key(p)
 
         data = openmc.data.IncidentNeutron.from_ace(p)
@@ -203,12 +205,13 @@ def main():
 
     thermal_dir = ace_files_dir / details["thermal_files"]
 
+    thermal_tracker = ProgressTracker(len(thermal_mats))
     for mat in thermal_mats:
         for i, p in enumerate(
             sorted(thermal_dir.glob(f"{mat}*.ace"), key=thermal_temp)
         ):
             if i == 0:
-                print(f"Converting: {p}")
+                thermal_tracker.starting(p)
                 data = openmc.data.ThermalScattering.from_ace(p)
             else:
                 print(f"Adding temperature: {p}")

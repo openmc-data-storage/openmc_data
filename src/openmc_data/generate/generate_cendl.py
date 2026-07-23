@@ -11,7 +11,7 @@ from pathlib import Path
 from urllib.parse import urljoin
 
 import openmc.data
-from openmc_data import download, extract, process_neutron, state_download_size
+from openmc_data import download, extract, process_neutron, state_download_size, ProgressTracker
 
 
 class CustomFormatter(argparse.ArgumentDefaultsHelpFormatter,
@@ -123,7 +123,9 @@ def main():
 
     with Pool() as pool:
         results = []
-        for filename in sorted(neutron_files):
+        neutron_files = sorted(neutron_files)
+        tracker = ProgressTracker(len(neutron_files), verb='Processed')
+        for filename in neutron_files:
 
             # this is a fix for the CENDL 3.1 release where the
             # 22-Ti-047.C31 and 5-B-010.C31 files contain non-ASCII characters
@@ -137,7 +139,11 @@ def main():
                 open(filename, 'w').write('\r\n'.join(text))
 
             func_args = (filename, args.destination, args.libver)
-            r = pool.apply_async(process_neutron, func_args)
+            r = pool.apply_async(
+                process_neutron, func_args,
+                callback=tracker.callback(filename.name),
+                error_callback=tracker.callback(filename.name),
+            )
             results.append(r)
 
         for r in results:

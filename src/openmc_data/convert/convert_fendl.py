@@ -14,7 +14,7 @@ from textwrap import dedent
 from urllib.parse import urljoin
 
 import openmc.data
-from openmc_data import download, all_release_details, calculate_download_size, get_file_types
+from openmc_data import download, all_release_details, calculate_download_size, get_file_types, ProgressTracker
 
 
 class CustomFormatter(
@@ -228,7 +228,9 @@ def main():
                 if not f.name.endswith("_") and not f.name.endswith(".xsd")
             ]
 
-            for filename in sorted(neutron_files):
+            neutron_files = sorted(neutron_files)
+            tracker = ProgressTracker(len(neutron_files))
+            for filename in neutron_files:
                 # Handling for special cases
                 if filename.name in special_cases:
                     ret = special_cases[filename.name](filename)
@@ -237,7 +239,7 @@ def main():
                     if ret["skip_file"]:
                         continue
 
-                print(f"Converting: {filename}")
+                tracker.starting(filename)
                 data = openmc.data.IncidentNeutron.from_ace(filename)
 
                 # Export HDF5 file
@@ -258,7 +260,9 @@ def main():
                 release_details[args.release]["photon"][file_types[particle]]["endf_files"]
             )
 
-            for photo_path in sorted(photon_files):
+            photon_files = sorted(photon_files)
+            photon_tracker = ProgressTracker(len(photon_files))
+            for photo_path in photon_files:
 
                 # Check if file requires special handling
                 if photo_path.name in special_cases:
@@ -268,7 +272,7 @@ def main():
                     if ret["skip_file"]:
                         continue
 
-                print(f"Converting: {photo_path}")
+                photon_tracker.starting(photo_path)
                 evaluations = openmc.data.endf.get_evaluations(photo_path)
                 for ev in evaluations:
                     # Export HDF5 file
