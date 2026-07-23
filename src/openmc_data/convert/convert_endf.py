@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 import openmc.data
-from openmc_data import download, extract, all_release_details, get_file_types, calculate_download_size
+from openmc_data import download, extract, all_release_details, get_file_types, calculate_download_size, ProgressTracker
 
 # Make sure Python version is sufficient
 assert sys.version_info >= (3, 6), "Python 3.6+ is required"
@@ -155,8 +155,10 @@ def main():
                 (openmc.data.IncidentNeutron, ace_files_dir.rglob(details["ace_files"])),
                 (openmc.data.ThermalScattering, ace_files_dir.rglob(details["sab_files"])),
             ]:
-                for path in sorted(files):
-                    print(f"Converting: {path.name}")
+                files = sorted(files)
+                tracker = ProgressTracker(len(files))
+                for path in files:
+                    tracker.starting(path.name)
                     data = cls.from_ace(path)
                     # Export HDF5 file
                     h5_file = args.destination.joinpath(particle, data.name + ".h5")
@@ -166,11 +168,13 @@ def main():
                     library.register_file(h5_file)
 
         elif particle == "photon":
-            for photo_path, atom_path in zip(
+            photon_pairs = list(zip(
                 sorted(endf_files_dir.glob(details["photo_files"])), sorted(endf_files_dir.glob(details["atom_files"]))
-            ):
+            ))
+            tracker = ProgressTracker(len(photon_pairs))
+            for photo_path, atom_path in photon_pairs:
                 # Generate instance of IncidentPhoton
-                print("Converting:", photo_path.name, atom_path.name)
+                tracker.starting(f"{photo_path.name} {atom_path.name}")
                 data = openmc.data.IncidentPhoton.from_endf(photo_path, atom_path)
 
                 # Export HDF5 file

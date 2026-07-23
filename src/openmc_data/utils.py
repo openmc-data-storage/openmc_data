@@ -1,6 +1,8 @@
 import hashlib
 import shutil
 import tarfile
+import threading
+import time
 from typing import Iterable
 import warnings
 import zipfile
@@ -16,6 +18,75 @@ except ModuleNotFoundError:
     openmc = None
 
 _BLOCK_SIZE = 16384
+
+
+def format_duration(seconds):
+    """Format a number of seconds as a ``H:MM:SS`` string."""
+    if seconds is None or seconds != seconds:  # None or NaN
+        return '--:--:--'
+    seconds = int(round(seconds))
+    hours, remainder = divmod(seconds, 3600)
+    minutes, secs = divmod(remainder, 60)
+    return f'{hours:d}:{minutes:02d}:{secs:02d}'
+
+
+class ProgressTracker:
+    """Track progress through a fixed number of items and estimate the time
+    remaining.
+
+    The estimate is a simple extrapolation from the average time taken per
+    completed item so far. Use :meth:`starting` for serial loops (call it just
+    before processing each item) and :meth:`callback` with a
+    ``multiprocessing.Pool`` (pass the returned function as the ``apply_async``
+    callback so progress is reported as each item completes).
+
+    Parameters
+    ----------
+    total : int
+        Total number of items that will be processed.
+    verb : str
+        Word printed at the start of each progress line, e.g. ``'Converting'``.
+    """
+
+    def __init__(self, total, verb='Converting'):
+        self.total = max(int(total), 0)
+        self.verb = verb
+        self.count = 0
+        self.start = time.monotonic()
+        self._lock = threading.Lock()
+
+    def _format(self, position, completed, name):
+        elapsed = time.monotonic() - self.start
+        eta = elapsed / completed * (self.total - completed) if completed > 0 else None
+        pct = 100 * position / self.total if self.total else 100
+        line = (f'{self.verb} [{position}/{self.total} {pct:3.0f}%] '
+                f'elapsed {format_duration(elapsed)} ETA {format_duration(eta)}')
+        return f'{line}: {name}' if name else line
+
+    def starting(self, name=''):
+        """Print a progress line for an item that is about to be processed.
+
+        The ETA is based on the items completed before this one, which is the
+        appropriate estimate for a serial loop.
+        """
+        with self._lock:
+            self.count += 1
+            line = self._format(self.count, self.count - 1, name)
+        print(line, flush=True)
+
+    def complete(self, name=''):
+        """Advance the counter and print a progress line for a finished item."""
+        with self._lock:
+            self.count += 1
+            line = self._format(self.count, self.count, name)
+        print(line, flush=True)
+
+    def callback(self, name=''):
+        """Return a one-argument function suitable as an ``apply_async``
+        ``callback`` / ``error_callback`` that reports completion of ``name``."""
+        def _callback(_result=None):
+            self.complete(name)
+        return _callback
 
 
 def _require_openmc():

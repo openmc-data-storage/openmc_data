@@ -15,6 +15,8 @@ import sys
 
 import openmc.data
 
+from openmc_data import ProgressTracker
+
 
 # Make sure Python version is sufficient
 assert sys.version_info >= (3, 6), "Python 3.6+ is required"
@@ -68,9 +70,11 @@ def main():
             zaid, xs = table.name.split('.')
             tables[zaid].append(table)
 
-        for zaid, tables in sorted(tables.items()):
+        neutron_groups = sorted(tables.items())
+        tracker = ProgressTracker(len(neutron_groups))
+        for zaid, tables in neutron_groups:
             # Convert first temperature for the table
-            print(f'Converting: {tables[0].name}')
+            tracker.starting(tables[0].name)
             data = openmc.data.IncidentNeutron.from_ace(tables[0], 'mcnp')
 
             # For each higher temperature, add cross sections to the existing table
@@ -97,9 +101,11 @@ def main():
             name, xs = table.name.split('.')
             tables[name].append(table)
 
-        for zaid, tables in sorted(tables.items()):
+        sab_groups = sorted(tables.items())
+        tracker = ProgressTracker(len(sab_groups))
+        for zaid, tables in sab_groups:
             # Convert first temperature for the table
-            print(f'Converting: {tables[0].name}')
+            tracker.starting(tables[0].name)
             data = openmc.data.ThermalScattering.from_ace(tables[0])
 
             # For each higher temperature, add cross sections to the existing table
@@ -119,9 +125,10 @@ def main():
     if args.photon is not None:
         lib = openmc.data.ace.Library(args.photon)
 
+        tracker = ProgressTracker(len(lib.tables))
         for table in lib.tables:
             # Convert first temperature for the table
-            print(f'Converting: {table.name}')
+            tracker.starting(table.name)
             data = openmc.data.IncidentPhoton.from_ace(table)
 
             # Export HDF5 file

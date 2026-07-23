@@ -14,7 +14,7 @@ from string import digits
 from urllib.parse import urljoin
 
 import openmc.data
-from openmc_data import download, calculate_download_size, all_release_details, get_file_types
+from openmc_data import download, calculate_download_size, all_release_details, get_file_types, ProgressTracker
 
 
 class CustomFormatter(
@@ -196,9 +196,11 @@ def main():
 
     library = openmc.data.DataLibrary()
 
-    for name, filenames in sorted(tables.items()):
+    neutron_tables = sorted(tables.items())
+    tracker = ProgressTracker(len(neutron_tables))
+    for name, filenames in neutron_tables:
         # Convert first temperature for the table
-        print("Converting: " + str(filenames[0]))
+        tracker.starting(filenames[0])
         data = openmc.data.IncidentNeutron.from_ace(filenames[0])
 
         # For each higher temperature, add cross sections to the existing table
@@ -228,9 +230,11 @@ def main():
     for name, filenames in sorted(tables.items()):
         filenames.sort(key=lambda x: int(x.name.split("-")[1].split(".")[0]))
 
-    for name, filenames in sorted(tables.items()):
+    sab_tables = sorted(tables.items())
+    sab_tracker = ProgressTracker(len(sab_tables))
+    for name, filenames in sab_tables:
         # Convert first temperature for the table
-        print(f"Converting: {filenames[0]}")
+        sab_tracker.starting(filenames[0])
 
         # Take numbers out of table name, e.g. lw10.32t -> lw.32t
         table = openmc.data.ace.get_table(filenames[0])

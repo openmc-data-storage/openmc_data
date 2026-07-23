@@ -17,9 +17,11 @@ except PackageNotFoundError:
 __all__ = ["__version__"]
 
 from .utils import (
+    ProgressTracker,
     calculate_download_size,
     download,
     extract,
+    format_duration,
     get_file_types,
     process_neutron,
     process_thermal,

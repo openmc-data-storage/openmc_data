@@ -15,6 +15,8 @@ import sys
 
 import openmc.data
 
+from openmc_data import ProgressTracker
+
 
 # Make sure Python version is sufficient
 assert sys.version_info >= (3, 6), "Python 3.6+ is required"
@@ -87,10 +89,12 @@ def main():
 
     library = openmc.data.DataLibrary()
 
-    for name, paths in sorted(tables.items()):
+    sorted_tables = sorted(tables.items())
+    tracker = ProgressTracker(len(sorted_tables))
+    for name, paths in sorted_tables:
         # Convert first temperature for the table
         p = paths[0]
-        print(f'Converting: {p}')
+        tracker.starting(p)
         if p.name.endswith('t'):
             data = openmc.data.ThermalScattering.from_ace(p)
         else:
@@ -116,9 +120,10 @@ def main():
     if args.photon is not None:
         lib = openmc.data.ace.Library(args.photon)
 
+        tracker = ProgressTracker(len(lib.tables))
         for table in lib.tables:
             # Convert first temperature for the table
-            print(f'Converting: {table.name}')
+            tracker.starting(table.name)
             data = openmc.data.IncidentPhoton.from_ace(table)
 
             # Export HDF5 file
