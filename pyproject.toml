@@ -73,6 +73,7 @@ make_compton = "openmc_data.other.make_compton:main"
 make_stopping_powers = "openmc_data.other.make_stopping_powers:main"
 add_branching_ratios = "openmc_data.depletion.add_branching_ratios:main"
 combine_libraries = "openmc_data.other.combine_libraries:main"
+remove_corrupt_h5 = "openmc_data.other.remove_corrupt_h5:main"
 sample_sandy = "openmc_data.other.sample_sandy:main"
 reduce_chain = "openmc_data.depletion.reduce_chain:main"
 
