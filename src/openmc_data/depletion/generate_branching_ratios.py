@@ -110,6 +110,15 @@ parser.add_argument(
     "chain are dropped and reported",
 )
 parser.add_argument(
+    "-j",
+    "--jobs",
+    type=int,
+    default=1,
+    help="Number of ENDF files to process at the same time. Reconstructing the "
+    "cross sections needed for the MF=9 reactions with NJOY takes tens of "
+    "seconds per nuclide, so a whole library is worth running in parallel",
+)
+parser.add_argument(
     "-o",
     "--output",
     type=Path,
@@ -278,16 +287,107 @@ def chain_nuclides():
     return {nuclide.name for nuclide in openmc.deplete.Chain.from_xml(args.chain).nuclides}
 
 
-def main():
+# state shared with the worker processes, set by init_worker
+_state = {}
 
+
+def init_worker(midpoints, flux, in_chain):
     import openmc.deplete.chain
-    from openmc.data.endf import Evaluation
 
-    mt_to_reaction = {
+    _state["midpoints"] = midpoints
+    _state["flux"] = flux
+    _state["in_chain"] = in_chain
+    _state["cross_sections"] = CrossSections()
+    _state["mt_to_reaction"] = {
         mt: name
         for name, info in openmc.deplete.chain.REACTIONS.items()
         for mt in info.mts
     }
+
+
+def process_file(path):
+    """Find the branching ratios in one ENDF neutron file.
+
+    Returns (ratios, skipped) where ratios is {reaction: {target: ratio}} for
+    this file's nuclide and skipped is a list of (reason, description).
+    """
+    from openmc.data.endf import Evaluation
+
+    midpoints = _state["midpoints"]
+    flux = _state["flux"]
+    in_chain = _state["in_chain"]
+    mt_to_reaction = _state["mt_to_reaction"]
+
+    ratios_by_reaction = {}
+    skipped = []
+
+    try:
+        evaluation = Evaluation(path)
+    except Exception as e:
+        return None, [("unreadable evaluation", f"{path.name} ({e})")]
+    parent = evaluation.gnds_name
+
+    for mf, mt in sorted(evaluation.section):
+        if mf != 8 or mt not in mt_to_reaction:
+            continue
+        reaction = mt_to_reaction[mt]
+        targets = isomer_targets(evaluation, mt)
+
+        # only reactions that make more than one state of a product branch
+        if len({name for name, _lmf in targets.values()}) < 2:
+            continue
+
+        lmf = {lmf for _name, lmf in targets.values()}
+        if len(lmf) != 1 or lmf.pop() not in (9, 10):
+            skipped.append(("unsupported MF=8 layout", f"{parent} {reaction}"))
+            continue
+        data_mf = next(iter(targets.values()))[1]
+        if (data_mf, mt) not in evaluation.section:
+            skipped.append((f"MF={data_mf} section missing", f"{parent} {reaction}"))
+            continue
+
+        production = production_data(evaluation, data_mf, mt)
+        weight = flux
+        if data_mf == 9:
+            # MF=9 holds multiplicities so the reaction cross section is needed
+            # to turn them into a reaction rate weighting
+            cross_section = _state["cross_sections"].get(path, parent, mt, midpoints)
+            if cross_section is None:
+                skipped.append(
+                    ("no cross section for MF=9 weighting", f"{parent} {reaction}")
+                )
+                continue
+            weight = cross_section * flux
+
+        rates = {
+            lfs: float(np.sum(tabulated(midpoints) * weight))
+            for lfs, tabulated in production.items()
+            if lfs in targets
+        }
+        total = sum(rates.values())
+        if total <= 0.0:
+            skipped.append(("zero reaction rate for this flux", f"{parent} {reaction}"))
+            continue
+
+        ratios = {targets[lfs][0]: rate / total for lfs, rate in rates.items()}
+
+        if in_chain is not None:
+            missing = ({parent} | set(ratios)) - in_chain
+            if missing:
+                skipped.append(
+                    (
+                        "not in chain file",
+                        f"{parent} {reaction} ({', '.join(sorted(missing))})",
+                    )
+                )
+                continue
+
+        ratios_by_reaction[reaction] = ratios
+
+    return (parent, ratios_by_reaction), skipped
+
+
+def main():
 
     boundaries, flux = read_flux()
     midpoints = 0.5 * (boundaries[:-1] + boundaries[1:])
@@ -304,86 +404,56 @@ def main():
     print(f"Found {len(paths)} ENDF neutron files in {args.neutron_dir}")
 
     in_chain = chain_nuclides()
-    cross_sections = CrossSections()
 
     branching_ratios = defaultdict(dict)
     skipped = Counter()
     skipped_detail = defaultdict(list)
 
-    for path in paths:
-        try:
-            evaluation = Evaluation(path)
-        except Exception as e:
-            skipped["unreadable evaluation"] += 1
-            skipped_detail["unreadable evaluation"].append(f"{path.name} ({e})")
-            continue
-        parent = evaluation.gnds_name
-
-        for mf, mt in sorted(evaluation.section):
-            if mf != 8 or mt not in mt_to_reaction:
-                continue
-            reaction = mt_to_reaction[mt]
-            targets = isomer_targets(evaluation, mt)
-
-            # only reactions that make more than one state of a product branch
-            if len({name for name, _lmf in targets.values()}) < 2:
-                continue
-
-            lmf = {lmf for _name, lmf in targets.values()}
-            if len(lmf) != 1 or lmf.pop() not in (9, 10):
-                skipped["unsupported MF=8 layout"] += 1
-                skipped_detail["unsupported MF=8 layout"].append(f"{parent} {reaction}")
-                continue
-            data_mf = next(iter(targets.values()))[1]
-            if (data_mf, mt) not in evaluation.section:
-                skipped[f"MF={data_mf} section missing"] += 1
-                skipped_detail[f"MF={data_mf} section missing"].append(
-                    f"{parent} {reaction}"
-                )
-                continue
-
-            production = production_data(evaluation, data_mf, mt)
-            weight = flux
-            if data_mf == 9:
-                # MF=9 holds multiplicities so the reaction cross section is
-                # needed to turn them into a reaction rate weighting
-                cross_section = cross_sections.get(path, parent, mt, midpoints)
-                if cross_section is None:
-                    skipped["no cross section for MF=9 weighting"] += 1
-                    skipped_detail["no cross section for MF=9 weighting"].append(
-                        f"{parent} {reaction}"
-                    )
-                    continue
-                weight = cross_section * flux
-
-            rates = {
-                lfs: float(np.sum(tabulated(midpoints) * weight))
-                for lfs, tabulated in production.items()
-                if lfs in targets
-            }
-            total = sum(rates.values())
-            if total <= 0.0:
-                skipped["zero reaction rate for this flux"] += 1
-                skipped_detail["zero reaction rate for this flux"].append(
-                    f"{parent} {reaction}"
-                )
-                continue
-
-            ratios = {}
-            for lfs, rate in rates.items():
-                ratios[targets[lfs][0]] = rate / total
-
-            if in_chain is not None:
-                missing = {parent} | set(ratios)
-                missing -= in_chain
-                if missing:
-                    skipped["not in chain file"] += 1
-                    skipped_detail["not in chain file"].append(
-                        f"{parent} {reaction} ({', '.join(sorted(missing))})"
-                    )
-                    continue
-
+    def collect(result):
+        found, file_skipped = result
+        for reason, description in file_skipped:
+            skipped[reason] += 1
+            skipped_detail[reason].append(description)
+        if found is None:
+            return
+        parent, ratios_by_reaction = found
+        for reaction, ratios in ratios_by_reaction.items():
             branching_ratios[reaction][parent] = ratios
+
+    if args.jobs > 1:
+        # the argument parsing happens when this module is imported so the
+        # workers have to be forked rather than spawned, otherwise they reparse
+        # a command line that is not theirs
+        import multiprocessing
+        from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+
+        try:
+            context = multiprocessing.get_context("fork")
+        except ValueError:
+            context = None
+
+        if context is None:
+            init_worker(midpoints, flux, in_chain)
+            executor = ThreadPoolExecutor(max_workers=args.jobs)
+        else:
+            executor = ProcessPoolExecutor(
+                max_workers=args.jobs,
+                mp_context=context,
+                initializer=init_worker,
+                initargs=(midpoints, flux, in_chain),
+            )
+        print(f"Processing with {args.jobs} jobs")
+        with executor:
+            for done, result in enumerate(executor.map(process_file, paths), 1):
+                collect(result)
+                if done % 100 == 0:
+                    print(f"  {done} of {len(paths)} files")
+    else:
+        init_worker(midpoints, flux, in_chain)
+        for done, path in enumerate(paths, 1):
+            collect(process_file(path))
+            if done % 100 == 0:
+                print(f"  {done} of {len(paths)} files")
 
     total_channels = sum(len(parents) for parents in branching_ratios.values())
     print(f"\nWrote branching ratios for {total_channels} reactions")
