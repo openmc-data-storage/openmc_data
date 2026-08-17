@@ -442,18 +442,24 @@ def main():
                 initializer=init_worker,
                 initargs=(midpoints, flux, in_chain),
             )
-        print(f"Processing with {args.jobs} jobs")
+        print(f"Processing with {args.jobs} jobs", flush=True)
+        # as_completed rather than map so that the progress reflects the files
+        # that have actually finished. Results from map arrive in the order the
+        # files were submitted, so one slow file hides all the progress behind it
+        from concurrent.futures import as_completed
+
         with executor:
-            for done, result in enumerate(executor.map(process_file, paths), 1):
-                collect(result)
-                if done % 100 == 0:
-                    print(f"  {done} of {len(paths)} files")
+            futures = {executor.submit(process_file, path): path for path in paths}
+            for done, future in enumerate(as_completed(futures), 1):
+                collect(future.result())
+                if done % 25 == 0 or done == len(paths):
+                    print(f"  {done} of {len(paths)} files", flush=True)
     else:
         init_worker(midpoints, flux, in_chain)
         for done, path in enumerate(paths, 1):
             collect(process_file(path))
-            if done % 100 == 0:
-                print(f"  {done} of {len(paths)} files")
+            if done % 25 == 0 or done == len(paths):
+                print(f"  {done} of {len(paths)} files", flush=True)
 
     total_channels = sum(len(parents) for parents in branching_ratios.values())
     print(f"\nWrote branching ratios for {total_channels} reactions")
