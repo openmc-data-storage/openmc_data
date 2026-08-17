@@ -111,6 +111,47 @@ A few categories of scripts are available:
 |generate_serpent_fissq | |  |
 |generate_endf71_chain_casl | ENDF/B |  |
 
+### Branching ratios for metastable states
+
+Reactions can produce either the ground state or a metastable state of a
+nuclide and the split between them is dependent on the neutron spectrum. The
+`generate_branching_ratios` script finds this split from the isomeric production
+data in the ENDF neutron files (MF=8 identifies the isomeric states and whether
+the production data is in MF=9 or MF=10) and collapses it with a multigroup
+neutron flux that you provide. The one group branching ratio is reaction rate
+weighted, which is the weighting that preserves the production rate of each
+isomer in a single energy group chain.
+
+The JSON file produced is in the same format as the `branching_ratios_pwr.json`
+and `branching_ratios_sfr.json` files, so it can be applied to a chain file with
+`add_branching_ratios`.
+
+```bash
+# downloads the ENDF files and makes a chain file from them
+generate_tendl_chain -r 2017 --lib endf80
+
+# collapses the isomeric production data with a fusion neutron source spectrum
+# taken from the IAEA CoNDERC FNS benchmark
+generate_branching_ratios \
+    --neutron-dir tendl-2017-endf/neutron \
+    --fispact-fluxes fns/Ag/2000exp_5min_fluxes \
+    --chain chain_tendl_2017_endf80.xml \
+    -o branching_ratios_tendl_2017_fns.json
+
+# adds the branching ratios to the chain file
+add_branching_ratios \
+    -i chain_tendl_2017_endf80.xml \
+    -b branching_ratios_tendl_2017_fns.json \
+    -o chain_tendl_2017_endf80_fns.xml
+```
+
+Most reactions store their isomeric production as cross sections in MF=10 and
+need no other data. The remainder store multiplicities in MF=9 which have to be
+weighted by the reaction cross section, and as the MF=3 cross section is only
+the background in the resolved resonance range these are reconstructed with
+NJOY. Passing `--cross-sections` will instead read them from an existing HDF5
+library, which is considerably quicker if you have already made one.
+
 ### Download chain files
 
 | Script name | Library | Release | Branching options|
