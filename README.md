@@ -107,7 +107,7 @@ A few categories of scripts are available:
 |generate_endf_chain | ENDF/B | VII.1<br>VIII.0<br>VIII.1  |
 |generate_jeff_chain | JEFF | 3.3  |
 |generate_jendl_chain | JENDL | 5.0 |
-|generate_tendl_chain | TENDL | 2019<br>2021<br>2023<br>2025 |
+|generate_tendl_chain | TENDL | 2015<br>2017<br>2019<br>2021<br>2023<br>2025 |
 |generate_serpent_fissq | |  |
 |generate_endf71_chain_casl | ENDF/B |  |
 
@@ -115,7 +115,18 @@ A few categories of scripts are available:
 
 | Script name | Library | Release | Branching options|
 |-|-|-|-|
-|download_chain | ENDF/B<br><br><br><br>TENDL | VII.1<br>VIII.0<br>VIII.1<br><br>2019 | None<br>SFR<br>PWR<br><br>FNS |
+|download_chain | ENDF/B | VII.1<br>VIII.0<br>VIII.1 | None<br>SFR<br>PWR |
+|download_chain | TENDL | 2017 | None<br>SFR<br>PWR<br>FNS |
+|download_chain | TENDL | 2019 | FNS |
+
+The TENDL chains use decay data and neutron induced fission yields from
+ENDF/B-VIII.0. The FNS (fusion neutron source) option adds branching ratios for
+the production of metastable states that have been collapsed with a fusion
+neutron source spectrum, which makes these chains suitable for activation
+calculations of fusion neutron spectra. The FNS chains are hosted on the
+[openmc_activator](https://github.com/jbae11/openmc_activator) repository as
+the branching ratios can not currently be reproduced by this package, all the
+other chains are hosted here.
 
 <!-- | Sctipt name | Library | Release | Download available | Download ENDF files and generates XML chain files |
 |-|-|-|-|-|
