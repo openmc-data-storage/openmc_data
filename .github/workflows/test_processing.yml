@@ -20,13 +20,13 @@ jobs:
     run_scripts:
       runs-on: ubuntu-latest
       steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
 
       - name: Get specific changed files
         id: changed-files-specific
-        uses: tj-actions/changed-files@v19
+        uses: tj-actions/changed-files@v48
         with:
           files: |
             src/openmc_data/convert/convert_*.py
@@ -38,7 +38,7 @@ jobs:
 
       - name: Set up Python
         if: steps.changed-files-specific.outputs.any_changed == 'true'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: 3.12
 
