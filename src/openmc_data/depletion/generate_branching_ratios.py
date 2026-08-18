@@ -21,6 +21,13 @@ simulation is needed. Fusion neutron source spectra can be found in the IAEA
 CoNDERC FNS benchmark (https://nds.iaea.org/conderc/fusion/) as FISPACT-II
 fluxes files, which can be passed in with the --fispact-fluxes option.
 
+Every reaction that has isomeric production data is covered, not just capture.
+For TENDL this is 35 of the reactions that OpenMC chain files can represent, and
+for a fusion spectrum the threshold reactions such as (n,na), (n,3He) and (n,2n)
+produce more branched channels than (n,gamma) does. The bundled
+branching_ratios_pwr.json and branching_ratios_sfr.json files, by contrast, only
+contain (n,gamma) ratios.
+
 The resulting JSON file can be applied to a chain file with the
 add_branching_ratios command line tool.
 """

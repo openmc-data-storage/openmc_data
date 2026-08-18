@@ -6,7 +6,8 @@ import openmc.deplete
 
 
 parser = argparse.ArgumentParser(prog="add_branching_ratio",
-    description="Adds branching ratios to n,gamma reactions in OpenMC chain files",
+    description="Adds branching ratios to OpenMC chain files, for every reaction "
+    "present in the branching ratios file provided",
 )
 parser.add_argument(
     "-i", "--chain_in", type=Path, required=True, help="Path of the input chain file"
@@ -16,7 +17,10 @@ parser.add_argument(
     "--branching_ratios",
     type=str,
     required=True,
-    help='Path of the input branching ratios JSON file or the type of reactor for the branching ratio "SFR" or "PWR"',
+    help='Path of the input branching ratios JSON file, or "SFR" or "PWR" to use '
+    'the bundled reactor files. Note that the bundled files only contain '
+    '(n,gamma) ratios, whereas a file made by generate_branching_ratios covers '
+    'every reaction with isomeric production data',
 )
 parser.add_argument(
     "-o",

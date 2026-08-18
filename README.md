@@ -181,6 +181,21 @@ of fusion neutron spectra. They are produced with `generate_branching_ratios`
 from the isomeric production data in the TENDL files themselves, collapsed with a
 spectrum from the [IAEA CoNDERC FNS benchmark](https://nds.iaea.org/conderc/fusion/).
 
+The branching options differ in which reactions they cover, not only in the
+values. Counts below are for TENDL 2017.
+
+| Branching option | Reactions covered | Branched channels | Ratios come from |
+|-|-|-|-|
+| None | none | 0 | |
+| SFR<br>PWR | `(n,gamma)` only | 101 | [Serpent default isomeric branching ratios](https://serpent.vtt.fi/mediawiki/index.php?title=Default_isomeric_branching_ratios) |
+| FNS-ORIGEN | 15 reaction types | 2355 | ORIGEN |
+| FNS | 35 reaction types | 15616 | the TENDL files themselves |
+
+The reactor options only ever split capture. For a fusion spectrum the threshold
+reactions matter most, and in the FNS chains `(n,gamma)` is only the fourth
+largest group behind `(n,na)`, `(n,3He)` and `(n,2n)`, so SFR and PWR leave out
+most of what an activation calculation needs.
+
 FNS-ORIGEN is an earlier TENDL 2017 and 2019 chain hosted on the
 [openmc_activator](https://github.com/jbae11/openmc_activator) repository, whose
 branching ratios are derived from ORIGEN data rather than from TENDL. It is kept
