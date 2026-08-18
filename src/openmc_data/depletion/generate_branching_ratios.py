@@ -255,10 +255,22 @@ class CrossSections:
                     nuclide = None
         else:
             # NJOY reconstructs the resonances, which cannot be skipped as the
-            # MF=3 cross section is only the background in the resolved range
+            # MF=3 cross section is only the background in the resolved range.
+            #
+            # Only the shape of the cross section is wanted, as a weight, so the
+            # modules that do not affect it are turned off and the reconstruction
+            # tolerance is loosened. This matters enormously for the actinides,
+            # where the unresolved resonance probability tables from purr take
+            # over two hours per nuclide against about eight seconds without
+            # them, while the branching ratios move by at most 0.2 percent.
             try:
                 nuclide = openmc.data.IncidentNeutron.from_njoy(
-                    str(path), temperatures=[args.temperature]
+                    str(path),
+                    temperatures=[args.temperature],
+                    purr=False,
+                    heatr=False,
+                    gaspr=False,
+                    error=0.01,
                 )
             except Exception:
                 nuclide = None
