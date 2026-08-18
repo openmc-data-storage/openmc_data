@@ -67,6 +67,7 @@ generate_jeff_chain = "openmc_data.depletion.generate_jeff_chain:main"
 generate_jendl_chain = "openmc_data.depletion.generate_jendl_chain:main"
 generate_serpent_fissq = "openmc_data.depletion.generate_serpent_fissq:main"
 generate_tendl_chain = "openmc_data.depletion.generate_tendl_chain:main"
+generate_branching_ratios = "openmc_data.depletion.generate_branching_ratios:main"
 
 convert_tendl_rand = "openmc_data.other.convert_tendl_rand:main"
 make_compton = "openmc_data.other.make_compton:main"

@@ -107,15 +107,103 @@ A few categories of scripts are available:
 |generate_endf_chain | ENDF/B | VII.1<br>VIII.0<br>VIII.1  |
 |generate_jeff_chain | JEFF | 3.3  |
 |generate_jendl_chain | JENDL | 5.0 |
-|generate_tendl_chain | TENDL | 2019<br>2021<br>2023<br>2025 |
+|generate_tendl_chain | TENDL | 2015<br>2017<br>2019<br>2021<br>2023<br>2025 |
 |generate_serpent_fissq | |  |
 |generate_endf71_chain_casl | ENDF/B |  |
+
+### Branching ratios for metastable states
+
+Reactions can produce either the ground state or a metastable state of a
+nuclide and the split between them is dependent on the neutron spectrum. The
+`generate_branching_ratios` script finds this split from the isomeric production
+data in the ENDF neutron files (MF=8 identifies the isomeric states and whether
+the production data is in MF=9 or MF=10) and collapses it with a multigroup
+neutron flux that you provide. The one group branching ratio is reaction rate
+weighted, which is the weighting that preserves the production rate of each
+isomer in a single energy group chain.
+
+The JSON file produced is in the same format as the `branching_ratios_pwr.json`
+and `branching_ratios_sfr.json` files, so it can be applied to a chain file with
+`add_branching_ratios`.
+
+```bash
+# downloads the ENDF files and makes a chain file from them
+generate_tendl_chain -r 2017 --lib endf80
+
+# collapses the isomeric production data with a fusion neutron source spectrum
+# taken from the IAEA CoNDERC FNS benchmark
+generate_branching_ratios \
+    --neutron-dir tendl-2017-endf/neutron \
+    --fispact-fluxes fns/Ag/2000exp_5min_fluxes \
+    --chain chain_tendl_2017_endf80.xml \
+    --jobs 20 \
+    -o branching_ratios_tendl_2017_fns.json
+
+# adds the branching ratios to the chain file
+add_branching_ratios \
+    -i chain_tendl_2017_endf80.xml \
+    -b branching_ratios_tendl_2017_fns.json \
+    -o chain_tendl_2017_endf80_fns.xml
+```
+
+Most reactions store their isomeric production as cross sections in MF=10 and
+need no other data. The remainder store multiplicities in MF=9 which have to be
+weighted by the reaction cross section, and as the MF=3 cross section is only
+the background in the resolved resonance range these are reconstructed with
+NJOY. Passing `--cross-sections` will instead read them from an existing HDF5
+library, which avoids the NJOY runs if you have already made one.
+
+Only the shape of the cross section is used, as a weight, so the NJOY modules
+that do not affect it are skipped and the reconstruction tolerance is loosened.
+This is what makes the actinides tractable, as the unresolved resonance
+probability tables take over two hours per nuclide, and it changes the branching
+ratios by less than 0.2%.
+
+Use `--jobs` to process files in parallel. A whole TENDL library is about 2800
+evaluations and takes roughly half an hour with `--jobs 20`, against many hours
+in series.
 
 ### Download chain files
 
 | Script name | Library | Release | Branching options|
 |-|-|-|-|
-|download_chain | ENDF/B<br><br><br><br>TENDL | VII.1<br>VIII.0<br>VIII.1<br><br>2019 | None<br>SFR<br>PWR<br><br>FNS |
+|download_chain | ENDF/B | VII.1<br>VIII.0<br>VIII.1 | None<br>SFR<br>PWR |
+|download_chain | TENDL | 2017<br>2019 | None<br>SFR<br>PWR<br>FNS<br>FNS-ORIGEN |
+|download_chain | TENDL | 2025 | None<br>SFR<br>PWR<br>FNS |
+
+All the TENDL chains are made with `generate_tendl_chain` using decay data and
+neutron induced fission yields from ENDF/B-VIII.0, so the releases can be
+compared against one another.
+
+FNS (fusion neutron source) adds branching ratios for the production of
+metastable states, which makes these chains suitable for activation calculations
+of fusion neutron spectra. They are produced with `generate_branching_ratios`
+from the isomeric production data in the TENDL files themselves, collapsed with a
+spectrum from the [IAEA CoNDERC FNS benchmark](https://nds.iaea.org/conderc/fusion/).
+
+The branching options differ in which reactions they cover, not only in the
+values. Counts below are for TENDL 2017.
+
+| Branching option | Reactions covered | Branched channels | Ratios come from |
+|-|-|-|-|
+| None | none | 0 | |
+| SFR<br>PWR | `(n,gamma)` only | 101 | [Serpent default isomeric branching ratios](https://serpent.vtt.fi/mediawiki/index.php?title=Default_isomeric_branching_ratios) |
+| FNS-ORIGEN | 15 reaction types | 2355 | ORIGEN |
+| FNS | 35 reaction types | 15616 | the TENDL files themselves |
+
+The reactor options only ever split capture. For a fusion spectrum the threshold
+reactions matter most, and in the FNS chains `(n,gamma)` is only the fourth
+largest group behind `(n,na)`, `(n,3He)` and `(n,2n)`, so SFR and PWR leave out
+most of what an activation calculation needs.
+
+FNS-ORIGEN is an earlier TENDL 2017 and 2019 chain hosted on the
+[openmc_activator](https://github.com/jbae11/openmc_activator) repository, whose
+branching ratios are derived from ORIGEN data rather than from TENDL. It is kept
+available for comparison, but the FNS chains are the TENDL only option and the
+two can differ substantially. For Ag107 capture to Ag108_m1 under a fusion
+spectrum, for example, FNS gives 0.056 against FNS-ORIGEN's 0.348, because the
+FNS value is reaction rate weighted and the majority of the capture rate sits in
+the resolved resonance range where the isomeric ratio is small.
 
 <!-- | Sctipt name | Library | Release | Download available | Download ENDF files and generates XML chain files |
 |-|-|-|-|-|
@@ -132,6 +220,7 @@ A few categories of scripts are available:
 | sample_sandy | This scripts generates random (gaussian) evaluations of a nuclear data file following its covariance matrix using SANDY, and converts them to HDF5 for use in OpenMC. Script generates a cross_sections_sandy.xml file with the standard library plus the sampled evaluations. |
 | make_compton | |
 | make_stopping_powers | |
-| add_branching_ratios | add branching ratios for n,gamma reactions to a preexisting chain files. |
+| generate_branching_ratios | Finds the branching ratios for the production of metastable states in the ENDF neutron files and collapses them with a multigroup neutron flux, writing a JSON file for add_branching_ratios. |
+| add_branching_ratios | Adds branching ratios to a preexisting chain file, for any reaction present in the JSON file provided. |
 | reduce_chain | |
 | combine_libraries | Combines multiple cross_section.xml files into a single cross_section.xml. |
