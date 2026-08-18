@@ -136,6 +136,7 @@ generate_branching_ratios \
     --neutron-dir tendl-2017-endf/neutron \
     --fispact-fluxes fns/Ag/2000exp_5min_fluxes \
     --chain chain_tendl_2017_endf80.xml \
+    --jobs 20 \
     -o branching_ratios_tendl_2017_fns.json
 
 # adds the branching ratios to the chain file
@@ -150,7 +151,17 @@ need no other data. The remainder store multiplicities in MF=9 which have to be
 weighted by the reaction cross section, and as the MF=3 cross section is only
 the background in the resolved resonance range these are reconstructed with
 NJOY. Passing `--cross-sections` will instead read them from an existing HDF5
-library, which is considerably quicker if you have already made one.
+library, which avoids the NJOY runs if you have already made one.
+
+Only the shape of the cross section is used, as a weight, so the NJOY modules
+that do not affect it are skipped and the reconstruction tolerance is loosened.
+This is what makes the actinides tractable, as the unresolved resonance
+probability tables take over two hours per nuclide, and it changes the branching
+ratios by less than 0.2%.
+
+Use `--jobs` to process files in parallel. A whole TENDL library is about 2800
+evaluations and takes roughly half an hour with `--jobs 20`, against many hours
+in series.
 
 ### Download chain files
 
@@ -194,6 +205,7 @@ the resolved resonance range where the isomeric ratio is small.
 | sample_sandy | This scripts generates random (gaussian) evaluations of a nuclear data file following its covariance matrix using SANDY, and converts them to HDF5 for use in OpenMC. Script generates a cross_sections_sandy.xml file with the standard library plus the sampled evaluations. |
 | make_compton | |
 | make_stopping_powers | |
-| add_branching_ratios | add branching ratios for n,gamma reactions to a preexisting chain files. |
+| generate_branching_ratios | Finds the branching ratios for the production of metastable states in the ENDF neutron files and collapses them with a multigroup neutron flux, writing a JSON file for add_branching_ratios. |
+| add_branching_ratios | Adds branching ratios to a preexisting chain file, for any reaction present in the JSON file provided. |
 | reduce_chain | |
 | combine_libraries | Combines multiple cross_section.xml files into a single cross_section.xml. |
