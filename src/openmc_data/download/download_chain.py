@@ -37,10 +37,11 @@ parser.add_argument(
 parser.add_argument(
     "-r",
     "--release",
-    choices=["b7.1", "b8.0", "b8.1", "2017", "2019"],
+    choices=["b7.1", "b8.0", "b8.1", "2017", "2019", "2025"],
     default="2019",
     help="The nuclear data library release version. The currently supported "
-         "options are b7.1, b8.0 and b8.1 for endf and 2017 and 2019 for tendl.",
+         "options are b7.1, b8.0 and b8.1 for endf and 2017, 2019 and 2025 for "
+         "tendl.",
 )
 parser.add_argument(
     "-l",
@@ -52,15 +53,17 @@ parser.add_argument(
 parser.add_argument(
     "-b",
     "--branching_ratios",
-    choices=["None", "SFR", "PWR", "FNS"],
+    choices=["None", "SFR", "PWR", "FNS", "FNS-ORIGEN"],
     default="FNS",
-    help="The branching ratios applied to the chain file. The currently "
-         "supported options are endf b7.1, b8.0 and b8.1 with branching ratio "
-         "options of None, SFR (sodium fast reactor), PWR (pressurized water "
-         "reactor), tendl 2017 with None, SFR, PWR or FNS (fusion neutron "
-         "source) branching ratios and tendl 2019 with FNS. The tendl "
-         "chains are processed with decay data and neutron induced fission "
-         "yields from ENDF/B-VIII.0. There is an option to use JEFF 3.3 if you "
+    help="The branching ratios applied to the chain file. None, SFR (sodium "
+         "fast reactor) and PWR (pressurized water reactor) are available for "
+         "every library and release. FNS (fusion neutron source) is available "
+         "for the tendl releases, with branching ratios for the production of "
+         "metastable states collapsed from the TENDL isomeric production data "
+         "with a fusion spectrum. FNS-ORIGEN is an earlier tendl 2017 and 2019 "
+         "chain whose branching ratios come from ORIGEN rather than from TENDL. "
+         "The tendl chains use decay data and neutron induced fission yields "
+         "from ENDF/B-VIII.0. There is an option to use JEFF 3.3 if you "
          "generate your own chain file with the generate_tendl_chain command "
          "line tool.",
 )

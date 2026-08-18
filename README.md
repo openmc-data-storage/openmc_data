@@ -157,17 +157,27 @@ library, which is considerably quicker if you have already made one.
 | Script name | Library | Release | Branching options|
 |-|-|-|-|
 |download_chain | ENDF/B | VII.1<br>VIII.0<br>VIII.1 | None<br>SFR<br>PWR |
-|download_chain | TENDL | 2017 | None<br>SFR<br>PWR<br>FNS |
-|download_chain | TENDL | 2019 | FNS |
+|download_chain | TENDL | 2017<br>2019 | None<br>SFR<br>PWR<br>FNS<br>FNS-ORIGEN |
+|download_chain | TENDL | 2025 | None<br>SFR<br>PWR<br>FNS |
 
-The TENDL chains use decay data and neutron induced fission yields from
-ENDF/B-VIII.0. The FNS (fusion neutron source) option adds branching ratios for
-the production of metastable states that have been collapsed with a fusion
-neutron source spectrum, which makes these chains suitable for activation
-calculations of fusion neutron spectra. The FNS chains are hosted on the
-[openmc_activator](https://github.com/jbae11/openmc_activator) repository as
-the branching ratios can not currently be reproduced by this package, all the
-other chains are hosted here.
+All the TENDL chains are made with `generate_tendl_chain` using decay data and
+neutron induced fission yields from ENDF/B-VIII.0, so the releases can be
+compared against one another.
+
+FNS (fusion neutron source) adds branching ratios for the production of
+metastable states, which makes these chains suitable for activation calculations
+of fusion neutron spectra. They are produced with `generate_branching_ratios`
+from the isomeric production data in the TENDL files themselves, collapsed with a
+spectrum from the [IAEA CoNDERC FNS benchmark](https://nds.iaea.org/conderc/fusion/).
+
+FNS-ORIGEN is an earlier TENDL 2017 and 2019 chain hosted on the
+[openmc_activator](https://github.com/jbae11/openmc_activator) repository, whose
+branching ratios are derived from ORIGEN data rather than from TENDL. It is kept
+available for comparison, but the FNS chains are the TENDL only option and the
+two can differ substantially. For Ag107 capture to Ag108_m1 under a fusion
+spectrum, for example, FNS gives 0.056 against FNS-ORIGEN's 0.348, because the
+FNS value is reaction rate weighted and the majority of the capture rate sits in
+the resolved resonance range where the isomeric ratio is small.
 
 <!-- | Sctipt name | Library | Release | Download available | Download ENDF files and generates XML chain files |
 |-|-|-|-|-|
