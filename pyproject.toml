@@ -43,6 +43,14 @@ tests = [
 
 [tool.setuptools]
 package-dir = {"" = "src"}
+# The chain xml files in src/openmc_data/depletion are tracked in git so that
+# they can be fetched with download_chain (see urls_xml.py), but they are far
+# too big to ship in the distributions, so only the json data files are
+# included as package data.
+include-package-data = false
+
+[tool.setuptools.package-data]
+"openmc_data.depletion" = ["*.json"]
 
 [project.scripts]
 convert_fendl = "openmc_data.convert.convert_fendl:main"
