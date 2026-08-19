@@ -11,7 +11,7 @@ from pathlib import Path
 from urllib.parse import urljoin
 
 import openmc.data
-from openmc_data import download, extract, calculate_download_size, all_release_details, get_file_types
+from openmc_data import download, extract, calculate_download_size, all_release_details, get_file_types, ProgressTracker
 
 
 # Make sure Python version is sufficient
@@ -139,7 +139,9 @@ def main():
 
     library = openmc.data.DataLibrary()
 
-    for filename in sorted(neutron_files):
+    neutron_files = sorted(neutron_files)
+    tracker = ProgressTracker(len(neutron_files))
+    for filename in neutron_files:
 
         # this is a fix for the TENDL-2017 release where the B10 ACE file which has an error on one of the values
         if args.release == "2017" and filename.name == "B010":
@@ -150,7 +152,7 @@ def main():
                 text = "".join(text[:423]) + "86896" + "".join(text[428:])
                 open(filename, "w").write(text)
 
-        print(f"Converting: {filename}")
+        tracker.starting(filename)
         data = openmc.data.IncidentNeutron.from_ace(filename)
 
         # Export HDF5 file

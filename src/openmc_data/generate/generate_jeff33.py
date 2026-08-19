@@ -20,7 +20,7 @@ from urllib.parse import urljoin
 
 import openmc.data
 
-from openmc_data import download, process_neutron, process_thermal
+from openmc_data import download, process_neutron, process_thermal, ProgressTracker
 
 # Make sure Python version is sufficient
 assert sys.version_info >= (3, 6), "Python 3.6+ is required"
@@ -162,15 +162,25 @@ def main():
         # PROCESS INCIDENT NEUTRON AND THERMAL SCATTERING DATA IN PARALLEL
 
         with Pool() as pool:
-            neutron_paths = neutron_dir.glob('*.jeff33')
+            neutron_paths = sorted(neutron_dir.glob('*.jeff33'))
             results = []
+            tracker = ProgressTracker(
+                len(neutron_paths) + len(thermal_paths), verb='Processed')
             for p in neutron_paths:
                 func_args = (p, destination, args.libver, args.temperatures)
-                r = pool.apply_async(process_neutron, func_args)
+                r = pool.apply_async(
+                    process_neutron, func_args,
+                    callback=tracker.callback(p.name),
+                    error_callback=tracker.callback(p.name),
+                )
                 results.append(r)
             for p_neut, p_therm in thermal_paths:
                 func_args = (p_neut, p_therm, destination, args.libver)
-                r = pool.apply_async(process_thermal, func_args)
+                r = pool.apply_async(
+                    process_thermal, func_args,
+                    callback=tracker.callback(p_therm.name),
+                    error_callback=tracker.callback(p_therm.name),
+                )
                 results.append(r)
             for r in results:
                 r.wait()
