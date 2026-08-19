@@ -26,7 +26,7 @@ jobs:
 
       - name: Get specific changed files
         id: changed-files-specific
-        uses: tj-actions/changed-files@v48
+        uses: tj-actions/changed-files@v47
         with:
           files: |
             src/openmc_data/convert/convert_*.py
