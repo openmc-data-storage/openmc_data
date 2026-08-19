@@ -1,0 +1,3 @@
+# Keep the depletion chain xml files out of the sdist, they are downloaded
+# from github on demand by download_chain rather than shipped in the package
+exclude src/openmc_data/depletion/*.xml
