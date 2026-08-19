@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "setuptools >= 65.5.0",
+    "setuptools >= 77.0.3",
     "setuptools_scm[toml] >= 7.0.5",
 ]
 build-backend = "setuptools.build_meta"
@@ -11,14 +11,14 @@ name = "openmc_data"
 authors = [
   { name="Jonathan Shimwell", email="mail@jshimwell.com" },
 ]
-license = {file = "LICENSE"}
+license = "MIT"
+license-files = ["LICENSE"]
 description = "A Python package containing a collection of scripts for producing and downloading data for OpenMC"
 readme = "README.md"
 requires-python = ">=3.8"
 keywords = ["openmc", "nuclear", "data", "download", "process", "cross", "section"]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
 dependencies = [
