@@ -211,19 +211,19 @@ def _convert_group(entries, thermal):
     return data
 
 
-def _parser(default_release, allowed_releases, default_libver):
+def _parser():
     choices = '; '.join(
         f"{release}: {', '.join(all_release_details['jeff'][release]['neutron']['ace']['temperatures'])}"
-        for release in allowed_releases
+        for release in RELEASES
     )
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         epilog=f"Available neutron archive temperatures (K), by release: {choices}",
     )
-    parser.add_argument("-r", "--release", choices=allowed_releases, default=default_release)
+    parser.add_argument("-r", "--release", choices=RELEASES, default="4.0")
     parser.add_argument("-t", "--temperatures", nargs="+", help="Neutron archive temperatures in K; default: all available for the release")
     parser.add_argument("-d", "--destination", type=Path, help="Direct output directory; default: jeff-<release>-hdf5")
-    parser.add_argument("--libver", choices=("earliest", "latest"), default=default_libver)
+    parser.add_argument("--libver", choices=("earliest", "latest"), default="latest")
     for option, default, help_text in (
         ("download", True, "Download selected neutron archives and the thermal archive"),
         ("extract", True, "Extract the downloaded archives"),
@@ -234,8 +234,9 @@ def _parser(default_release, allowed_releases, default_libver):
     return parser
 
 
-def _main(argv=None, *, default_release="4.0", allowed_releases=RELEASES, default_libver="latest"):
-    parser = _parser(default_release, allowed_releases, default_libver)
+def main(argv=None):
+    """Run the converter; importing this module never parses arguments."""
+    parser = _parser()
     args = parser.parse_args(argv)
     details = all_release_details["jeff"][args.release]
     neutron = details["neutron"]["ace"]
@@ -299,11 +300,6 @@ def _main(argv=None, *, default_release="4.0", allowed_releases=RELEASES, defaul
         for cache in (downloads, root):
             if cache.exists():
                 shutil.rmtree(cache)
-
-
-def main(argv=None):
-    """Run the unified converter; importing this module never parses arguments."""
-    return _main(argv)
 
 
 if __name__ == "__main__":

@@ -5,7 +5,6 @@ Only archive downloads are replaced; no network or NJOY is needed.
 """
 
 import copy
-import importlib
 import os
 from pathlib import Path
 import subprocess
@@ -326,33 +325,27 @@ def test_destination_in_cache_rejected(release):
         converter.main(cached(release, '--destination', str(root_for(release) / 'out')))
 
 
-@pytest.mark.parametrize('module, release, libver', [
-    ('convert_jeff32', '3.2', 'latest'), ('convert_jeff33', '3.3', 'earliest')])
-def test_alias_defaults_and_release_handling(module, release, libver, monkeypatch):
-    alias = importlib.import_module(f'openmc_data.convert.{module}')
-    temperatures = converter.all_release_details['jeff'][release]['neutron']['ace']['temperatures']
-    library(release, temperatures)
+@pytest.mark.parametrize('release', RELEASES)
+@pytest.mark.parametrize('options, expected', [([], 'latest'), (['--libver', 'earliest'], 'earliest')])
+def test_hdf5_version(release, options, expected, monkeypatch):
+    library(release)
     export = openmc.data.IncidentNeutron.export_to_hdf5
     versions = []
     def record(self, *args, **kwargs):
         versions.append(kwargs['libver'])
         return export(self, *args, **kwargs)
     monkeypatch.setattr(openmc.data.IncidentNeutron, 'export_to_hdf5', record)
-    alias.main(['--no-download', '--no-extract'])
-    alias.main(['--no-download', '--no-extract', '-r', release, '-t', '600', '-d', 'explicit', '--libver', 'earliest'])
-    assert versions == [libver, 'earliest']
-    with pytest.raises(SystemExit, match='2'):
-        alias.main(['-r', '4.0'])
+    converter.main(cached(release, '-t', '600', *options))
+    assert versions == [expected]
 
 
-@pytest.mark.parametrize('module', ['convert_jeff', 'convert_jeff32', 'convert_jeff33'])
-def test_import_safe_and_module_help(module):
-    code = f"import sys; sys.argv = ['unrelated', '--invalid']; import openmc_data.convert.{module}"
+def test_import_safe_and_module_help():
+    code = "import sys; sys.argv = ['unrelated', '--invalid']; import openmc_data.convert.convert_jeff"
     # The fixture changes cwd; a relative PYTHONPATH would otherwise import an
     # unrelated installed checkout in these child processes.
     env = {**os.environ, 'PYTHONPATH': str(Path(converter.__file__).resolve().parents[2])}
     subprocess.run([sys.executable, '-c', code], check=True, capture_output=True, text=True, env=env)
-    result = subprocess.run([sys.executable, '-m', f'openmc_data.convert.{module}', '--help'],
+    result = subprocess.run([sys.executable, '-m', 'openmc_data.convert.convert_jeff', '--help'],
                             check=True, capture_output=True, text=True, env=env)
     assert '--temperatures' in result.stdout
 

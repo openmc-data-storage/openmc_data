@@ -117,8 +117,7 @@ only after success. Metastable corrections never edit cached ACE files.
 Every discovered nuclide must have every selected neutron temperature; 3.3 also
 requires its 20 thermal groups. Caches cannot reveal nuclides absent at all temperatures.
 
-Legacy aliases `convert_jeff32`/`convert_jeff33` retain their releases, destinations
-and HDF5 defaults (`latest`/`earliest`). See `convert_jeff --help` for all options.
+See `convert_jeff --help` for all options.
 
 ### Generate cross sections
 
@@ -149,8 +148,6 @@ and HDF5 defaults (`latest`/`earliest`). See `convert_jeff --help` for all optio
 |generate_endf| ENDF/B | VIII.0 | NNDC | [openmc.org](https://anl.box.com/shared/static/uhbxlrx7hvxqw27psymfbhi7bx7s6u6a.xz) |  | :heavy_check_mark: |  |
 |convert_fendl| FENDL | 2.1<br>3.0<br>3.1a<br>3.1d<br>3.2 |  | [openmc.org 3.2](https://anl.box.com/shared/static/3cb7jetw7tmxaw6nvn77x6c578jnm2ey.xz) | :heavy_check_mark: |  |  |
 |generate_jendl| JENDL | 4.0 |  |  |  | :heavy_check_mark: |  |
-|convert_jeff32| JEFF | 3.2 |  | [openmc.org](https://anl.box.com/shared/static/pb94oxriiipezysu7w4r2qdoufc2epxv.xz) | :heavy_check_mark: |  |  |
-|convert_jeff33| JEFF | 3.3 |  | [openmc.org](https://anl.box.com/shared/static/ddetxzp0gv1buk1ev67b8ynik7f268hw.xz) | :heavy_check_mark: |  |  |
 |convert_tendl| TENDL | 2015<br>2017<br>2019<br>2021|  |  | :heavy_check_mark: |  |  | -->
 
 ## Produce Depletion Chain files
