@@ -127,6 +127,7 @@ See `convert_jeff --help` for all options.
 | generate_endf | ENDF/B | VII.1<br>VIII.0<br>VIII.1 | NNDC |
 | generate_fendl | FENDL | 3.2c<br>3.2b<br>3.2a<br>3.2<br>3.1d<br>3.1a<br>3.0 | |
 | generate_jendl | JENDL | 4.0<br>5.0 | |
+| generate_jeff | JEFF | 3.3<br>4.0 | NJOY |
 | generate_tendl | TENDL | 2023<br>2025 | |
 
 
