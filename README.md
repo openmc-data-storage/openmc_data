@@ -112,25 +112,16 @@ A few categories of scripts are available:
 | download_jeff | JEFF | 3.3<br>4.0 | OpenMC development team |
 | download_tendl | TENDL | 2019<br>2021  |  |
 
-`download_jeff` downloads the preprocessed HDF5 archives from the
-[official OpenMC data libraries](https://openmc.org/data/#official-data-libraries),
-not the older NEA-converted JEFF 3.3 archive. Both releases include JEFF incident
-neutron and thermal scattering data, a cross section XML index, and ENDF/B
-photoatomic and atomic relaxation data: VIII.0 for JEFF 3.3 and VIII.1 for JEFF
-4.0. Neutron temperatures are 250, 293.6, 600, 900, 1200, and 2500 K; thermal
-scattering temperatures follow the source evaluations. No local NJOY processing
-is needed.
-
-Run `download_jeff` for the default release 4.0, or `download_jeff -r 3.3` for
-3.3 (`--release` is also accepted). Downloads are stored in a
-jeff-&lt;release&gt;-download subdirectory and extracted into a
-jeff-&lt;release&gt;-hdf5 subdirectory, preserving the archive's internal layout.
-These directories are created under the current directory, or under the parent
-directory selected with `--destination`/`-d`, for example
-`download_jeff -r 4.0 -d /data --cleanup`. Downloading and extraction are enabled
-by default; `--no-download` reuses local archives and `--no-extract` keeps them
-compressed. `--cleanup` deletes the archives only after successful extraction;
-the default `--no-cleanup` keeps them. Use `download_jeff --help` for all options.
+`download_jeff -r 4.0 -d /data --cleanup` downloads an
+[official OpenMC library](https://openmc.org/data/#official-data-libraries),
+not the older NEA-converted archive. Release 4.0 is the default; 3.3 is also supported.
+Both include JEFF neutron/thermal data and XML, with ENDF/B photon supplements
+(VIII.0 for 3.3, VIII.1 for 4.0). Neutron temperatures are 250, 293.6, 600, 900,
+1200 and 2500 K; thermal temperatures are native. NJOY is not needed.
+`-d` selects the parent of `jeff-<release>-download` and `jeff-<release>-hdf5`
+(default: current directory). `--no-download` reuses archives; `--no-extract`
+keeps them compressed. `--cleanup` removes archives only after successful
+extraction; otherwise they are retained. See `download_jeff --help` for options.
 
 <!-- | Script name | Library | Release | Processed by | Download available | Downloads ACE files and convert to HDF5 | Downloads ENDF files and convert to HDF5 | Convert local ACE files |
 |-|-|-|-|-|-|-|-|

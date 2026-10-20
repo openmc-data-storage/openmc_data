@@ -8,7 +8,7 @@ import shutil
 import socket
 import sys
 import tarfile
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 import pytest
 
@@ -48,26 +48,6 @@ def operations(monkeypatch):
     return download, extract
 
 
-def assert_operations(operations, release, root=Path(), download=True, extract=True,
-                      cleanup=False):
-    download_mock, extract_mock = operations
-    download_path = root / f"jeff-{release}-download"
-    if download:
-        download_mock.assert_called_once_with(
-            BASE_URL + ARCHIVES[release], output_path=download_path
-        )
-    else:
-        download_mock.assert_not_called()
-    if extract:
-        extract_mock.assert_called_once_with(
-            compressed_files=[download_path / ARCHIVES[release]],
-            extraction_dir=root / f"jeff-{release}-hdf5",
-            del_compressed_file=cleanup,
-        )
-    else:
-        extract_mock.assert_not_called()
-
-
 @pytest.mark.parametrize("release", ARCHIVES)
 def test_official_archive_metadata(release):
     details = all_h5_release_details["jeff"][release]["neutron-photon"]
@@ -93,37 +73,12 @@ def test_import_is_safe(monkeypatch, tmp_path, capsys):
     assert capsys.readouterr().out == ""
 
 
-def test_defaults(operations):
-    download_jeff.main([])
-    assert_operations(operations, "4.0")
-
-
-@pytest.mark.parametrize("release", ARCHIVES)
-@pytest.mark.parametrize("flag", ["-r", "--release"])
-def test_release(operations, release, flag):
-    download_jeff.main([flag, release])
-    assert_operations(operations, release)
-
-
-def test_main_uses_sys_argv(monkeypatch, operations):
-    monkeypatch.setattr(sys, "argv", ["download_jeff", "-r", "3.3"])
-    download_jeff.main()
-    assert_operations(operations, "3.3")
-
-
-@pytest.mark.parametrize("release", ARCHIVES)
-@pytest.mark.parametrize("flag", ["-d", "--destination"])
-@pytest.mark.parametrize("absolute", [False, True])
-def test_custom_destination(operations, tmp_path, release, flag, absolute):
-    destination = Path("nested data") / "libraries"
-    if absolute:
-        destination = tmp_path / destination
-    download_jeff.main(["-r", release, flag, str(destination)])
-    assert_operations(operations, release, root=destination)
-
-
-@pytest.mark.parametrize("release", ARCHIVES)
+@pytest.mark.parametrize("release,options", [
+    ("4.0", []), ("3.3", ["-r", "3.3"]), ("4.0", ["--release", "4.0"]),
+])
+@pytest.mark.parametrize("destination", [None, "relative", "absolute"])
 @pytest.mark.parametrize("flags, download, extract, cleanup", [
+    ([], True, True, False),
     (["--download", "--extract", "--cleanup"], True, True, True),
     (["--no-download"], False, True, False),
     (["--no-extract"], True, False, False),
@@ -132,35 +87,37 @@ def test_custom_destination(operations, tmp_path, release, flag, absolute):
     (["--no-download", "--download", "--no-extract", "--extract"], True, True, False),
     (["--download", "--no-download", "--extract", "--no-extract"], False, False, False),
 ])
-def test_flags(operations, tmp_path, release, flags, download, extract, cleanup):
-    download_jeff.main(["-r", release, *flags])
-    assert_operations(operations, release, download=download, extract=extract,
-                      cleanup=cleanup)
+def test_cli(operations, tmp_path, monkeypatch, release, options, destination,
+             flags, download, extract, cleanup):
+    root = Path("nested data/libraries") if destination else Path()
+    if destination == "absolute":
+        root = tmp_path / root
+    argv = [*options, *flags]
+    if destination:
+        argv += ["-d" if destination == "relative" else "--destination", str(root)]
+    monkeypatch.setattr(sys, "argv", ["download_jeff", *argv])
+    download_jeff.main()  # Exercise sys.argv as well as explicit argv in other tests.
+    archive = root / f"jeff-{release}-download" / ARCHIVES[release]
+    assert operations[0].call_args_list == ([call(BASE_URL + archive.name, output_path=archive.parent)] if download else [])
+    assert operations[1].call_args_list == ([call(
+        compressed_files=[archive], extraction_dir=root / f"jeff-{release}-hdf5",
+        del_compressed_file=cleanup)] if extract else [])
     assert list(tmp_path.iterdir()) == []
 
 
-def test_help(operations, tmp_path, capsys):
+@pytest.mark.parametrize("argv,code", [(["--help"], 0)] + [
+    (["--release", value], 2) for value in ("3.2", "b8.1", "5.0")
+])
+def test_parser_exit(operations, tmp_path, capsys, argv, code):
     with pytest.raises(SystemExit) as exc:
-        download_jeff.main(["--help"])
-    assert exc.value.code == 0
-    help_text = capsys.readouterr().out
-    for option in ("--release", "{3.3,4.0}", "--destination", "--download",
-                   "--no-download", "--extract", "--no-extract", "--cleanup",
-                   "--no-cleanup", "default: 4.0"):
-        assert option in help_text
-    assert_operations(operations, "4.0", download=False, extract=False)
-    assert list(tmp_path.iterdir()) == []
-
-
-@pytest.mark.parametrize("release", ["3.2", "b8.1", "5.0"])
-def test_invalid_release(operations, tmp_path, capsys, release):
-    with pytest.raises(SystemExit) as exc:
-        download_jeff.main(["--release", release])
-    assert exc.value.code == 2
-    error = capsys.readouterr().err
-    assert "invalid choice" in error
-    assert "3.3" in error and "4.0" in error
-    assert_operations(operations, "4.0", download=False, extract=False)
+        download_jeff.main(argv)
+    assert exc.value.code == code
+    output = capsys.readouterr()
+    expected = ("invalid choice", "3.3", "4.0") if code else (
+        "--release", "{3.3,4.0}", "--destination", "--download", "--no-download",
+        "--extract", "--no-extract", "--cleanup", "--no-cleanup", "default: 4.0")
+    assert all(text in (output.err if code else output.out) for text in expected)
+    assert not any(mock.called for mock in operations)
     assert list(tmp_path.iterdir()) == []
 
 

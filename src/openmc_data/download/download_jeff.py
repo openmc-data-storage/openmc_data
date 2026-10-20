@@ -14,63 +14,28 @@ from openmc_data.urls_h5 import all_h5_release_details
 from openmc_data.utils import download, extract
 
 
-class CustomFormatter(
-    argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter
-):
-    pass
-
-
 def main(argv=None):
     """Download and optionally extract an official JEFF HDF5 library."""
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=CustomFormatter)
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
-        "-d",
-        "--destination",
-        type=Path,
-        default=None,
+        "-d", "--destination", type=Path, default=Path(),
         help="Parent directory for jeff-<release>-download and jeff-<release>-hdf5",
     )
-    parser.add_argument(
-        "--download", action="store_true", help="Download files listed on openmc.org"
-    )
-    parser.add_argument(
-        "--no-download",
-        dest="download",
-        action="store_false",
-        help="Use previously downloaded files",
-    )
-    parser.add_argument("--extract", action="store_true", help="Extract archive files")
-    parser.add_argument(
-        "--no-extract",
-        dest="extract",
-        action="store_false",
-        help="Do not extract archive files",
-    )
-    parser.add_argument(
-        "-r",
-        "--release",
-        choices=["3.3", "4.0"],
-        default="4.0",
-        help="The JEFF nuclear data library release version",
-    )
-    parser.add_argument(
-        "--cleanup",
-        action="store_true",
-        help="Remove downloaded archives after successful extraction",
-    )
-    parser.add_argument(
-        "--no-cleanup",
-        dest="cleanup",
-        action="store_false",
-        help="Keep downloaded archives after extraction",
-    )
-    parser.set_defaults(download=True, extract=True, cleanup=False)
+    parser.add_argument("-r", "--release", choices=["3.3", "4.0"], default="4.0",
+                        help="JEFF release")
+    for flag, default, help_text in (
+        ("download", True, "Download files listed on openmc.org"),
+        ("extract", True, "Extract archive files"),
+        ("cleanup", False, "Remove archives after successful extraction"),
+    ):
+        parser.add_argument("--" + flag, action="store_true", default=default, help=help_text)
+        parser.add_argument("--no-" + flag, dest=flag, action="store_false")
     args = parser.parse_args(argv)
 
     details = all_h5_release_details["jeff"][args.release]["neutron-photon"]
-    root = args.destination if args.destination is not None else Path()
-    download_path = root / f"jeff-{args.release}-download"
-    destination = root / f"jeff-{args.release}-hdf5"
+    download_path = args.destination / f"jeff-{args.release}-download"
+    destination = args.destination / f"jeff-{args.release}-hdf5"
 
     if args.download:
         # Archive and extracted sizes are not recorded, so do not estimate them.
