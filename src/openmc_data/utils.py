@@ -215,6 +215,15 @@ def extract(
             Path(compressed_file).unlink(missing_ok=True)
 
 
+def _file_md5(path):
+    """Hash large archives without loading them into memory."""
+    checksum = hashlib.md5()
+    with path.open('rb') as stream:
+        for chunk in iter(lambda: stream.read(_BLOCK_SIZE), b''):
+            checksum.update(chunk)
+    return checksum.hexdigest()
+
+
 def download(
     url: str,
     checksum=None,
@@ -268,8 +277,9 @@ def download(
             local_path = Path(output_path) / output_filename
 
         # Check if file already downloaded
-        if local_path.is_file():
-            if local_path.stat().st_size == file_size:
+        if file_size is not None and local_path.is_file():
+            if (local_path.stat().st_size == file_size
+                    and (checksum is None or _file_md5(local_path) == checksum)):
                 print(f'Skipping {local_path}, already downloaded')
                 return local_path
 
@@ -283,13 +293,19 @@ def download(
                     break
                 fh.write(chunk)
                 downloaded += len(chunk)
-                status = '{:10}  [{:3.2f}%]'.format(
-                    downloaded, downloaded * 100. / file_size)
+                if file_size:
+                    status = '{:10}  [{:3.2f}%]'.format(
+                        downloaded, downloaded * 100. / file_size)
+                else:
+                    status = f'{downloaded:10} bytes'
                 print(status + '\b'*len(status), end='', flush=True)
             print('')
 
+    if file_size is not None and downloaded != file_size:
+        raise OSError(f"Incomplete download of {url}: expected {file_size} bytes, received {downloaded}")
+
     if checksum is not None:
-        downloadsum = hashlib.md5(open(local_path, 'rb').read()).hexdigest()
+        downloadsum = _file_md5(local_path)
         if downloadsum != checksum:
             raise OSError("MD5 checksum for {} does not match. If this is "
                           "your first time receiving this message, please "

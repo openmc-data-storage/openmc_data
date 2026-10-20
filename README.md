@@ -101,8 +101,90 @@ A few categories of scripts are available:
 | generate_endf | ENDF/B | VII.1<br>VIII.0<br>VIII.1 | NNDC |
 | generate_fendl | FENDL | 3.2c<br>3.2b<br>3.2a<br>3.2<br>3.1d<br>3.1a<br>3.0 | |
 | generate_jendl | JENDL | 4.0<br>5.0 | |
+| generate_jeff | JEFF | 3.3<br>4.0 | NJOY |
+| generate_jeff33 | JEFF | 3.3 (legacy alias) | NJOY |
 | generate_tendl | TENDL | 2023<br>2025 | |
 
+#### JEFF generation
+
+`generate_jeff` processes ENDF evaluations with OpenMC and NJOY, defaulting to
+JEFF 4.0. Use `--release 3.3` for JEFF 3.3, and `--particles neutron thermal
+photon` to select particle types (all three are selected by default).
+Thermal-only generation downloads the neutron evaluations it needs, but does
+not produce neutron HDF5 files. `--jobs` controls parallel workers and defaults
+to the CPU count; `--jobs 1` processes serially.
+
+For example, `generate_jeff --release 4.0 --particles neutron --temperatures
+293.6 600 --jobs 4` generates neutron data at two temperatures. The default
+neutron temperatures are 250, 293.6, 600, 900, 1200 and 2500 K. Thermal
+scattering always uses the evaluation's native temperatures, regardless of
+`--temperatures`. NJOY must be on `PATH`. `--libver earliest` (default) and
+`--libver latest` control HDF5 compatibility.
+
+Downloads come from the NEA records for
+[JEFF 3.3 neutrons](https://data.oecd-nea.org/records/bh7jn-rm903),
+[JEFF 3.3 thermal scattering](https://data.oecd-nea.org/records/3nm84-46r21),
+[JEFF 4.0 neutrons](https://data.oecd-nea.org/records/e9ajn-a3p20), and
+[JEFF 4.0 thermal scattering](https://data.oecd-nea.org/records/scmva-nqh68).
+Published MD5 checksums are checked, including when extracting a local cache.
+Photon data are supplements from ENDF/B-VIII.0 for JEFF 3.3 and ENDF/B-VIII.1
+for JEFF 4.0, not JEFF evaluations.
+
+JEFF 3.3 C13 and O17 neutron evaluations are replaced with the individual
+[TENDL-2019 archives published by IAEA](https://www-nds.iaea.org/public/download-endf/TENDL-2019/n/).
+The original JEFF files remain untouched. Each replacement ZIP must contain
+one evaluation with the expected ENDF target. IAEA does not publish checksums
+for these ZIPs; extraction checks ZIP CRCs. Some networks receive a Cloudflare
+challenge from IAEA. This is a download failure, not a successful generation;
+in that case, obtain the archives manually and reuse a local cache.
+
+JEFF 3.3 retains the existing 20 thermal pairs. JEFF 4.0 uses the 128 thermal
+pairs in the [upstream generator](https://github.com/openmc-dev/data/blob/master/generate_jeff.py),
+checked against NEA's archive inventories. Additional temperature-split
+PuO2/UO2/Zy4 evaluations in the JEFF 4.0 archive are not included. Availability
+in an archive does not guarantee that every evaluation is processable by a
+particular OpenMC/NJOY version; full-library NJOY qualification is not part of
+the automated tests.
+
+The default destination is `jeff-RELEASE-hdf5`, with particle subdirectories
+and a relative-path XML library manifest. `--destination` overrides it. Each
+worker writes to isolated staging storage; missing inputs, duplicate names,
+unpaired photon inputs, or worker errors abort generation. Only outputs from
+the current run are registered, never stale files already in the destination.
+Processing or validation failures leave an existing library unchanged. During
+publication the old manifest is removed before replacing data, and the new
+manifest is installed last, so a publication failure cannot advertise mixed
+data as a successful library.
+
+Archive and extracted-input directories default to `jeff-RELEASE-download`
+and `jeff-RELEASE-endf`. Override these with `--download-dir` and `--endf-dir`.
+Both use `neutron`, `thermal`, and `photon` subdirectories. NEA archives retain
+their original basenames despite the download URLs ending in `/content`.
+JEFF 3.3 replacement archives and extracted files go into separate
+`replacements/6-C-13g` and `replacements/8-O-17g` subdirectories of those roots.
+The output and two cache roots must not overlap.
+
+- `--no-download`: extract cached archives without accessing the network.
+- `--no-download --no-extract`: process local inputs in the particle
+    subdirectories, including nested archive folders. Neutron/photon subsets are
+    allowed; thermal generation requires all mapped pairs for the release.
+- `--cleanup`: after success, remove only the selected particle/replacement
+    cache directories for enabled download/extraction stages. Offline inputs are
+    retained when both stages are disabled.
+- `--use-tmpdir`: use automatically cleaned temporary inputs for a fresh
+    download and extraction. When reusing inputs or specifying cache roots, this
+    option is ignored with a warning instead of losing access to local files.
+
+`generate_jeff33` remains an import-safe compatibility wrapper. It fixes the
+release to 3.3 and keeps its legacy destination `jeff33_hdf5` and temporary-input
+default. Reusable inputs use the new release-scoped directory layout described
+above, not the legacy working-directory layout.
+
+Offline orchestration tests use real HDF5/XML with mocked NJOY. Separate live
+source tests check archive availability, NEA checksums, and the 4.0 inventory.
+Opt-in NJOY smoke tests use bounded streamed samples rather than downloading
+complete libraries; set `OPENMC_JEFF_INTEGRATION=1` with NJOY on `PATH` when
+running the integration tests.
 
 ### Download cross sections
 

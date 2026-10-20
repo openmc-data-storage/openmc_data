@@ -63,6 +63,7 @@ jobs:
         run: |
           generate_cendl --help
           generate_endf --help
+          generate_jeff --help
           generate_jeff33 --help
           generate_jendl --help
       

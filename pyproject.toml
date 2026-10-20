@@ -71,6 +71,7 @@ convert_tendl = "openmc_data.convert.convert_tendl:main"
 
 generate_cendl = "openmc_data.generate.generate_cendl:main"
 generate_endf = "openmc_data.generate.generate_endf:main"
+generate_jeff = "openmc_data.generate.generate_jeff:main"
 generate_jeff33 = "openmc_data.generate.generate_jeff33:main"
 generate_jendl = "openmc_data.generate.generate_jendl:main"
 generate_fendl = "openmc_data.generate.generate_fendl:main"
