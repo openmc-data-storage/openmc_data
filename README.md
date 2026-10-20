@@ -106,22 +106,11 @@ A few categories of scripts are available:
 
 ### Download cross sections
 
-| Script name | Library | Release | Processed by |
-|-|-|-|-|
-| download_endf | ENDF/B | VII.1<br>VIII.0<br>VIII.1  | NNDC |
-| download_jeff | JEFF | 3.3<br>4.0 | OpenMC development team |
-| download_tendl | TENDL | 2019<br>2021  |  |
-
-`download_jeff -r 4.0 -d /data --cleanup` downloads an
-[official OpenMC library](https://openmc.org/data/#official-data-libraries),
-not the older NEA-converted archive. Release 4.0 is the default; 3.3 is also supported.
-Both include JEFF neutron/thermal data and XML, with ENDF/B photon supplements
-(VIII.0 for 3.3, VIII.1 for 4.0). Neutron temperatures are 250, 293.6, 600, 900,
-1200 and 2500 K; thermal temperatures are native. NJOY is not needed.
-`-d` selects the parent of `jeff-<release>-download` and `jeff-<release>-hdf5`
-(default: current directory). `--no-download` reuses archives; `--no-extract`
-keeps them compressed. `--cleanup` removes archives only after successful
-extraction; otherwise they are retained. See `download_jeff --help` for options.
+| Script name | Library | Release | Processed by | Neutron temperatures (K) |
+|-|-|-|-|-|
+| download_endf | ENDF/B | VII.1<br>VIII.0<br>VIII.1  | NNDC | 250, 293.6, 600, 900, 1200, 2500 |
+| download_jeff | JEFF | 3.3<br>4.0 | OpenMC development team | 250, 293.6, 600, 900, 1200, 2500 |
+| download_tendl | TENDL | 2019<br>2021  |  | 293.6 |
 
 <!-- | Script name | Library | Release | Processed by | Download available | Downloads ACE files and convert to HDF5 | Downloads ENDF files and convert to HDF5 | Convert local ACE files |
 |-|-|-|-|-|-|-|-|
