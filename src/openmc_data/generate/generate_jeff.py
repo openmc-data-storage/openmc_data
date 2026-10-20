@@ -19,13 +19,11 @@ from openmc_data.urls_jeff import jeff_endf_details, jeff33_replacements
 from openmc_data.utils import _file_md5
 
 
-def _parser(legacy=False):
+def _parser():
     parser = argparse.ArgumentParser(description=__doc__,
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-r', '--release', choices=['3.3'] if legacy else ['3.3', '4.0'],
-                        default='3.3' if legacy else '4.0')
-    parser.add_argument('-d', '--destination', type=Path,
-                        default=Path('jeff33_hdf5') if legacy else None)
+    parser.add_argument('-r', '--release', choices=['3.3', '4.0'], default='4.0')
+    parser.add_argument('-d', '--destination', type=Path, help='Output directory (default: jeff-RELEASE-hdf5)')
     parser.add_argument('-p', '--particles', nargs='+', choices=['neutron', 'thermal', 'photon'],
                         default=['neutron', 'thermal', 'photon'])
     parser.add_argument('--temperatures', nargs='+', type=float,
@@ -39,7 +37,7 @@ def _parser(legacy=False):
         ('download', True, 'Download missing or invalid archives'),
         ('extract', True, 'Extract archives into particle subdirectories'),
         ('cleanup', False, 'Remove selected caches after success, only for enabled download/extract stages'),
-        ('use-tmpdir', legacy, 'Use temporary inputs for a fresh download and extraction'),
+        ('use-tmpdir', False, 'Use temporary inputs for a fresh download and extraction'),
     ]:
         parser.add_argument('--' + flag, action='store_true', default=default, help=help_text)
         parser.add_argument('--no-' + flag, dest=flag.replace('-', '_'), action='store_false')
@@ -187,8 +185,8 @@ def _generate(tasks, destination, args):
         manifest.replace(destination / 'cross_sections.xml')
 
 
-def _main(argv=None, *, legacy=False):
-    parser = _parser(legacy)
+def main(argv=None):
+    parser = _parser()
     args = parser.parse_args(argv)
     if args.jobs is not None and args.jobs < 1:
         parser.error('--jobs must be positive')
@@ -248,10 +246,6 @@ def _main(argv=None, *, legacy=False):
                     if enabled and (root / group).exists():
                         shutil.rmtree(root / group)
     print(f'Wrote {destination / "cross_sections.xml"}')
-
-
-def main(argv=None):
-    _main(argv)
 
 
 if __name__ == '__main__':

@@ -102,7 +102,6 @@ A few categories of scripts are available:
 | generate_fendl | FENDL | 3.2c<br>3.2b<br>3.2a<br>3.2<br>3.1d<br>3.1a<br>3.0 | |
 | generate_jendl | JENDL | 4.0<br>5.0 | |
 | generate_jeff | JEFF | 3.3<br>4.0 | NJOY |
-| generate_jeff33 | JEFF | 3.3 (legacy alias) | NJOY |
 | generate_tendl | TENDL | 2023<br>2025 | |
 
 #### JEFF generation
@@ -139,8 +138,7 @@ hold original archive basenames and nested inputs; 3.3 replacements use
 - `--use-tmpdir` uses temporary inputs for fresh downloads/extraction; it is ignored
     with a warning for reused inputs or explicit cache roots.
 
-`generate_jeff33` keeps release 3.3, destination `jeff33_hdf5`, and temporary-input
-defaults, but reusable inputs follow the new layout. See `generate_jeff --help`.
+See `generate_jeff --help` for all options.
 Tests use real HDF5/XML with mocked NJOY; opt-in bounded real-data samples require
 `OPENMC_JEFF_INTEGRATION=1` and NJOY. Live URL checks run separately.
 

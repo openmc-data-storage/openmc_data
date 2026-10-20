@@ -25,7 +25,6 @@ import requests
 from stream_unzip import stream_unzip
 
 from openmc_data.generate import generate_jeff as gen
-from openmc_data.generate import generate_jeff33 as legacy
 from openmc_data.urls_jeff import jeff_endf_details, jeff33_replacements
 
 
@@ -110,21 +109,14 @@ def test_release_particle_selection(tmp_path, processing, release, count, partic
     assert not list(tmp_path.glob('.jeff-generate-*'))
 
 
-def test_defaults_and_legacy_import_safe(monkeypatch):
+def test_defaults_and_import_safe(monkeypatch):
     monkeypatch.setattr(sys, 'argv', ['program', '--not-a-generator-option'])
     importlib.reload(gen)
-    importlib.reload(legacy)
     args = gen._parser().parse_args([])
     assert args.release == '4.0' and not args.use_tmpdir
+    assert args.destination is None and args.libver == 'earliest'
     assert args.temperatures == [250.0, 293.6, 600.0, 900.0, 1200.0, 2500.0]
     assert args.particles == ['neutron', 'thermal', 'photon']
-    args = gen._parser(legacy=True).parse_args([])
-    assert args.release == '3.3' and args.use_tmpdir
-    assert args.destination == Path('jeff33_hdf5')
-    main = MagicMock()
-    monkeypatch.setattr(legacy, '_main', main)
-    legacy.main(['--jobs', '2'])
-    main.assert_called_once_with(['--jobs', '2'], legacy=True)
 
 
 @pytest.mark.parametrize('argv', [
@@ -253,14 +245,15 @@ def test_input_cleanup(tmp_path, processing, monkeypatch, temporary, failure):
     assert Path.cwd() == tmp_path
 
 
-def test_legacy_offline_tmpdir_uses_persistent_inputs(tmp_path, processing):
-    inputs(tmp_path / 'jeff-3.3-endf', '3.3')
+@pytest.mark.parametrize('release', ['3.3', '4.0'])
+def test_offline_tmpdir_uses_persistent_inputs(tmp_path, processing, release):
+    inputs(tmp_path / f'jeff-{release}-endf', release)
     cwd = Path.cwd()
     with pytest.warns(UserWarning, match='ignored'):
-        legacy.main(['-p', 'photon', '--no-download', '--no-extract', '--jobs', '1', '--cleanup'])
+        gen.main(offline(release, ['photon']) + ['--use-tmpdir', '--cleanup'])
     assert Path.cwd() == cwd
-    assert (tmp_path / 'jeff33_hdf5/cross_sections.xml').is_file()
-    assert (tmp_path / 'jeff-3.3-endf/photon').exists()
+    assert (tmp_path / f'jeff-{release}-hdf5/cross_sections.xml').is_file()
+    assert (tmp_path / f'jeff-{release}-endf/photon').exists()
 
 
 @pytest.mark.parametrize('download_enabled', [False, True])
