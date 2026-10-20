@@ -139,8 +139,6 @@ hold original archive basenames and nested inputs; 3.3 replacements use
     with a warning for reused inputs or explicit cache roots.
 
 See `generate_jeff --help` for all options.
-Tests use real HDF5/XML with mocked NJOY; opt-in bounded real-data samples require
-`OPENMC_JEFF_INTEGRATION=1` and NJOY. Live URL checks run separately.
 
 ### Download cross sections
 

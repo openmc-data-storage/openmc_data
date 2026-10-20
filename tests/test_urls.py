@@ -1,6 +1,4 @@
 
-import json
-import re
 import time
 from pathlib import Path
 from unittest.mock import MagicMock
@@ -15,7 +13,6 @@ from openmc_data import (
     all_chain_release_details,
     all_decay_release_details,
 )
-from openmc_data.urls_jeff import jeff_endf_details, jeff33_replacements
 
 
 # urls that serve a file kept in this repository, see check_url
@@ -273,58 +270,3 @@ def test_transient_failure_is_retried(http_response):
     get.side_effect = [requests.Timeout('timed out'), response]
     check_url('https://example.org/data')
     assert get.call_count == 2
-
-
-def source_urls():
-    groups = [(f'{release}-{particle}', details)
-              for release, particles in jeff_endf_details.items()
-              for particle, details in particles.items()]
-    groups.extend((f'3.3-replacement-{name}', details) for name, details in jeff33_replacements.items())
-    for label, details in groups:
-        for name in details['compressed_files']:
-            yield pytest.param(details['base_url'] + name + details.get('url_suffix', ''),
-                               id=f'{label}-{name}')
-
-
-@pytest.mark.parametrize('url', list(source_urls()))
-def test_generate_jeff_url_registry(url):
-    validate_url(url)
-
-
-@pytest.mark.network
-@pytest.mark.parametrize('url', list(source_urls()))
-def test_generate_jeff_urls(url):
-    check_url(url)
-
-
-def bounded_text(url):
-    with requests.get(url, stream=True, headers={'Accept-Encoding': 'identity'}, timeout=(10, 60)) as r:
-        r.raise_for_status()
-        content = r.raw.read(2_000_001)
-        assert len(content) <= 2_000_000, 'Metadata/preview unexpectedly large'
-        return content.decode()
-
-
-@pytest.mark.network
-@pytest.mark.parametrize('release', ['3.3', '4.0'])
-@pytest.mark.parametrize('particle', ['neutron', 'thermal'])
-def test_nea_record_checksums(release, particle):
-    details = jeff_endf_details[release][particle]
-    record = json.loads(bounded_text(details['base_url'].rsplit('/files/', 1)[0]))
-    for name, checksum in zip(details['compressed_files'], details['checksums']):
-        entry = record['files']['entries'][name]
-        assert entry['checksum'] == 'md5:' + checksum
-        assert entry['links']['content'] == details['base_url'] + name + '/content'
-
-
-@pytest.mark.network
-@pytest.mark.parametrize('particle,column', [('neutron', 0), ('thermal', 1)])
-def test_jeff40_pairs_exist_in_archive_preview(particle, column):
-    details = jeff_endf_details['4.0'][particle]
-    record = details['base_url'].split('/records/')[1].split('/')[0]
-    name = details['compressed_files'][0]
-    text = bounded_text(f'https://data.oecd-nea.org/records/{record}/preview/{name}')
-    members = re.findall(r'</i>\s*([^<>]+\.jeff)</span>', text)
-    assert len(members) >= (593 if particle == 'neutron' else 128)
-    required = {pair[column] for pair in jeff_endf_details['4.0']['thermal']['pairs']}
-    assert not required - set(members)

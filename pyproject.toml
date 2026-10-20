@@ -34,8 +34,7 @@ write_to = "src/openmc_data/_version.py"
 [project.optional-dependencies]
 tests = [
     "pytest",
-    "requests",
-    "stream-unzip",
+    "requests"
 ]
 
 [tool.pytest.ini_options]
