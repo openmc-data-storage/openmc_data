@@ -1,6 +1,8 @@
 import hashlib
 import io
+from pathlib import Path
 import tarfile
+from unittest.mock import Mock
 
 import pytest
 
@@ -53,16 +55,13 @@ def test_download_streaming_length_and_cache(tmp_path, monkeypatch, capsys, know
     target = tmp_path / 'library.zip'
     if existing:
         target.write_bytes(b'o' * len(payload))
-    calls = []
-    def urlopen(request, **kwargs):
-        calls.append((request, kwargs))
-        return response
+    urlopen = Mock(return_value=response)
     monkeypatch.setattr(utils, 'urlopen', urlopen)
     path = utils.download('https://example.invalid/library.zip/content', as_browser=True,
                           output_path=tmp_path, output_filename='library.zip', timeout=10)
     assert path == target
-    assert calls[0][0].get_header('User-agent') == 'Mozilla/5.0'
-    assert calls[0][1] == {'timeout': 10}
+    assert urlopen.call_args.args[0].get_header('User-agent') == 'Mozilla/5.0'
+    assert urlopen.call_args.kwargs == {'timeout': 10}
     if existing and known_length:
         assert target.read_bytes() == b'o' * len(payload)
         assert not response.read_sizes
@@ -75,71 +74,38 @@ def test_download_streaming_length_and_cache(tmp_path, monkeypatch, capsys, know
     assert response.closed
 
 
-@pytest.mark.parametrize('length', [None, 0])
-def test_empty_download(tmp_path, monkeypatch, length):
-    monkeypatch.setattr(utils, 'urlopen', lambda *a, **k: Response(b'', length))
-    path = utils.download('https://example.invalid/empty', output_path=tmp_path)
-    assert path.read_bytes() == b''
-
-
-def test_wrong_cached_size_redownloaded(tmp_path, monkeypatch):
-    (tmp_path / 'file').write_bytes(b'partial')
-    monkeypatch.setattr(utils, 'urlopen', lambda *a, **k: Response(b'new', 3))
-    assert utils.download('https://example.invalid/file', output_path=tmp_path).read_bytes() == b'new'
-
-
-@pytest.mark.parametrize('valid', [False, True])
-def test_unknown_length_checksum(tmp_path, monkeypatch, valid):
-    monkeypatch.setattr(utils, 'urlopen', lambda *a, **k: Response(b'payload', None))
-    checksum = hashlib.md5(b'payload' if valid else b'wrong').hexdigest()
-    if valid:
-        assert utils.download('https://example.invalid/file', checksum=checksum, output_path=tmp_path).is_file()
-    else:
-        with pytest.raises(OSError, match='MD5 checksum'):
-            utils.download('https://example.invalid/file', checksum=checksum, output_path=tmp_path)
-
-
-@pytest.mark.parametrize('valid_cache', [False, True])
-def test_known_length_cached_checksum(tmp_path, monkeypatch, valid_cache):
-    payload = b'payload'
+@pytest.mark.parametrize('payload,length,cached,checksum_data,error', [
+    (b'', None, None, None, None), (b'', 0, None, None, None),
+    (b'new', 3, b'partial', None, None),
+    (b'payload', None, None, b'payload', None),
+    (b'payload', None, None, b'wrong', 'MD5 checksum'),
+    (b'payload', 7, b'payload', b'payload', None),
+    (b'payload', 7, b'invalid', b'payload', None),
+    (b'partial', 100, None, None, 'Incomplete download'),
+])
+def test_download_validation(tmp_path, monkeypatch, payload, length, cached, checksum_data, error):
     target = tmp_path / 'file'
-    target.write_bytes(payload if valid_cache else b'invalid')
-    response = Response(payload, len(payload))
-    monkeypatch.setattr(utils, 'urlopen', lambda *a, **k: response)
-    checksum = hashlib.md5(payload).hexdigest()
-    assert utils.download('https://example.invalid/file', checksum=checksum,
-                          output_path=tmp_path).read_bytes() == payload
-    assert bool(response.read_sizes) is not valid_cache
+    if cached is not None:
+        target.write_bytes(cached)
+    response = Response(payload, length)
+    monkeypatch.setattr(utils, 'urlopen', Mock(return_value=response))
+    checksum = hashlib.md5(checksum_data).hexdigest() if checksum_data is not None else None
+    if error:
+        with pytest.raises(OSError, match=error):
+            utils.download('https://example.invalid/file', checksum=checksum, output_path=tmp_path)
+    else:
+        assert utils.download('https://example.invalid/file', checksum=checksum,
+                              output_path=tmp_path).read_bytes() == payload
+        assert bool(response.read_sizes) is not (cached == payload)
     assert response.closed
 
 
 def test_checksum_uses_bounded_reads(tmp_path, monkeypatch):
-    from pathlib import Path
-
     payload = b'x' * (2*utils._BLOCK_SIZE + 17)
-    response = Response(payload, None)
-    monkeypatch.setattr(utils, 'urlopen', lambda *a, **k: response)
-    opened = Path.open
-    reads = []
-
-    def bounded(path, mode='r', *args, **kwargs):
-        if mode == 'rb':
-            stream = Response(payload, len(payload))
-            reads.append(stream)
-            return stream
-        return opened(path, mode, *args, **kwargs)
-
-    monkeypatch.setattr(Path, 'open', bounded)
-    utils.download('https://example.invalid/file', checksum=hashlib.md5(payload).hexdigest(),
-                   output_path=tmp_path)
-    assert len(reads) == 1
-    assert len(reads[0].read_sizes) == 4
-    assert reads[0].closed
-
-
-def test_truncated_download_fails(tmp_path, monkeypatch):
-    response = Response(b'partial', 100)
-    monkeypatch.setattr(utils, 'urlopen', lambda *a, **k: response)
-    with pytest.raises(OSError, match='Incomplete download'):
-        utils.download('https://example.invalid/file', output_path=tmp_path)
-    assert response.closed
+    stream = Response(payload, len(payload))
+    opened = Mock(return_value=stream)
+    monkeypatch.setattr(Path, 'open', opened)
+    assert utils._file_md5(tmp_path / 'file') == hashlib.md5(payload).hexdigest()
+    opened.assert_called_once_with('rb')
+    assert len(stream.read_sizes) == 4
+    assert stream.closed

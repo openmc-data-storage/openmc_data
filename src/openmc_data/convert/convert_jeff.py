@@ -229,9 +229,8 @@ def _parser(default_release, allowed_releases, default_libver):
         ("extract", True, "Extract the downloaded archives"),
         ("cleanup", False, "Remove ACE and download cache directories only after success"),
     ):
-        parser.add_argument(f"--{option}", dest=option, action="store_true", help=help_text)
+        parser.add_argument(f"--{option}", action="store_true", default=default, help=help_text)
         parser.add_argument(f"--no-{option}", dest=option, action="store_false", help=f"Do not {help_text.lower()}")
-        parser.set_defaults(**{option: default})
     return parser
 
 

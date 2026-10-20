@@ -96,6 +96,14 @@ def root_for(release):
     return Path.cwd() / f'jeff-{release}-ace'
 
 
+def library(release, temperatures=('600',)):
+    root = root_for(release)
+    for temperature in temperatures:
+        neutron_file(root, release, temperature)
+    thermal_file(root, release)
+    return root
+
+
 @pytest.mark.parametrize('release', RELEASES)
 @pytest.mark.parametrize('selected', [('600',), ('900', '600', '900')])
 def test_selection_no_293_base_sorted_no_duplicates(release, selected, monkeypatch):
@@ -128,11 +136,8 @@ def test_selection_no_293_base_sorted_no_duplicates(release, selected, monkeypat
 
 @pytest.mark.parametrize('release', RELEASES)
 def test_default_all_available(release):
-    root = root_for(release)
     temperatures = converter.all_release_details['jeff'][release]['neutron']['ace']['temperatures']
-    for temp in temperatures:
-        neutron_file(root, release, temp)
-    thermal_file(root, release)
+    library(release, temperatures)
     argv = cached(release) if release != '4.0' else ['--no-download', '--no-extract']
     converter.main(argv)
     data = openmc.data.IncidentNeutron.from_hdf5(f'jeff-{release}-hdf5/Ne20.h5')
@@ -168,7 +173,10 @@ def test_metastables_all_temperatures_without_mutating_cache(release, encoded):
 
 
 @pytest.mark.parametrize('release', RELEASES)
-@pytest.mark.parametrize('missing', ['all', 'temperature', 'nuclide', 'thermal', 'empty'])
+@pytest.mark.parametrize('missing', [
+    'all', 'temperature', 'nuclide', 'thermal', 'empty',
+    'identity', 'bad-temperature', 'type', 'thermal-empty',
+])
 def test_missing_or_empty_tables_fail(release, missing):
     root = root_for(release)
     thermal_file(root, release)
@@ -181,8 +189,16 @@ def test_missing_or_empty_tables_fail(release, missing):
             neutron_file(root, release, '900', 'O', 16)
         if missing == 'empty':
             path.write_text('')
+        elif missing in ('identity', 'bad-temperature', 'type'):
+            name, temperature = {
+                'identity': ('8016.00c', 600), 'bad-temperature': ('10020.00c', 900),
+                'type': ('hh2o.00t', 600),
+            }[missing]
+            write_ace(path, name, temperature)
     if missing == 'thermal':
         thermal_file(root, release).unlink()
+    elif missing == 'thermal-empty':
+        thermal_file(root, release).write_text('')
     with pytest.raises((FileNotFoundError, ValueError)):
         converter.main(cached(release, '-t', '600', '900', '--cleanup'))
     assert root.exists()
@@ -191,9 +207,7 @@ def test_missing_or_empty_tables_fail(release, missing):
 
 @pytest.mark.parametrize('release', RELEASES)
 def test_exceptions_preserve_caches_and_publish_nothing(release, monkeypatch):
-    root = root_for(release)
-    neutron_file(root, release, '600')
-    thermal_file(root, release)
+    root = library(release)
     downloads = Path(f'jeff-{release}-download')
     downloads.mkdir()
     (downloads / 'keep').write_text('cache')
@@ -275,9 +289,8 @@ def test_40_numeric_temperatures_and_uo2_twins():
 
 @pytest.mark.parametrize('collision', ['neutron', 'thermal', 'rounded', 'existing', 'xml'])
 def test_output_collisions(collision):
-    root = root_for('4.0')
+    root = library('4.0')
     path = neutron_file(root, '4.0', '600')
-    thermal_file(root, '4.0', 423, 0, 'hh2o')
     if collision == 'neutron':
         duplicate = root / 'duplicate' / path.name
         duplicate.parent.mkdir()
@@ -301,9 +314,7 @@ def test_unknown_thermal_identity_not_fuzzy_matched():
 
 @pytest.mark.parametrize('field, expected', [('selected_cases', 12), ('selected_tables', 316)])
 def test_incomplete_40_subset_fails(field, expected):
-    root = root_for('4.0')
-    neutron_file(root, '4.0', '600')
-    thermal_file(root, '4.0')
+    library('4.0')
     converter.all_release_details['jeff']['4.0']['thermal']['ace'][field] = expected
     with pytest.raises(ValueError, match='Incomplete'):
         converter.main(cached('4.0', '-t', '600'))
@@ -320,9 +331,7 @@ def test_destination_in_cache_rejected(release):
 def test_alias_defaults_and_release_handling(module, release, libver, monkeypatch):
     alias = importlib.import_module(f'openmc_data.convert.{module}')
     temperatures = converter.all_release_details['jeff'][release]['neutron']['ace']['temperatures']
-    for temp in temperatures:
-        neutron_file(root_for(release), release, temp)
-    thermal_file(root_for(release), release)
+    library(release, temperatures)
     export = openmc.data.IncidentNeutron.export_to_hdf5
     versions = []
     def record(self, *args, **kwargs):
@@ -366,9 +375,7 @@ def test_ace_catalog_integrity():
 
 
 def test_33_missing_material_does_not_reuse_previous_data():
-    root = root_for('3.3')
-    neutron_file(root, '3.3', '600')
-    thermal_file(root, '3.3')
+    library('3.3')
     converter.all_release_details['jeff']['3.3']['thermal']['ace']['required_file_groups'] = ['h-h2o', 'be']
     with pytest.raises(FileNotFoundError, match='thermal materials: be'):
         converter.main(cached('3.3', '-t', '600'))
@@ -386,9 +393,7 @@ def test_33_thermal_prefixes_allow_phase_suffixes():
 
 @pytest.mark.parametrize('release', RELEASES)
 def test_download_without_extract_uses_cache(release, monkeypatch):
-    root = root_for(release)
-    neutron_file(root, release, '600')
-    thermal_file(root, release)
+    library(release)
     downloads = []
     monkeypatch.setattr(converter, 'download', lambda *args, **kwargs: downloads.append(kwargs['output_filename']))
     def fail(*args, **kwargs):
@@ -397,25 +402,6 @@ def test_download_without_extract_uses_cache(release, monkeypatch):
     with pytest.warns(UserWarning, match='multiple GB'):
         converter.main(['-r', release, '-t', '600', '--download', '--no-extract'])
     assert len(downloads) == 2
-
-
-@pytest.mark.parametrize('release', RELEASES)
-@pytest.mark.parametrize('problem', ['identity', 'temperature', 'type', 'thermal-empty'])
-def test_inconsistent_tables_fail(release, problem):
-    root = root_for(release)
-    path = neutron_file(root, release, '600')
-    thermal = thermal_file(root, release)
-    if problem == 'identity':
-        write_ace(path, '8016.00c', 600)
-    elif problem == 'temperature':
-        write_ace(path, '10020.00c', 900)
-    elif problem == 'type':
-        write_ace(path, 'hh2o.00t', 600)
-    else:
-        thermal.write_text('')
-    with pytest.raises(ValueError):
-        converter.main(cached(release, '-t', '600'))
-    assert not Path(f'jeff-{release}-hdf5/cross_sections.xml').exists()
 
 
 def test_new_style_header():
@@ -429,10 +415,7 @@ def test_new_style_header():
 
 @pytest.mark.parametrize('problem', ['unsafe-name', 'lost-temperature', 'wrong-name'])
 def test_output_safety_checks(problem, monkeypatch):
-    root = root_for('3.3')
-    neutron_file(root, '3.3', '600')
-    neutron_file(root, '3.3', '900')
-    thermal_file(root, '3.3')
+    library('3.3', ('600', '900'))
     if problem == 'unsafe-name':
         monkeypatch.setattr(converter, '_thermal_name', lambda _: '../unsafe')
     elif problem == 'lost-temperature':

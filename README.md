@@ -94,10 +94,9 @@ A few categories of scripts are available:
 
 #### JEFF ACE conversion
 
-`convert_jeff --help` describes the unified neutron and thermal ACE-to-HDF5
-converter. Use `-r/--release` to select a release and `-t/--temperatures` to
-select neutron archive temperatures. With no temperature option, all available
-neutron temperatures for that release are processed:
+`convert_jeff -r 3.3 -t 600 900 --destination jeff-hot` converts neutron and
+thermal ACE data without NJOY or a 293 K base. Defaults: release 4.0, all neutron
+temperatures, `--libver latest`. Available neutron archive temperatures:
 
 | Release | Neutron archive temperatures (K) |
 | --- | --- |
@@ -105,39 +104,21 @@ neutron temperatures for that release are processed:
 | 3.3 | 293, 600, 900, 1200, 1500, 1800 |
 | 4.0 | 0.1, 293, 300, 600, 900, 1200, 1500, 1800 |
 
-For example, `convert_jeff -r 3.3 -t 600 900 --destination jeff-hot` does not
-require 293 K neutron data. The 4.0 archive labelled 293 contains 293.6 K data;
-select it with `-t 293`, not `-t 293.6`. Thermal tables have independent
-temperature grids, so **all thermal temperatures** are retained regardless of
-the neutron selection. Tables are grouped by ACE material identity, not filename
-suffix; the UO2 temperature pairs separated by 1 K are retained.
+Select the 4.0 archive containing 293.6 K data with `-t 293`. **All native thermal
+temperatures** are retained, including the 1 K UO2 pairs. **JEFF-4.0 supplies only
+the public 12-case/316-table thermal subset**, not the full TSL library.
+Unknown thermal aliases retain their identity with a `c_` prefix and warning.
 
-**JEFF-4.0 thermal coverage is the public selected subset: 12 cases and 316
-tables**, not the complete JEFF-4.0 TSL library. It covers Be, D in D2O, graphite,
-H in CH2 and H2O, H in ZrH/ZrH1.5/ZrH2, O and U in UO2, and Zr in ZrH1.5/ZrH2.
-The converter checks that subset's case and table counts. Unrecognized OpenMC
-thermal aliases retain their ACE identity with a `c_` prefix and a warning,
-rather than being guessed as another material.
+Output HDF5/XML goes directly into `--destination` (default `jeff-<release>-hdf5`),
+staged until conversion succeeds; existing files and name/temperature collisions fail.
+Downloads require multiple GB. `--no-download --no-extract` reuses working-directory
+caches `jeff-<release>-download` and `jeff-<release>-ace`; `--cleanup` removes both
+only after success. Metastable corrections never edit cached ACE files.
+Every discovered nuclide must have every selected neutron temperature; 3.3 also
+requires its 20 thermal groups. Caches cannot reveal nuclides absent at all temperatures.
 
-HDF5 files and the cross-section XML registry are written **directly** into
-`--destination` (default: `jeff-<release>-hdf5`). Existing target files and
-colliding material/temperature names are rejected. Outputs are staged until
-conversion succeeds. Downloads and extracted ACE files are cached in
-`jeff-<release>-download` and `jeff-<release>-ace` under the working directory.
-`--no-download --no-extract` reuses those caches, while still filtering neutron
-temperatures. Each discovered neutron nuclide must have every requested
-temperature; empty or inconsistent input fails. The known 20 thermal material
-file groups are also required for 3.3. Cached files alone cannot prove
-that a nuclide absent at every temperature was originally present in an archive.
-`--cleanup` removes both cache directories only after success; the default
-`--no-cleanup` preserves them. ACE files are never edited to correct metastables.
-Full downloads require multiple GB; files are streamed and conversion keeps only
-one material's multi-temperature data in memory at a time.
-
-`convert_jeff32` and `convert_jeff33` remain thin compatibility aliases. They
-retain their original releases, accepted `-r` values, default destinations, and
-HDF5 defaults (`latest` for 3.2, `earliest` for 3.3). The unified command defaults
-to release 4.0 and `--libver latest`; `--libver earliest` is also supported.
+Legacy aliases `convert_jeff32`/`convert_jeff33` retain their releases, destinations
+and HDF5 defaults (`latest`/`earliest`). See `convert_jeff --help` for all options.
 
 ### Generate cross sections
 
