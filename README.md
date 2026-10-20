@@ -89,9 +89,55 @@ A few categories of scripts are available:
 |convert_endf | ENDF/B | VII.1 | NNDC |
 |convert_lib80x | ENDF/B | VIII.0 | LANL |
 |convert_fendl | FENDL | 3.2c<br>3.2b<br>3.2a<br>3.2<br>3.1d<br>3.1a<br>3.1<br>3.0<br>2.1 |
-|convert_jeff32 | JEFF | 3.2 |
-|convert_jeff33 | JEFF | 3.3 |
+|convert_jeff | JEFF | 3.2<br>3.3<br>4.0 (default) | OECD/NEA |
 |convert_tendl | TENDL | 2015<br>2017<br>2019<br>2021 |
+
+#### JEFF ACE conversion
+
+`convert_jeff --help` describes the unified neutron and thermal ACE-to-HDF5
+converter. Use `-r/--release` to select a release and `-t/--temperatures` to
+select neutron archive temperatures. With no temperature option, all available
+neutron temperatures for that release are processed:
+
+| Release | Neutron archive temperatures (K) |
+| --- | --- |
+| 3.2 | 293, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 1800 |
+| 3.3 | 293, 600, 900, 1200, 1500, 1800 |
+| 4.0 | 0.1, 293, 300, 600, 900, 1200, 1500, 1800 |
+
+For example, `convert_jeff -r 3.3 -t 600 900 --destination jeff-hot` does not
+require 293 K neutron data. The 4.0 archive labelled 293 contains 293.6 K data;
+select it with `-t 293`, not `-t 293.6`. Thermal tables have independent
+temperature grids, so **all thermal temperatures** are retained regardless of
+the neutron selection. Tables are grouped by ACE material identity, not filename
+suffix; the UO2 temperature pairs separated by 1 K are retained.
+
+**JEFF-4.0 thermal coverage is the public selected subset: 12 cases and 316
+tables**, not the complete JEFF-4.0 TSL library. It covers Be, D in D2O, graphite,
+H in CH2 and H2O, H in ZrH/ZrH1.5/ZrH2, O and U in UO2, and Zr in ZrH1.5/ZrH2.
+The converter checks that subset's case and table counts. Unrecognized OpenMC
+thermal aliases retain their ACE identity with a `c_` prefix and a warning,
+rather than being guessed as another material.
+
+HDF5 files and the cross-section XML registry are written **directly** into
+`--destination` (default: `jeff-<release>-hdf5`). Existing target files and
+colliding material/temperature names are rejected. Outputs are staged until
+conversion succeeds. Downloads and extracted ACE files are cached in
+`jeff-<release>-download` and `jeff-<release>-ace` under the working directory.
+`--no-download --no-extract` reuses those caches, while still filtering neutron
+temperatures. Each discovered neutron nuclide must have every requested
+temperature; empty or inconsistent input fails. The known 20 thermal material
+file groups are also required for 3.3. Cached files alone cannot prove
+that a nuclide absent at every temperature was originally present in an archive.
+`--cleanup` removes both cache directories only after success; the default
+`--no-cleanup` preserves them. ACE files are never edited to correct metastables.
+Full downloads require multiple GB; files are streamed and conversion keeps only
+one material's multi-temperature data in memory at a time.
+
+`convert_jeff32` and `convert_jeff33` remain thin compatibility aliases. They
+retain their original releases, accepted `-r` values, default destinations, and
+HDF5 defaults (`latest` for 3.2, `earliest` for 3.3). The unified command defaults
+to release 4.0 and `--libver latest`; `--libver earliest` is also supported.
 
 ### Generate cross sections
 

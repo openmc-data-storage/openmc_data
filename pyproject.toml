@@ -61,6 +61,7 @@ include-package-data = false
 
 [project.scripts]
 convert_fendl = "openmc_data.convert.convert_fendl:main"
+convert_jeff = "openmc_data.convert.convert_jeff:main"
 convert_jeff32 = "openmc_data.convert.convert_jeff32:main"
 convert_jeff33 = "openmc_data.convert.convert_jeff33:main"
 convert_lib80x = "openmc_data.convert.convert_lib80x:main"
