@@ -104,41 +104,6 @@ A few categories of scripts are available:
 | generate_jeff | JEFF | 3.3<br>4.0 | NJOY |
 | generate_tendl | TENDL | 2023<br>2025 | |
 
-#### JEFF generation
-
-`generate_jeff -r 4.0 -p neutron --temperatures 293.6 600 --jobs 4` processes
-ENDF with OpenMC and NJOY (`njoy` must be on `PATH`). Defaults: release 4.0,
-all three particles, CPU-count workers, `--libver earliest`, and neutron
-temperatures 250, 293.6, 600, 900, 1200 and 2500 K. Thermal temperatures are
-native; thermal-only runs fetch neutron inputs without generating neutron HDF5.
-
-NEA sources and published MD5 checksums are in [src/openmc_data/urls_jeff.py](src/openmc_data/urls_jeff.py).
-Photon supplements use ENDF/B-VIII.0 for JEFF 3.3 and VIII.1 for 4.0.
-The 20 legacy 3.3 and 128 [upstream 4.0 thermal pairs](https://github.com/openmc-dev/data/blob/master/generate_jeff.py)
-are supported; additional temperature-split PuO2/UO2/Zy4 evaluations are excluded.
-Full-library NJOY qualification has not been performed.
-
-For 3.3, C13/O17 use individual [IAEA TENDL-2019 replacements](https://www-nds.iaea.org/public/download-endf/TENDL-2019/n/)
-without editing originals. ZIP CRCs and ENDF targets are checked (no published MD5).
-If IAEA blocks automated access, manually cache the archives; blocked downloads fail.
-
-Output goes into `--destination` (default `jeff-RELEASE-hdf5`) with particle
-subdirectories and relative XML paths. Isolated workers stage and validate outputs
-before publication; only current outputs are registered. Processing failures preserve
-existing data; publication removes the old manifest first and installs the new one last.
-
-Caches default to `jeff-RELEASE-download` and `jeff-RELEASE-endf`, overridable via
-`--download-dir`/`--endf-dir`. All three roots must be disjoint. Particle subdirectories
-hold original archive basenames and nested inputs; 3.3 replacements use
-`replacements/6-C-13g` and `replacements/8-O-17g` beneath each cache root.
-- `--no-download` extracts cached archives, checking published MD5s.
-- `--no-download --no-extract` processes local inputs. Neutron/photon subsets are
-    allowed; thermal runs require every mapped pair.
-- `--cleanup` removes selected caches only after success and only for enabled stages.
-- `--use-tmpdir` uses temporary inputs for fresh downloads/extraction; it is ignored
-    with a warning for reused inputs or explicit cache roots.
-
-See `generate_jeff --help` for all options.
 
 ### Download cross sections
 

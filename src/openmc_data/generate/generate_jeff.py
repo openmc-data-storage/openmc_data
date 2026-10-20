@@ -1,8 +1,36 @@
 #!/usr/bin/env python3
 """Generate OpenMC HDF5 data from JEFF 3.3 or 4.0 ENDF evaluations using NJOY.
 
-Photons use ENDF/B-VIII.0 (JEFF 3.3) or VIII.1 (JEFF 4.0).
-Thermal scattering uses the native evaluation temperatures, not --temperatures.
+Requires njoy on PATH. Example:
+    generate_jeff -r 4.0 -p neutron --temperatures 293.6 600 --jobs 4
+
+Thermal scattering uses native temperatures, not --temperatures. Thermal-only
+runs fetch neutron inputs without generating neutron HDF5. Photon supplements
+use ENDF/B-VIII.0 for JEFF 3.3 and VIII.1 for 4.0.
+
+NEA sources and published MD5s are in openmc_data.urls_jeff. Supported thermal
+pairs are the 20 legacy 3.3 pairs and 128 upstream 4.0 pairs from:
+https://github.com/openmc-dev/data/blob/master/generate_jeff.py
+Additional temperature-split PuO2/UO2/Zy4 evaluations are excluded.
+Full-library NJOY qualification has not been performed.
+
+JEFF 3.3 C13/O17 use individual IAEA TENDL-2019 replacements without editing
+originals. ZIP CRCs and ENDF targets are checked (no published MD5). If IAEA
+blocks automated access, manually cache the archives; blocked downloads fail.
+
+Output uses particle subdirectories and relative XML paths. Isolated workers
+stage and validate outputs before publication; only current outputs are
+registered. Processing failures preserve existing data. Publication removes
+the old manifest first and installs the new one last.
+
+Destination, download and ENDF directories must not overlap. Cache particle
+subdirectories hold original archive basenames and nested inputs; 3.3
+replacements use replacements/6-C-13g and replacements/8-O-17g beneath each
+cache root. --no-download extracts cached archives, checking published MD5s.
+With --no-download --no-extract, local neutron/photon subsets are allowed;
+thermal runs require every mapped pair. --cleanup removes selected caches
+only after success and only for enabled stages. --use-tmpdir is ignored with
+a warning for reused inputs or explicit cache roots.
 """
 
 import argparse
@@ -19,18 +47,24 @@ from openmc_data.urls_jeff import jeff_endf_details, jeff33_replacements
 from openmc_data.utils import _file_md5
 
 
+class CustomFormatter(argparse.ArgumentDefaultsHelpFormatter,
+                      argparse.RawDescriptionHelpFormatter):
+    pass
+
+
 def _parser():
-    parser = argparse.ArgumentParser(description=__doc__,
-                                    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-r', '--release', choices=['3.3', '4.0'], default='4.0')
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=CustomFormatter)
+    parser.add_argument('-r', '--release', choices=['3.3', '4.0'], default='4.0',
+                        help='JEFF release')
     parser.add_argument('-d', '--destination', type=Path, help='Output directory (default: jeff-RELEASE-hdf5)')
     parser.add_argument('-p', '--particles', nargs='+', choices=['neutron', 'thermal', 'photon'],
-                        default=['neutron', 'thermal', 'photon'])
+                        default=['neutron', 'thermal', 'photon'], help='Data types to generate')
     parser.add_argument('--temperatures', nargs='+', type=float,
                         default=[250.0, 293.6, 600.0, 900.0, 1200.0, 2500.0],
                         help='Neutron temperatures in kelvin (thermal uses native temperatures)')
     parser.add_argument('--jobs', type=int, default=None, help='NJOY worker count; default: CPU count')
-    parser.add_argument('--libver', choices=['earliest', 'latest'], default='earliest')
+    parser.add_argument('--libver', choices=['earliest', 'latest'], default='earliest',
+                        help='Output HDF5 version compatibility')
     parser.add_argument('--download-dir', type=Path, help='Archive cache (default: jeff-RELEASE-download)')
     parser.add_argument('--endf-dir', type=Path, help='Extracted inputs (default: jeff-RELEASE-endf)')
     for flag, default, help_text in [
