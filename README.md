@@ -20,6 +20,34 @@ The package is distributed on [PYPI](https://pypi.org/project/openmc-data/) and 
 pip install openmc_data
 ```
 
+# Testing
+
+Install the test dependencies with `python -m pip install '.[tests]'`, then run
+the offline suite with `python -m pytest -q -rs tests -m 'not network and not integration'`.
+Tests stay in the flat [tests](tests) directory: [test_utils.py](tests/test_utils.py)
+covers shared utilities, [test_urls.py](tests/test_urls.py) covers registry
+validation, HTTP helper regressions and marked live URL checks, and script-specific
+tests belong in files named test_&lt;script&gt;.py alongside them. Use pytest's
+`tmp_path` for generated test artifacts rather than writing into the repository.
+
+The `network` marker identifies live external URL checks; `integration` identifies
+data download and processing tests. Pull requests and pushes run offline tests
+and CLI help checks in [test_package.yml](.github/workflows/test_package.yml), and
+offline URL syntax and repository-file checks in
+[test_urls.yml](.github/workflows/test_urls.yml), without compiling OpenMC for the
+URL jobs. Live URL checks run nightly or manually in a separate job of that same
+workflow. Full, multi-GB processing runs only through the required script choice
+in the manual [test_processing.yml](.github/workflows/test_processing.yml) workflow.
+
+Exactly one URL is explicitly **not tested over HTTP** because of its Cloudflare
+challenge:
+<https://nds.iaea.org/fendl/data/neutron/fendl-FENDL-3.2c-neutron-endf.zip>.
+Its syntax is still checked offline. Other HTTP errors, including IAEA and
+Cloudflare 403 responses, remain failures, not skips or expected failures.
+Nightly/manual external health checks may remain red until blocked IAEA and
+obsolete OECD URLs are restored; passing offline checks does not establish that
+downloads are available.
+
 # Usage
 
 Once installed several scripts are available in your terminal that are able to

@@ -41,7 +41,10 @@ jobs:
           cd ..
           pip install .
           cd ..
-          pip install .
+          pip install '.[tests]'
+
+      - name: Test offline unit and CLI behavior
+        run: python -m pytest -q -rs tests -m 'not network and not integration'
 
         # this just check the scripts are accessible after the install
         # the scripts are not run or checked for correct behaviour
