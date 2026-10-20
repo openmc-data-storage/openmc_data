@@ -106,10 +106,11 @@ A few categories of scripts are available:
 
 ### Download cross sections
 
-| Script name | Library | Release | Processed by |
-|-|-|-|-|
-| download_endf | ENDF/B | VII.1<br>VIII.0<br>VIII.1  | NNDC |
-| download_tendl | TENDL | 2019<br>2021  |  |
+| Script name | Library | Release | Processed by | Neutron temperatures (K) |
+|-|-|-|-|-|
+| download_endf | ENDF/B | VII.1<br>VIII.0<br>VIII.1  | NNDC | 250, 293.6, 600, 900, 1200, 2500 |
+| download_jeff | JEFF | 3.3<br>4.0 | OpenMC development team | 250, 293.6, 600, 900, 1200, 2500 |
+| download_tendl | TENDL | 2019<br>2021  |  | 293.6 |
 
 <!-- | Script name | Library | Release | Processed by | Download available | Downloads ACE files and convert to HDF5 | Downloads ENDF files and convert to HDF5 | Convert local ACE files |
 |-|-|-|-|-|-|-|-|

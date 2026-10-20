@@ -25,6 +25,23 @@ all_h5_release_details = {
             }
         },
     },
+    # Official OpenMC libraries: https://openmc.org/data/#official-data-libraries
+    # These include JEFF neutron/thermal data and ENDF/B photon supplements,
+    # not the older NEA-converted JEFF 3.3 library. Sizes are not recorded.
+    "jeff": {
+        "3.3": {
+            "neutron-photon": {
+                "base_url": "https://anl.box.com/shared/static/",
+                "compressed_files": ["4jwkvrr9pxlruuihcrgti75zde6g7bum.xz"],
+            }
+        },
+        "4.0": {
+            "neutron-photon": {
+                "base_url": "https://anl.box.com/shared/static/",
+                "compressed_files": ["fmcr8zoox1t6um0rwb2iw1nz72xue8ol.xz"],
+            }
+        },
+    },
     "tendl": {
         "2019": {
             "neutron": {
