@@ -426,22 +426,14 @@ all_release_details = {
         "3.2": {
             'neutron': {
                 "ace":{
-                    "base_url": "https://www.oecd-nea.org/dbforms/data/eva/evatapes/jeff_32/Processed/",
-                    "compressed_files": [
-                        "JEFF32-ACE-293K.tar.gz",
-                        "JEFF32-ACE-400K.tar.gz",
-                        "JEFF32-ACE-500K.tar.gz",
-                        "JEFF32-ACE-600K.tar.gz",
-                        "JEFF32-ACE-700K.tar.gz",
-                        "JEFF32-ACE-800K.zip",  # Note the different suffix
-                        "JEFF32-ACE-900K.tar.gz",
-                        "JEFF32-ACE-1000K.tar.gz",
-                        "JEFF32-ACE-1200K.tar.gz",
-                        "JEFF32-ACE-1500K.tar.gz",
-                        "JEFF32-ACE-1800K.tar.gz",
-                        "TSLs.tar.gz"],
+                    "base_url": "https://data.oecd-nea.org/api/records/8wvwt-vgy24/files/",
+                    "url_suffix": "/content",
+                    "as_browser": True,
+                    "compressed_files": [f"JEFF32-ACE-{t}K.tar.gz" for t in
+                                         (293, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 1800)],
                     "temperatures": [
                         "293",
+                        "300",
                         "400",
                         "500",
                         "600",
@@ -452,43 +444,78 @@ all_release_details = {
                         "1200",
                         "1500",
                         "1800",
-                        None
                     ],
-                    "neutron_files": "*.ACE",
-                    "metastables": "*M.ACE",
-                    "sab_files": "ANNEX_6_3_STLs/*/*.ace",
-                    "redundant": "ACEs_293K/*-293.ACE",
                     "compressed_file_size": 9,
                     "uncompressed_file_size": 40,
+                }
+            },
+            'thermal': {
+                'ace': {
+                    "base_url": "https://data.oecd-nea.org/api/records/z2s35-csq77/files/",
+                    "url_suffix": "/content",
+                    "as_browser": True,
+                    "compressed_files": ["JEFF32-Processed-ACE-TSL.zip"],
+                    "ace_paths": ["TSL-ACE/**/*.ace", "ANNEX_6_3_STLs/**/*.ace"],
+                    "compressed_file_size": 0.06,
+                    "uncompressed_file_size": 0.3,
                 }
             }
         },
         "3.3": {
             'neutron': {
                 'ace': {
-                    "base_url": "http://www.oecd-nea.org/dbdata/jeff/jeff33/downloads/temperatures/",
-                    "compressed_files": [
-                        "ace_293.tar.gz",
-                        "ace_600.tar.gz",
-                        "ace_900.tar.gz",
-                        "ace_1200.tar.gz",
-                        "ace_1500.tar.gz",
-                        "ace_1800.tar.gz",
-                        "ace_tsl.tar.gz",
-                    ],
-                    "temperatures": [
-                        "293",
-                        "600",
-                        "900",
-                        "1200",
-                        "1500",
-                        "1800",
-                        None
-                    ],
-                    "neutron_files": "ace_293/*.ace",
-                    "thermal_files": "ace_tsl",
+                    "base_url": "https://data.oecd-nea.org/api/records/zjcaq-2rw89/files/",
+                    "url_suffix": "/content",
+                    "as_browser": True,
+                    "compressed_files": [f"ace_{t}.tar.gz" for t in (293, 600, 900, 1200, 1500, 1800)],
+                    "temperatures": ["293", "600", "900", "1200", "1500", "1800"],
                     "compressed_file_size": 7.7,
                     "uncompressed_file_size": 37,
+                }
+            },
+            'thermal': {
+                'ace': {
+                    "base_url": "https://data.oecd-nea.org/api/records/1rkw4-zk241/files/",
+                    "url_suffix": "/content",
+                    "as_browser": True,
+                    "compressed_files": ["ace_tsl.tar.gz"],
+                    "ace_paths": ["ace_tsl/*.ace"],
+                    "required_file_groups": [
+                        "al-sap", "be", "ca-cah2", "d-d2o", "graph", "h-cah2",
+                        "h-ch2", "h-h2o", "h-ice", "h-zrh", "mesi", "mg",
+                        "o-d2o", "orto-d", "orto-h", "o-sap", "para-d",
+                        "para-h", "sili", "tolu",
+                    ],
+                    "compressed_file_size": 0.93,
+                    "uncompressed_file_size": 5,
+                }
+            }
+        },
+        "4.0": {
+            'neutron': {
+                'ace': {
+                    "base_url": "https://data.oecd-nea.org/api/records/0vhn5-d6t91/files/",
+                    "url_suffix": "/content",
+                    "as_browser": True,
+                    "compressed_files": [f"JEFF40-Processed-Neutron-ACE-{t}K.zip" for t in
+                                         ("0.1", "293", "300", "600", "900", "1200", "1500", "1800")],
+                    "temperatures": ["0.1", "293", "300", "600", "900", "1200", "1500", "1800"],
+                    "compressed_file_size": 0,  # Size estimate not available.
+                    "uncompressed_file_size": 0,
+                }
+            },
+            'thermal': {
+                'ace': {
+                    "base_url": "https://data.oecd-nea.org/api/records/m3qef-tjx77/files/",
+                    "url_suffix": "/content",
+                    "as_browser": True,
+                    "compressed_files": ["JEFF40-Processed-TSL-selected-ACE.zip"],
+                    "ace_paths": ["data/*"],
+                    # Public convenience subset, NOT the complete JEFF-4.0 TSL library.
+                    "selected_cases": 12,
+                    "selected_tables": 316,
+                    "compressed_file_size": 4.39,
+                    "uncompressed_file_size": 0,  # Size estimate not available.
                 }
             }
         }

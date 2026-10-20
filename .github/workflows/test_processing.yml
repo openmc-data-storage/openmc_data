@@ -9,8 +9,7 @@ on:
         type: choice
         options:
           - convert_fendl
-          - convert_jeff32
-          - convert_jeff33
+          - convert_jeff
           - convert_endf
           - convert_tendl
           - convert_tendl_rand
@@ -58,17 +57,10 @@ jobs:
         run: |
           convert_fendl --cleanup
 
-      # this running convert_jeff32 in with default arguments produces 49GB of
-      # data. Hence the use of arguments to process just one temperature
-      - name: test default convert_jeff32
-        if: inputs.script == 'convert_jeff32'
-        run: |
-          convert_jeff32 -r 3.2 -t 293 --cleanup
-
-      - name: test default convert_jeff33
-        if: inputs.script == 'convert_jeff33'
-        run: |
-          convert_jeff33 -r 3.3 -t 293 --cleanup
+      # Limit neutron processing to one temperature to bound disk use.
+      - name: test convert_jeff
+        if: inputs.script == 'convert_jeff'
+        run: convert_jeff -t 293 --cleanup
 
       - name: test default convert_endf
         if: inputs.script == 'convert_endf'
