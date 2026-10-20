@@ -94,5 +94,6 @@ sample_sandy = "openmc_data.other.sample_sandy:main"
 reduce_chain = "openmc_data.depletion.reduce_chain:main"
 
 download_endf = "openmc_data.download.download_endf:main"
+download_jeff = "openmc_data.download.download_jeff:main"
 download_tendl = "openmc_data.download.download_tendl:main"
 download_chain = "openmc_data.download.download_chain:main"
