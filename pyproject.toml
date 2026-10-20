@@ -37,6 +37,13 @@ tests = [
     "requests"
 ]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "network: live external URL checks (scheduled or manual, not a pull request gate)",
+    "integration: data download and processing tests (manual only)",
+]
+
 [project.urls]
 "Homepage" = "https://github.com/fusion-energy/openmc_data"
 "Bug Tracker" = "https://github.com/fusion-energy/openmc_data/issues"

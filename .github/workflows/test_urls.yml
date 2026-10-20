@@ -30,23 +30,26 @@ jobs:
           python-version: 3.12
 
       - name: Install testing dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install libhdf5-serial-dev
-          git clone --single-branch --branch develop --depth 1 https://github.com/openmc-dev/openmc.git
-          cd openmc
-          mkdir build
-          cd build
-          cmake ..
-          make -j2
-          sudo make -j2 install
-          cd ..
-          pip install .
-          cd ..
-          pip install .[tests]
+        run: python -m pip install '.[tests]'
 
-      # the -s allows normal print statements in the url testing to be seen in
-      # the pytest output 
-      - name: test urls
-        run: |
-          pytest -v -s tests/test_urls.py
+      - name: Test URL registry and HTTP helpers offline
+        run: python -m pytest -q -rs tests/test_urls.py -m 'not network and not integration'
+
+    live_urls:
+      if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+      runs-on: ubuntu-latest
+      timeout-minutes: 180
+      steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.12
+
+      - name: Install testing dependencies
+        run: python -m pip install '.[tests]'
+
+      # External failures remain failures; this health check is not a PR gate.
+      - name: Test live URLs with explicit skip reasons
+        run: python -m pytest -v -rs tests/test_urls.py -m network
