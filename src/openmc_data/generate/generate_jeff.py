@@ -41,9 +41,8 @@ def _parser(legacy=False):
         ('cleanup', False, 'Remove selected caches after success, only for enabled download/extract stages'),
         ('use-tmpdir', legacy, 'Use temporary inputs for a fresh download and extraction'),
     ]:
-        parser.add_argument('--' + flag, dest=flag.replace('-', '_'), action='store_true', help=help_text)
+        parser.add_argument('--' + flag, action='store_true', default=default, help=help_text)
         parser.add_argument('--no-' + flag, dest=flag.replace('-', '_'), action='store_false')
-        parser.set_defaults(**{flag.replace('-', '_'): default})
     return parser
 
 
@@ -155,19 +154,14 @@ def _generate(tasks, destination, args):
                 results = [result.get() for result in pending]
 
         library = openmc.data.DataLibrary()
-        outputs = []
-        seen = set()
+        outputs = {}
         for particle, path in sorted(results, key=lambda item: (item[0], item[1].name)):
             relative = Path(particle) / path.name
-            if relative in seen:
+            if relative in outputs:
                 raise ValueError(f'Output name collision: {relative}')
-            seen.add(relative)
-            target = staging / 'library' / relative
-            target.parent.mkdir(parents=True, exist_ok=True)
-            path.replace(target)
-            library.register_file(target)
-            outputs.append(relative)
-        manifest = staging / 'library' / 'cross_sections.xml'
+            library.register_file(path)
+            outputs[relative] = path
+        manifest = staging / 'cross_sections.xml'
         library.export_to_xml(manifest)
 
         # Make paths relative to the manifest, not the temporary staging directory.
@@ -186,10 +180,10 @@ def _generate(tasks, destination, args):
         # Old data remain untouched on processing/validation failure. Once publishing
         # starts, remove the old manifest so an I/O failure cannot advertise mixed data.
         (destination / 'cross_sections.xml').unlink(missing_ok=True)
-        for relative in outputs:
+        for relative, path in outputs.items():
             target = destination / relative
             target.parent.mkdir(parents=True, exist_ok=True)
-            (staging / 'library' / relative).replace(target)
+            path.replace(target)
         manifest.replace(destination / 'cross_sections.xml')
 
 

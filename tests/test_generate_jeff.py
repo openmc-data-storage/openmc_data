@@ -5,24 +5,24 @@ OPENMC_JEFF_INTEGRATION=1 and NJOY on PATH, and stream bounded archive samples
 rather than saving complete libraries. They are not full-library qualification.
 """
 
+from contextlib import nullcontext
 import hashlib
 import importlib
 import os
 from pathlib import Path
-import struct
 import sys
 import tarfile
 import tempfile
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 import zipfile
-import zlib
 
 import h5py
 import numpy as np
 import openmc.data
 import pytest
 import requests
+from stream_unzip import stream_unzip
 
 from openmc_data.generate import generate_jeff as gen
 from openmc_data.generate import generate_jeff33 as legacy
@@ -62,7 +62,6 @@ def inputs(root, release):
 
 @pytest.fixture
 def processing(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
     calls = []
     def neutron(path, output, libver, temperatures):
         calls.append(('neutron', path, libver, temperatures))
@@ -136,7 +135,6 @@ def test_defaults_and_legacy_import_safe(monkeypatch):
     ['--endf-dir', 'cache', '--download-dir', 'cache/download'],
 ])
 def test_invalid_arguments(argv, tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
     with pytest.raises(SystemExit) as error:
         gen.main(argv)
     assert error.value.code == 2
@@ -146,12 +144,10 @@ def test_invalid_arguments(argv, tmp_path, monkeypatch):
 @pytest.mark.parametrize('release', ['3.3', '4.0'])
 def test_thermal_download_dependency(tmp_path, processing, monkeypatch, release):
     inputs(tmp_path / f'jeff-{release}-endf', release)
-    groups = []
-    def prepare(details, archives, directory, args):
-        groups.append(directory.name)
+    prepare = MagicMock()
     monkeypatch.setattr(gen, '_prepare', prepare)
     gen.main(['-r', release, '-p', 'thermal', '--jobs', '1'])
-    assert groups == ['neutron', 'thermal']
+    assert [call.args[2].name for call in prepare.call_args_list] == ['neutron', 'thermal']
     assert {c[0] for c in processing} == {'thermal'}
     assert not (tmp_path / f'jeff-{release}-hdf5/neutron').exists()
 
@@ -233,22 +229,28 @@ def test_pool_exception_is_retrieved(tmp_path, processing, monkeypatch):
     assert not (tmp_path / 'jeff-4.0-hdf5/cross_sections.xml').exists()
 
 
+@pytest.mark.parametrize('temporary', [False, True])
 @pytest.mark.parametrize('failure', [False, True])
-def test_cleanup_only_after_success(tmp_path, processing, monkeypatch, failure):
+def test_input_cleanup(tmp_path, processing, monkeypatch, temporary, failure):
     root = tmp_path / 'jeff-4.0-endf'
     inputs(root, '4.0')
     archive = put(tmp_path / 'jeff-4.0-download/photon/data.zip')
     other = put(tmp_path / 'jeff-4.0-download/neutron/keep.zip')
-    monkeypatch.setattr(gen, '_prepare', lambda *args: None)
+    roots = []
+    def prepare(details, archives, directory, args):
+        roots.append(directory.parent)
+        inputs(directory.parent, '4.0')
+    monkeypatch.setattr(gen, '_prepare', prepare)
     if failure:
         monkeypatch.setattr(gen, '_generate', MagicMock(side_effect=RuntimeError('failed')))
-        with pytest.raises(RuntimeError):
-            gen.main(['-p', 'photon', '--jobs', '1', '--cleanup'])
-    else:
-        gen.main(['-p', 'photon', '--jobs', '1', '--cleanup'])
-    assert archive.exists() is failure
-    assert (root / 'photon').exists() is failure
+    with pytest.raises(RuntimeError) if failure else nullcontext():
+        gen.main(['-p', 'photon', '--jobs', '1', '--use-tmpdir' if temporary else '--cleanup'])
+    assert roots
+    assert all(path.exists() is not temporary for path in roots)
+    assert archive.exists() is (temporary or failure)
+    assert (root / 'photon').exists() is (temporary or failure)
     assert other.exists() and (root / 'neutron').exists()
+    assert Path.cwd() == tmp_path
 
 
 def test_legacy_offline_tmpdir_uses_persistent_inputs(tmp_path, processing):
@@ -259,24 +261,6 @@ def test_legacy_offline_tmpdir_uses_persistent_inputs(tmp_path, processing):
     assert Path.cwd() == cwd
     assert (tmp_path / 'jeff33_hdf5/cross_sections.xml').is_file()
     assert (tmp_path / 'jeff-3.3-endf/photon').exists()
-
-
-@pytest.mark.parametrize('failure', [False, True])
-def test_temporary_input_cleanup_and_cwd(tmp_path, processing, monkeypatch, failure):
-    roots = []
-    def prepare(details, archives, directory, args):
-        roots.append(directory.parent)
-        inputs(directory.parent, '4.0')
-    monkeypatch.setattr(gen, '_prepare', prepare)
-    if failure:
-        monkeypatch.setattr(gen, '_generate', MagicMock(side_effect=RuntimeError('failed')))
-        with pytest.raises(RuntimeError):
-            gen.main(['-p', 'photon', '--use-tmpdir', '--jobs', '1'])
-    else:
-        gen.main(['-p', 'photon', '--use-tmpdir', '--jobs', '1'])
-    assert roots and all(not root.exists() for root in roots)
-    assert Path.cwd() == tmp_path
-    assert not (tmp_path / 'jeff-4.0-download').exists()
 
 
 @pytest.mark.parametrize('download_enabled', [False, True])
@@ -401,35 +385,19 @@ def sample(details, wanted, destination, budget):
         r.raise_for_status()
         stream = BoundedStream(r.raw, budget)
         if name.endswith('.zip'):
-            while missing:
-                header = stream.read(30)
-                assert header[:4] == b'PK\x03\x04', 'Missing sample or unsupported ZIP header'
-                fields = struct.unpack('<4s5H3I2H', header)
-                flags, method, crc, compressed, uncompressed = fields[2], fields[3], *fields[6:9]
-                member = stream.read(fields[9]).decode()
-                extra = stream.read(fields[10])
-                assert not flags & 8, 'Streaming sample requires known member sizes'
-                if compressed == 0xffffffff:
-                    tag, length = struct.unpack('<HH', extra[:4])
-                    assert tag == 1 and length >= 16
-                    uncompressed, compressed = struct.unpack('<QQ', extra[4:20])
-                target = Path(member).name
-                chunks = []
-                while compressed:
-                    chunk = stream.read(min(65536, compressed))
-                    assert chunk, 'Truncated ZIP sample'
-                    compressed -= len(chunk)
-                    if target in missing:
-                        chunks.append(chunk)
+            # Delegate ZIP64, decompression, CRC and truncation checks to the reader.
+            for member, _, chunks in stream_unzip(iter(lambda: stream.read(65536), b'')):
+                target = Path(member.decode()).name
                 if target in missing:
-                    data = b''.join(chunks)
-                    if method == 8:
-                        data = zlib.decompress(data, -15)
-                    else:
-                        assert method == 0
-                    assert len(data) == uncompressed and zlib.crc32(data) == crc
-                    (destination / target).write_bytes(data)
+                    with (destination / target).open('wb') as output:
+                        for chunk in chunks:
+                            output.write(chunk)
                     missing.remove(target)
+                    if not missing:
+                        break
+                else:
+                    for _ in chunks:
+                        pass
         else:
             with tarfile.open(fileobj=stream, mode='r|gz') as archive:
                 for member in archive:
@@ -448,57 +416,39 @@ def sample(details, wanted, destination, budget):
 @pytest.mark.integration
 @pytest.mark.skipif(os.environ.get('OPENMC_JEFF_INTEGRATION') != '1',
                     reason='set OPENMC_JEFF_INTEGRATION=1 for opt-in network/NJOY sample validation')
-@pytest.mark.parametrize('release,name', [('3.3', '1-H-1g.jeff33'), ('4.0', 'n_1-H-001g.jeff')])
-def test_real_neutron_main(tmp_path, monkeypatch, release, name):
-    monkeypatch.chdir(tmp_path)
-    directory = tmp_path / f'jeff-{release}-endf/neutron'
-    sample(jeff_endf_details[release]['neutron'], [name], directory, 128 * 1024**2)
-    # Two workers also exercise real child-process execution, exception transport,
-    # and import safety on Python's forkserver/spawn multiprocessing defaults.
-    gen.main(['-r', release, '-p', 'neutron', '--no-download', '--no-extract',
-              '--temperatures', '293.6', '--jobs', '2'])
-    destination = tmp_path / f'jeff-{release}-hdf5'
-    data = openmc.data.IncidentNeutron.from_hdf5(destination / 'neutron/H1.h5')
-    assert data.name == 'H1' and '294K' in data.temperatures
-    assert len(openmc.data.DataLibrary.from_xml(destination / 'cross_sections.xml')) == 1
-
-
-@pytest.mark.network
-@pytest.mark.integration
-@pytest.mark.skipif(os.environ.get('OPENMC_JEFF_INTEGRATION') != '1',
-                    reason='set OPENMC_JEFF_INTEGRATION=1 for opt-in network/NJOY sample validation')
-@pytest.mark.parametrize('release,n,t', [
-    ('3.3', '1-H-1g.jeff33', 'tsl-HinH2O.jeff33'),
-    ('4.0', 'n_3-Li-007g.jeff', 'tsl_7Li_7LiD.jeff'),
+@pytest.mark.parametrize('release,particle,n,t', [
+    ('3.3', 'neutron', '1-H-1g.jeff33', None),
+    ('4.0', 'neutron', 'n_1-H-001g.jeff', None),
+    ('3.3', 'thermal', '1-H-1g.jeff33', 'tsl-HinH2O.jeff33'),
+    ('4.0', 'thermal', 'n_3-Li-007g.jeff', 'tsl_7Li_7LiD.jeff'),
+    ('3.3', 'photon', None, None), ('4.0', 'photon', None, None),
 ])
-def test_real_thermal_native_temperatures(tmp_path, release, n, t):
-    neutron = tmp_path / 'neutron'
-    thermal = tmp_path / 'thermal'
-    sample(jeff_endf_details[release]['neutron'], [n], neutron, 128 * 1024**2)
-    sample(jeff_endf_details[release]['thermal'], [t], thermal, 40 * 1024**2)
-    args = gen._parser().parse_args(['--jobs', '1', '--temperatures', '700'])
-    gen._generate([('thermal', (neutron / n, thermal / t))], tmp_path / 'output', args)
-    outputs = list((tmp_path / 'output/thermal').glob('*.h5'))
-    assert len(outputs) == 1
-    data = openmc.data.ThermalScattering.from_hdf5(outputs[0])
-    assert len(data.temperatures) > 1 and data.temperatures != ['700K']
-    assert len(openmc.data.DataLibrary.from_xml(tmp_path / 'output/cross_sections.xml')) == 1
-
-
-@pytest.mark.network
-@pytest.mark.integration
-@pytest.mark.skipif(os.environ.get('OPENMC_JEFF_INTEGRATION') != '1',
-                    reason='set OPENMC_JEFF_INTEGRATION=1 for opt-in network/NJOY sample validation')
-@pytest.mark.parametrize('release', ['3.3', '4.0'])
-def test_real_photon_pair(tmp_path, monkeypatch, release):
-    monkeypatch.chdir(tmp_path)
-    details = jeff_endf_details[release]['photon']
-    inputs = tmp_path / f'jeff-{release}-endf/photon'
-    for archive, prefix in zip(details['compressed_files'], ['photoat', 'atom']):
-        sample(dict(details, compressed_files=[archive]), [f'{prefix}-001_H_000.endf'],
-               inputs, 32 * 1024**2)
-    gen.main(['-r', release, '-p', 'photon', '--no-download', '--no-extract', '--jobs', '1'])
+def test_real_sample(tmp_path, release, particle, n, t):
+    root = tmp_path / f'jeff-{release}-endf'
     destination = tmp_path / f'jeff-{release}-hdf5'
-    data = openmc.data.IncidentPhoton.from_hdf5(destination / 'photon/H.h5')
-    assert data.atomic_number == 1
+    details = jeff_endf_details[release]
+    if n:
+        sample(details['neutron'], [n], root / 'neutron', 128 * 1024**2)
+    if t:
+        sample(details['thermal'], [t], root / 'thermal', 40 * 1024**2)
+        args = gen._parser().parse_args(['--jobs', '1', '--temperatures', '700'])
+        gen._generate([('thermal', (root / 'neutron' / n, root / 'thermal' / t))], destination, args)
+    else:
+        if particle == 'photon':
+            for archive, prefix in zip(details['photon']['compressed_files'], ['photoat', 'atom']):
+                sample(dict(details['photon'], compressed_files=[archive]),
+                       [f'{prefix}-001_H_000.endf'], root / 'photon', 32 * 1024**2)
+        # Real neutron workers exercise child-process import safety and error transport.
+        gen.main(offline(release, [particle]) + ['--temperatures', '293.6',
+                                                '--jobs', '2' if n else '1'])
+    outputs = list((destination / particle).glob('*.h5'))
+    assert len(outputs) == 1
+    if particle == 'neutron':
+        data = openmc.data.IncidentNeutron.from_hdf5(outputs[0])
+        assert data.name == 'H1' and '294K' in data.temperatures
+    elif particle == 'thermal':
+        data = openmc.data.ThermalScattering.from_hdf5(outputs[0])
+        assert len(data.temperatures) > 1 and data.temperatures != ['700K']
+    else:
+        assert openmc.data.IncidentPhoton.from_hdf5(outputs[0]).atomic_number == 1
     assert len(openmc.data.DataLibrary.from_xml(destination / 'cross_sections.xml')) == 1
