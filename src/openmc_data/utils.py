@@ -223,6 +223,9 @@ def apply_updates(update_archives, target_dir, pattern='*.dat'):
     Each archive is extracted on its own and its files replace the files of
     the same name in ``target_dir``. Archives are applied in the order given,
     so a later update to an evaluation takes precedence over an earlier one.
+    Files that are not in ``target_dir``, such as corrections to another
+    sublibrary, are skipped, but an archive none of whose files are in
+    ``target_dir`` is an error.
 
     Parameters
     ----------
@@ -240,14 +243,21 @@ def apply_updates(update_archives, target_dir, pattern='*.dat'):
             updated_files = sorted(Path(tmp).rglob(pattern))
             if not updated_files:
                 raise FileNotFoundError(f'No {pattern} files found in {archive}')
-            for updated_file in updated_files:
-                destination = target_dir / updated_file.name
-                if not destination.is_file():
-                    raise FileNotFoundError(
-                        f'{archive} updates {updated_file.name}, which is not '
-                        f'in {target_dir}')
-                shutil.copyfile(updated_file, destination)
-            print(f'Applied {len(updated_files)} updated files from {archive}')
+            # An update can also correct other sublibraries, such as the
+            # JENDL-5 _u20, _0K, _300K and _act files, which are skipped
+            applied = [f for f in updated_files if (target_dir / f.name).is_file()]
+            skipped = [f.name for f in updated_files if f not in applied]
+            if not applied:
+                raise FileNotFoundError(
+                    f'None of the files in {archive} are in {target_dir}: '
+                    f'{", ".join(skipped)}')
+            for updated_file in applied:
+                shutil.copyfile(updated_file, target_dir / updated_file.name)
+            message = f'Applied {len(applied)} updated files from {archive}'
+            if skipped:
+                message += (f', skipped {len(skipped)} that are not in '
+                            f'{target_dir.name}: {", ".join(skipped)}')
+            print(message)
 
 
 def _file_md5(path):
