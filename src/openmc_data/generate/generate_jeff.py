@@ -105,12 +105,22 @@ def _prepare(details, archives, inputs, args):
             staging.replace(inputs)
 
 
-def _index(directory, pattern):
+def _index(directory, pattern, allow_duplicates=False):
+    """Map file names to paths.
+
+    The JEFF-4.0 thermal archive holds burnup and temperature split PuO2, UO2
+    and Zy4 evaluations in subdirectories that reuse file names. These are not
+    used, so with ``allow_duplicates`` a repeated name is recorded as ambiguous
+    and only an error if it is required.
+    """
     result = {}
     for path in sorted(directory.rglob(pattern)):
         if path.is_file():
             if path.name in result:
-                raise ValueError(f'Ambiguous input {path.name}: {result[path.name]} and {path}')
+                if not allow_duplicates:
+                    raise ValueError(f'Ambiguous input {path.name}: {result[path.name]} and {path}')
+                result[path.name] = None
+                continue
             result[path.name] = path
     if not result:
         raise FileNotFoundError(f'No {pattern} inputs in {directory}; enable --extract or supply ENDF files')
@@ -120,6 +130,8 @@ def _index(directory, pattern):
 def _required(index, name):
     if name not in index:
         raise FileNotFoundError(f'Missing required evaluation: {name}')
+    if index[name] is None:
+        raise ValueError(f'Ambiguous input {name}: more than one file has this name')
     return index[name]
 
 
@@ -267,7 +279,8 @@ def main(argv=None):
                         print(f'Using TENDL-2019 replacement for {name}')
             tasks.extend(('neutron', (path,)) for path in selected.values())
         if 'thermal' in particles:
-            thermal = _index(inputs / 'thermal', details['neutron']['pattern'])
+            thermal = _index(inputs / 'thermal', details['neutron']['pattern'],
+                             allow_duplicates=True)
             tasks.extend(('thermal', (_required(neutrons, n), _required(thermal, t)))
                          for n, t in details['thermal']['pairs'])
         if 'photon' in particles:
