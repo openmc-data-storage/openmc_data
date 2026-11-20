@@ -117,6 +117,23 @@ parser.add_argument(
     "chain are dropped and reported",
 )
 parser.add_argument(
+    "--decay",
+    type=Path,
+    nargs="+",
+    default=None,
+    help="ENDF decay sublibrary of the same library as the neutron files, as "
+    "files, multi-material tapes or directories. The MF=8 states of each "
+    "product are matched to the isomer of the decay data with the closest "
+    "excitation energy. Without it the states are numbered by ranking their "
+    "excitation energies, which mislabels an isomer when an evaluation lists a "
+    "higher isomer but not a lower one, for example Ta182_m2 from Ta181 capture",
+)
+parser.add_argument(
+    "--decay-pattern",
+    default="*",
+    help="Glob pattern used to find the decay files in --decay directories",
+)
+parser.add_argument(
     "-j",
     "--jobs",
     type=int,
@@ -170,7 +187,35 @@ def read_flux():
     return boundaries, values
 
 
-def isomer_targets(evaluation, mt):
+def decay_isomers():
+    """Return {(Z, A): {metastable state: excitation energy in eV}} from the
+    --decay files, or None when they were not given."""
+    if args.decay is None:
+        return None
+    import openmc.data
+
+    paths = []
+    for path in args.decay:
+        if path.is_dir():
+            paths.extend(p for p in sorted(path.rglob(args.decay_pattern)) if p.is_file())
+        else:
+            paths.append(path)
+
+    isomers = defaultdict(dict)
+    for path in paths:
+        for material in openmc.data.endf.get_evaluations(path):
+            target = openmc.data.endf.as_evaluation(material).target
+            if target["isomeric_state"] > 0:
+                key = (target["atomic_number"], target["mass_number"])
+                isomers[key][target["isomeric_state"]] = target["excitation_energy"]
+    if not isomers:
+        raise ValueError(f"No isomers found in the decay data {args.decay}")
+    print(f"Read excitation energies of {sum(map(len, isomers.values()))} "
+          f"isomers from the decay data")
+    return dict(isomers)
+
+
+def isomer_targets(evaluation, mt, isomers=None):
     """Map the ENDF final state number to a nuclide name for one MF=8 section.
 
     The final state number (LFS) counts excited states of the product while
@@ -179,8 +224,13 @@ def isomer_targets(evaluation, mt):
     the metastable index is found by ranking the states of each product by their
     excitation energy (ELFS).
 
+    When ``isomers`` from the decay data are given, each excited state is
+    instead matched to the isomer of that product with the closest excitation
+    energy, as other libraries can list a higher isomer without the lower one.
+
     Returns {LFS: (nuclide name, LMF)} where LMF is the file, 9 or 10, that
-    holds the production data.
+    holds the production data, or None when two states of a product match the
+    same isomer.
     """
     from openmc.data import gnds_name
     from openmc.data.endf import get_cont_record, get_head_record, get_list_record
@@ -208,12 +258,22 @@ def isomer_targets(evaluation, mt):
         product_states = sorted(
             (state for state in states if state[0] == za_product), key=lambda s: s[1]
         )
+        z, a = divmod(za_product, 1000)
+        known = (isomers or {}).get((z, a))
         metastable = 0
+        assigned = set()
         for _za, excitation, lmf, lfs in product_states:
-            if excitation > 0.0:
+            if excitation <= 0.0:
+                state = 0
+            elif known:
+                state = min(known, key=lambda m: abs(known[m] - excitation))
+            else:
                 metastable += 1
-            z, a = divmod(za_product, 1000)
-            targets[lfs] = (gnds_name(z, a, metastable), lmf)
+                state = metastable
+            if state in assigned:
+                return None
+            assigned.add(state)
+            targets[lfs] = (gnds_name(z, a, state), lmf)
     return targets
 
 
@@ -310,9 +370,10 @@ def chain_nuclides():
 _state = {}
 
 
-def init_worker(midpoints, flux, in_chain):
+def init_worker(midpoints, flux, in_chain, isomers=None):
     import openmc.deplete.chain
 
+    _state["isomers"] = isomers
     _state["midpoints"] = midpoints
     _state["flux"] = flux
     _state["in_chain"] = in_chain
@@ -350,7 +411,12 @@ def process_file(path):
         if mf != 8 or mt not in mt_to_reaction:
             continue
         reaction = mt_to_reaction[mt]
-        targets = isomer_targets(evaluation, mt)
+        targets = isomer_targets(evaluation, mt, _state["isomers"])
+        if targets is None:
+            skipped.append(
+                ("two states match the same isomer", f"{parent} {reaction}")
+            )
+            continue
 
         # only reactions that make more than one state of a product branch
         if len({name for name, _lmf in targets.values()}) < 2:
@@ -423,6 +489,7 @@ def main():
     print(f"Found {len(paths)} ENDF neutron files in {args.neutron_dir}")
 
     in_chain = chain_nuclides()
+    isomers = decay_isomers()
 
     branching_ratios = defaultdict(dict)
     skipped = Counter()
@@ -452,14 +519,14 @@ def main():
             context = None
 
         if context is None:
-            init_worker(midpoints, flux, in_chain)
+            init_worker(midpoints, flux, in_chain, isomers)
             executor = ThreadPoolExecutor(max_workers=args.jobs)
         else:
             executor = ProcessPoolExecutor(
                 max_workers=args.jobs,
                 mp_context=context,
                 initializer=init_worker,
-                initargs=(midpoints, flux, in_chain),
+                initargs=(midpoints, flux, in_chain, isomers),
             )
         print(f"Processing with {args.jobs} jobs", flush=True)
         # as_completed rather than map so that the progress reflects the files
@@ -474,7 +541,7 @@ def main():
                 if done % 25 == 0 or done == len(paths):
                     print(f"  {done} of {len(paths)} files", flush=True)
     else:
-        init_worker(midpoints, flux, in_chain)
+        init_worker(midpoints, flux, in_chain, isomers)
         for done, path in enumerate(paths, 1):
             collect(process_file(path))
             if done % 25 == 0 or done == len(paths):
