@@ -7,7 +7,7 @@ from urllib.parse import urljoin
 
 import openmc.deplete
 
-from openmc_data.utils import download, extract
+from openmc_data.utils import apply_updates, download, extract
 from openmc_data import all_decay_release_details
 
 
@@ -62,7 +62,7 @@ def main():
     if not neutron_files:
         details = all_decay_release_details[library_name][args.release]['neutron']
 
-        for f in details['compressed_files']:
+        for f in details['compressed_files'] + details.get('updates', []):
             # Establish connection to URL
             download(
                 urljoin(details['base_url'], f),
@@ -74,10 +74,8 @@ def main():
             extraction_dir=endf_files_dir,
             del_compressed_file=False
         )
-        for erratum in details["errata"]:
-            files = Path('.').rglob(erratum)
-            for p in files:
-                p.rename((endf_files_dir / details["endf_files"]).parent / p.name)
+        apply_updates([download_path / f for f in details.get('updates', [])],
+                      (endf_files_dir / details['endf_files']).parent)
         neutron_files = endf_files_dir.glob(details['endf_files'])
 
     decay_files = args.decay

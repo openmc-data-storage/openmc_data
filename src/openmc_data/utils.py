@@ -7,6 +7,7 @@ from typing import Iterable
 import warnings
 import zipfile
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
@@ -213,6 +214,39 @@ def extract(
     if del_compressed_file:
         for compressed_file in compressed_files:
             Path(compressed_file).unlink(missing_ok=True)
+
+
+def apply_updates(update_archives, target_dir, pattern='*.dat'):
+    """Overwrite evaluations in an extracted library with updated versions
+
+    Each archive is extracted on its own and its files replace the files of
+    the same name in ``target_dir``. Archives are applied in the order given,
+    so a later update to an evaluation takes precedence over an earlier one.
+
+    Parameters
+    ----------
+    update_archives : iterable of os.PathLike or str
+        Compressed update archives, oldest first.
+    target_dir : os.PathLike or str
+        The directory that holds the extracted evaluations to update.
+    pattern : str
+        Glob pattern matching the evaluation files within each archive.
+    """
+    target_dir = Path(target_dir)
+    for archive in update_archives:
+        with TemporaryDirectory(prefix='.update-', dir=target_dir.parent) as tmp:
+            extract(archive, Path(tmp), verbose=False)
+            updated_files = sorted(Path(tmp).rglob(pattern))
+            if not updated_files:
+                raise FileNotFoundError(f'No {pattern} files found in {archive}')
+            for updated_file in updated_files:
+                destination = target_dir / updated_file.name
+                if not destination.is_file():
+                    raise FileNotFoundError(
+                        f'{archive} updates {updated_file.name}, which is not '
+                        f'in {target_dir}')
+                shutil.copyfile(updated_file, destination)
+            print(f'Applied {len(updated_files)} updated files from {archive}')
 
 
 def _file_md5(path):

@@ -79,7 +79,7 @@ def convert_urls():
         for release, particles in releases.items():
             for particle, file_types in particles.items():
                 for file_type, value in file_types.items():
-                    for file in value['compressed_files']:
+                    for file in value['compressed_files'] + value.get('updates', []):
                         url = value['base_url'] + file + value.get('url_suffix', '')
                         yield pytest.param(url, value.get('as_browser', False),
                                            id=f"{library}-{release}-{particle}-{file_type}-{file}")
@@ -128,7 +128,7 @@ def decay_urls():
                 if isinstance(base_urls, str):
                     base_urls = [base_urls]
                 for base_url in base_urls:
-                    for file in value['compressed_files']:
+                    for file in value['compressed_files'] + value.get('updates', []):
                         yield pytest.param(base_url + file,
                                            id=f"{library}-{release}-{particle}-{file}")
 
