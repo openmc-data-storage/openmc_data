@@ -553,6 +553,18 @@ all_release_details = {
                     'compressed_file_size': 4.1,
                     'uncompressed_file_size': 16
                 }
+            },
+            'photon': {
+                'endf': {
+                    'base_url': 'https://wwwndc.jaea.go.jp/ftpnd/ftp/JENDL/',
+                    'compressed_files': ['jendl5-pa.tar.gz', 'jendl5-ar.tar.gz'],
+                    'checksums': ['50b5a159b80a105a8e4b6cf0d6832297',
+                                  '71bf76621f12d132ae2e35fff98c8f77'],
+                    'photo_files': 'jendl5-pa/*.dat',
+                    'atom_files': 'jendl5-ar/*.dat',
+                    'compressed_file_size': 0.04,
+                    'uncompressed_file_size': 0.1
+                }
             }
         }
     }
