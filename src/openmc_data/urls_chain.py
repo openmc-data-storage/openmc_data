@@ -46,18 +46,52 @@ all_decay_release_details = {
     'jeff': {
         '3.3': {
             'neutron': {
-                'base_url': ['https://www.oecd-nea.org/dbdata/jeff/jeff33/downloads/'],
-                'compressed_files': ['JEFF33-n.tgz']
+                'base_url': ['https://data.oecd-nea.org/api/records/bh7jn-rm903/files/'],
+                'compressed_files': ['JEFF33-n.tgz'],
+                'url_suffix': '/content',
+                'as_browser': True,
+                'checksums': ['e540bbf95179257280c61acfa75c83de'],
+                'endf_files': '*.jeff33',
             },
             'decay': {
-                'base_url': ['https://www.oecd-nea.org/dbdata/jeff/jeff33/downloads/'],
-                'compressed_files': ['JEFF33-rdd.zip']
+                'base_url': ['https://data.oecd-nea.org/api/records/qfhqd-s0y84/files/'],
+                'compressed_files': ['JEFF33-rdd_all.asc'],
+                'url_suffix': '/content',
+                'as_browser': True,
+                'checksums': ['35b230bbed62d627b415179ce3e531a8'],
             },
             'nfy': {
-                'base_url': ['https://www.oecd-nea.org/dbdata/jeff/jeff33/downloads/'],
-                'compressed_files': ['JEFF33-nfy.asc']
-            }       
-        }
+                'base_url': ['https://data.oecd-nea.org/api/records/nhfqy-hvz09/files/'],
+                'compressed_files': ['JEFF33-nfy.asc'],
+                'url_suffix': '/content',
+                'as_browser': True,
+                'checksums': ['a7909c663e376a3e99138717861d163c'],
+            },
+        },
+        '4.0': {
+            'neutron': {
+                'base_url': ['https://data.oecd-nea.org/api/records/e9ajn-a3p20/files/'],
+                'compressed_files': ['JEFF40-Evaluations-Neutron-593.zip'],
+                'url_suffix': '/content',
+                'as_browser': True,
+                'checksums': ['51d00ee7bf1491d428f9b30a9782e41d'],
+                'endf_files': '*.jeff',
+            },
+            'decay': {
+                'base_url': ['https://data.oecd-nea.org/api/records/tw0c6-t1386/files/'],
+                'compressed_files': ['Radioactive_Decay_Data_JEFF-40.txt'],
+                'url_suffix': '/content',
+                'as_browser': True,
+                'checksums': ['1dbde55c142501b2359c49d5333d6e70'],
+            },
+            'nfy': {
+                'base_url': ['https://data.oecd-nea.org/api/records/trtwt-k2828/files/'],
+                'compressed_files': ['nf_Fission_Yields_JEFF-40.txt'],
+                'url_suffix': '/content',
+                'as_browser': True,
+                'checksums': ['6eee8b1f4728068894577bb4cd8612af'],
+            },
+        },
     },
     'tendl': {
         '2015': {
