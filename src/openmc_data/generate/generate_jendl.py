@@ -12,7 +12,7 @@ from pathlib import Path
 from urllib.parse import urljoin
 
 import openmc.data
-from openmc_data import apply_updates, download, extract, process_neutron, state_download_size, all_release_details, ProgressTracker
+from openmc_data import apply_updates, download, extract, process_neutron, process_thermal, state_download_size, all_release_details, ProgressTracker
 
 
 class CustomFormatter(argparse.ArgumentDefaultsHelpFormatter,
@@ -42,11 +42,13 @@ def parse_args(argv=None):
     parser.add_argument('-r', '--release', choices=['4.0', '5.0'], default='4.0',
                         help="The nuclear data library release version. "
                         "The options currently supported are 4.0 and 5.0")
-    parser.add_argument('-p', '--particles', choices=['neutron', 'photon'],
+    parser.add_argument('-p', '--particles', choices=['neutron', 'thermal', 'photon'],
                         nargs='+', default=None,
-                        help="Incident particles to include. Defaults to every "
-                        "particle available for the release. Photon data is "
-                        "available for release 5.0")
+                        help="Data to include. Defaults to everything available "
+                        "for the release. Thermal scattering and photon data are "
+                        "available for release 5.0. Thermal scattering also needs "
+                        "the neutron evaluations, which are downloaded and "
+                        "extracted when thermal is selected")
     parser.add_argument('--cleanup', action='store_true',
                         help="Remove download directories when data has "
                         "been processed")
@@ -109,16 +111,21 @@ def main(argv=None):
             raise ValueError(f'JENDL-{args.release} has no {particle} data, '
                              f'available: {", ".join(release_details)}')
     details = {particle: release_details[particle]['endf'] for particle in particles}
+    # thermal scattering is processed together with the neutron evaluations of
+    # its principal scatterer, so their files are needed even if not processed
+    archives = dict(details)
+    if 'thermal' in details:
+        archives.setdefault('neutron', release_details['neutron']['endf'])
 
     # ==============================================================================
     # DOWNLOAD FILES FROM WEBSITE
 
     if args.download:
         state_download_size(
-            sum(d['compressed_file_size'] for d in details.values()),
-            sum(d['uncompressed_file_size'] for d in details.values()),
+            sum(d['compressed_file_size'] for d in archives.values()),
+            sum(d['uncompressed_file_size'] for d in archives.values()),
             'GB')
-        for d in details.values():
+        for d in archives.values():
             checksums = dict(zip(d['compressed_files'], d.get('checksums', [])))
             for f in d['compressed_files'] + d.get('updates', []):
                 # Establish connection to URL
@@ -132,8 +139,8 @@ def main(argv=None):
     # ==============================================================================
     # EXTRACT FILES FROM TGZ
     if args.extract:
-        if 'neutron' in details:
-            neutron = details['neutron']
+        if 'neutron' in archives:
+            neutron = archives['neutron']
             extract(
                 compressed_files=[download_path / f for f in neutron['compressed_files']],
                 extraction_dir=endf_files_dir,
@@ -145,6 +152,12 @@ def main(argv=None):
             if args.cleanup:
                 for archive in update_archives:
                     archive.unlink(missing_ok=True)
+        if 'thermal' in details:
+            extract(
+                compressed_files=[download_path / f for f in details['thermal']['compressed_files']],
+                extraction_dir=endf_files_dir,
+                del_compressed_file=args.cleanup
+            )
         if 'photon' in details:
             extract(
                 compressed_files=[download_path / f for f in details['photon']['compressed_files']],
@@ -182,6 +195,40 @@ def main(argv=None):
 
         # Register with library
         for p in sorted((args.destination).glob('*.h5')):
+            library.register_file(p)
+
+    # ==============================================================================
+    # GENERATE HDF5 LIBRARY -- THERMAL SCATTERING FILES
+
+    if 'thermal' in details:
+        thermal_files = [
+            (endf_files_dir / neutron, endf_files_dir / thermal, name)
+            for neutron, thermal, name in details['thermal']['sab_files']
+        ]
+        missing = [str(path) for pair in thermal_files for path in pair[:2]
+                   if not path.is_file()]
+        if missing:
+            raise FileNotFoundError('Thermal scattering needs these files: '
+                                    + ', '.join(sorted(set(missing))))
+        thermal_destination = args.destination / 'thermal'
+        thermal_destination.mkdir(parents=True, exist_ok=True)
+
+        with Pool() as pool:
+            results = []
+            tracker = ProgressTracker(len(thermal_files), verb='Processed')
+            for neutron, thermal, name in thermal_files:
+                func_args = (neutron, thermal, thermal_destination, args.libver, name)
+                r = pool.apply_async(
+                    process_thermal, func_args,
+                    callback=tracker.callback(name),
+                    error_callback=tracker.callback(name),
+                )
+                results.append(r)
+
+            for r in results:
+                r.wait()
+
+        for p in sorted(thermal_destination.glob('*.h5')):
             library.register_file(p)
 
     # ==============================================================================
