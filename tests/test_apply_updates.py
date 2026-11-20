@@ -93,3 +93,12 @@ def test_jendl5_updates_are_in_release_order(details):
     assert numbers == sorted(numbers) == [1, 6, 7, 10, 11, 12, 14, 17]
     assert details["compressed_files"] == ["jendl5-n.tar.gz"]
     assert "errata" not in details
+
+
+def test_jendl5_chain_uses_only_neutron_induced_yields():
+    # jendl5-fpy_upd8 also holds spontaneous fission yields for U238 and four
+    # Cm isotopes, which would replace their neutron induced yields
+    from pathlib import PurePath
+    pattern = all_decay_release_details["jendl"]["5.0"]["nfy"]["nfy_files"]
+    assert PurePath("jendl5-fpy_upd8/fpy_092-U-238_nf.dat").match(pattern)
+    assert not PurePath("jendl5-fpy_upd8/fpy_092-U-238_sf.dat").match(pattern)
