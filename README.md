@@ -159,7 +159,7 @@ See `convert_jeff --help` for all options.
 | Script name | Library | Release |
 |-|-|-|
 |generate_endf_chain | ENDF/B | VII.1<br>VIII.0<br>VIII.1  |
-|generate_jeff_chain | JEFF | 3.3  |
+|generate_jeff_chain | JEFF | 3.3<br>4.0 (default) |
 |generate_jendl_chain | JENDL | 5.0 |
 |generate_tendl_chain | TENDL | 2015<br>2017<br>2019<br>2021<br>2023<br>2025 |
 |generate_serpent_fissq | |  |
