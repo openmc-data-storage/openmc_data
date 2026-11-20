@@ -57,6 +57,21 @@ def test_update_for_unknown_evaluation_fails(tmp_path, library):
         apply_updates([archive], library)
 
 
+def test_updates_to_other_sublibraries_are_skipped(tmp_path, library, capsys):
+    # jendl5-n_upd14 also corrects the Na-23 files of four other sublibraries
+    archive = make_archive(tmp_path / "upd14.tar.gz", {
+        "n_026-Fe-057.dat": "upd14",
+        "n_026-Fe-057_u20.dat": "u20",
+        "n_026-Fe-057_0K.dat": "0K",
+    })
+    apply_updates([archive], library)
+    assert (library / "n_026-Fe-057.dat").read_text() == "upd14"
+    assert sorted(p.name for p in library.iterdir()) == [
+        "n_001-H-002.dat", "n_026-Fe-057.dat", "n_045-Rh-101m1.dat"]
+    output = capsys.readouterr().out
+    assert "skipped 2" in output and "n_026-Fe-057_u20.dat" in output
+
+
 def test_update_without_evaluations_fails(tmp_path, library):
     archive = make_archive(tmp_path / "upd.tar.gz", {"README": "nothing"})
     with pytest.raises(FileNotFoundError, match="No"):
@@ -78,3 +93,12 @@ def test_jendl5_updates_are_in_release_order(details):
     assert numbers == sorted(numbers) == [1, 6, 7, 10, 11, 12, 14, 17]
     assert details["compressed_files"] == ["jendl5-n.tar.gz"]
     assert "errata" not in details
+
+
+def test_jendl5_chain_uses_only_neutron_induced_yields():
+    # jendl5-fpy_upd8 also holds spontaneous fission yields for U238 and four
+    # Cm isotopes, which would replace their neutron induced yields
+    from pathlib import PurePath
+    pattern = all_decay_release_details["jendl"]["5.0"]["nfy"]["nfy_files"]
+    assert PurePath("jendl5-fpy_upd8/fpy_092-U-238_nf.dat").match(pattern)
+    assert not PurePath("jendl5-fpy_upd8/fpy_092-U-238_sf.dat").match(pattern)
