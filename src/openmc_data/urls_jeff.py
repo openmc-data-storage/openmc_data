@@ -127,7 +127,7 @@ jeff_endf_details = {
             'base_url': 'https://www.nndc.bnl.gov/endf-releases/releases/B-VIII.1/',
             'compressed_files': ['photoat/photoat-version.VIII.1.tar.gz',
                                  'atomic_relax/atomic_relax-version.VIII.1.tar.gz'],
-            'checksums': ['6d5f4830f6290d6c618803a8391ba0cf', '70e9ca0c481236499b7a3e0a490f4ef2'],
+            'checksums': ['97083fc0d867849260e97cabcc15aaa9', '93ecd523d1c8858da969dca7c91eea52'],
         },
     },
 }

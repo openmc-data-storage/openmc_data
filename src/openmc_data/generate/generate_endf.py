@@ -219,8 +219,8 @@ def main():
                     'thermal_scatt/thermal_scatt-version.VIII.1.tar.gz',
                 ],
                 'checksums': [
-                    'dc622c0f1c3c4477433e698266e0fc80',
-                    'f7bcae02b2da577e28a3a083e07a3a3a',
+                    '1a6abeac85bd2425df47983752687a93',
+                    '55f8488710bc3ac59470d91f52d2d395',
                 ],
                 'file_type': 'endf',
                 'endf_files': neutron_dir.rglob('n-*.endf'),
@@ -350,8 +350,8 @@ def main():
                     'atomic_relax/atomic_relax-version.VIII.1.tar.gz',
                 ],
                 'checksums': [
-                    '6d5f4830f6290d6c618803a8391ba0cf',
-                    '70e9ca0c481236499b7a3e0a490f4ef2',
+                    '97083fc0d867849260e97cabcc15aaa9',
+                    '93ecd523d1c8858da969dca7c91eea52',
                 ],
                 'file_type': 'endf',
                 'photo_files': endf_files_dir.joinpath('photon').rglob('photoat*.endf'),
