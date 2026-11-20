@@ -20,41 +20,74 @@ class CustomFormatter(argparse.ArgumentDefaultsHelpFormatter,
     pass
 
 
-parser = argparse.ArgumentParser(
-    description=__doc__,
-    formatter_class=CustomFormatter
-)
-parser.add_argument('-d', '--destination', type=Path, default=None,
-                    help='Directory to create new library in')
-parser.add_argument('--download', action='store_true',
-                    help='Download files')
-parser.add_argument('--no-download', dest='download', action='store_false',
-                    help='Do not download files')
-parser.add_argument('--extract', action='store_true',
-                    help='Extract tar/zip files')
-parser.add_argument('--no-extract', dest='extract', action='store_false',
-                    help='Do not extract tar/zip files')
-parser.add_argument('--libver', choices=['earliest', 'latest'],
-                    default='latest', help="Output HDF5 versioning. Use "
-                    "'earliest' for backwards compatibility or 'latest' for "
-                    "performance")
-parser.add_argument('-r', '--release', choices=['4.0', '5.0'], default='4.0',
-                    help="The nuclear data library release version. "
-                    "The options currently supported are 4.0 and 5.0")
-parser.add_argument('--cleanup', action='store_true',
-                    help="Remove download directories when data has "
-                    "been processed")
-parser.add_argument('--no-cleanup', dest='cleanup', action='store_false',
-                    help="Do not remove download directories when data has "
-                    "been processed")
-parser.add_argument('--temperatures', type=float,
-                    default=[250.0, 293.6, 600.0, 900.0, 1200.0, 2500.0],
-                    help="Temperatures in Kelvin", nargs='+')
-parser.set_defaults(download=True, extract=True, cleanup=False)
-args = parser.parse_args()
+def parse_args(argv=None):
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=CustomFormatter
+    )
+    parser.add_argument('-d', '--destination', type=Path, default=None,
+                        help='Directory to create new library in')
+    parser.add_argument('--download', action='store_true',
+                        help='Download files')
+    parser.add_argument('--no-download', dest='download', action='store_false',
+                        help='Do not download files')
+    parser.add_argument('--extract', action='store_true',
+                        help='Extract tar/zip files')
+    parser.add_argument('--no-extract', dest='extract', action='store_false',
+                        help='Do not extract tar/zip files')
+    parser.add_argument('--libver', choices=['earliest', 'latest'],
+                        default='latest', help="Output HDF5 versioning. Use "
+                        "'earliest' for backwards compatibility or 'latest' for "
+                        "performance")
+    parser.add_argument('-r', '--release', choices=['4.0', '5.0'], default='4.0',
+                        help="The nuclear data library release version. "
+                        "The options currently supported are 4.0 and 5.0")
+    parser.add_argument('-p', '--particles', choices=['neutron', 'photon'],
+                        nargs='+', default=None,
+                        help="Incident particles to include. Defaults to every "
+                        "particle available for the release. Photon data is "
+                        "available for release 5.0")
+    parser.add_argument('--cleanup', action='store_true',
+                        help="Remove download directories when data has "
+                        "been processed")
+    parser.add_argument('--no-cleanup', dest='cleanup', action='store_false',
+                        help="Do not remove download directories when data has "
+                        "been processed")
+    parser.add_argument('--temperatures', type=float,
+                        default=[250.0, 293.6, 600.0, 900.0, 1200.0, 2500.0],
+                        help="Temperatures in Kelvin", nargs='+')
+    parser.set_defaults(download=True, extract=True, cleanup=False)
+    return parser.parse_args(argv)
 
 
-def main():
+def photon_pairs(photo_files, atom_files):
+    """Pair photo-atomic and atomic relaxation evaluations by atomic number
+
+    The pairing reads the target of each evaluation rather than relying on
+    the two sublibraries using matching file names.
+    """
+    def by_atomic_number(files, description):
+        evaluations = {}
+        for path in files:
+            z = openmc.data.endf.Evaluation(path).target['atomic_number']
+            if z in evaluations:
+                raise ValueError(f'Two {description} evaluations for Z={z}: '
+                                 f'{evaluations[z]} and {path}')
+            evaluations[z] = path
+        if not evaluations:
+            raise FileNotFoundError(f'No {description} evaluations found')
+        return evaluations
+
+    photo = by_atomic_number(photo_files, 'photo-atomic')
+    atom = by_atomic_number(atom_files, 'atomic relaxation')
+    missing = sorted(photo.keys() - atom.keys())
+    if missing:
+        raise FileNotFoundError(f'No atomic relaxation evaluations for Z={missing}')
+    return [(photo[z], atom[z]) for z in sorted(photo)]
+
+
+def main(argv=None):
+    args = parse_args(argv)
 
     library_name = 'jendl'
 
@@ -69,66 +102,104 @@ def main():
 
     # This dictionary contains all the unique information about each release.
     # This can be exstened to accommodated new releases
-    details = all_release_details[library_name][args.release]['neutron']['endf']
+    release_details = all_release_details[library_name][args.release]
+    particles = args.particles or list(release_details)
+    for particle in particles:
+        if particle not in release_details:
+            raise ValueError(f'JENDL-{args.release} has no {particle} data, '
+                             f'available: {", ".join(release_details)}')
+    details = {particle: release_details[particle]['endf'] for particle in particles}
 
     # ==============================================================================
     # DOWNLOAD FILES FROM WEBSITE
 
     if args.download:
-        state_download_size(details['compressed_file_size'], details['uncompressed_file_size'], 'GB')
-        for f in details['compressed_files'] + details.get('updates', []):
-            # Establish connection to URL
-            download(
-                urljoin(details['base_url'], f),
-                context=ssl._create_unverified_context(),
-                output_path=download_path
-            )
+        state_download_size(
+            sum(d['compressed_file_size'] for d in details.values()),
+            sum(d['uncompressed_file_size'] for d in details.values()),
+            'GB')
+        for d in details.values():
+            checksums = dict(zip(d['compressed_files'], d.get('checksums', [])))
+            for f in d['compressed_files'] + d.get('updates', []):
+                # Establish connection to URL
+                download(
+                    urljoin(d['base_url'], f),
+                    checksum=checksums.get(f),
+                    context=ssl._create_unverified_context(),
+                    output_path=download_path
+                )
 
     # ==============================================================================
     # EXTRACT FILES FROM TGZ
     if args.extract:
-        extract(
-            compressed_files=[download_path / f for f in details['compressed_files']],
-            extraction_dir=endf_files_dir,
-            del_compressed_file=args.cleanup
-        )
-        update_archives = [download_path / f for f in details.get('updates', [])]
-        apply_updates(update_archives,
-                      (endf_files_dir / details['endf_files']).parent)
-        if args.cleanup:
-            for archive in update_archives:
-                archive.unlink(missing_ok=True)
-
-    # ==============================================================================
-    # GENERATE HDF5 LIBRARY -- NEUTRON FILES
-
-    # Get a list of all ENDF files
-    neutron_files = endf_files_dir.glob(details['endf_files'])
+        if 'neutron' in details:
+            neutron = details['neutron']
+            extract(
+                compressed_files=[download_path / f for f in neutron['compressed_files']],
+                extraction_dir=endf_files_dir,
+                del_compressed_file=args.cleanup
+            )
+            update_archives = [download_path / f for f in neutron.get('updates', [])]
+            apply_updates(update_archives,
+                          (endf_files_dir / neutron['endf_files']).parent)
+            if args.cleanup:
+                for archive in update_archives:
+                    archive.unlink(missing_ok=True)
+        if 'photon' in details:
+            extract(
+                compressed_files=[download_path / f for f in details['photon']['compressed_files']],
+                extraction_dir=endf_files_dir / 'photon',
+                del_compressed_file=args.cleanup
+            )
 
     # Create output directory if it doesn't exist
     args.destination.mkdir(parents=True, exist_ok=True)
 
     library = openmc.data.DataLibrary()
 
-    with Pool() as pool:
-        results = []
-        neutron_files = sorted(neutron_files)
-        tracker = ProgressTracker(len(neutron_files), verb='Processed')
-        for filename in neutron_files:
-            func_args = (filename, args.destination, args.libver, args.temperatures)
-            r = pool.apply_async(
-                process_neutron, func_args,
-                callback=tracker.callback(filename.name),
-                error_callback=tracker.callback(filename.name),
-            )
-            results.append(r)
+    # ==============================================================================
+    # GENERATE HDF5 LIBRARY -- NEUTRON FILES
 
-        for r in results:
-            r.wait()
+    if 'neutron' in details:
+        # Get a list of all ENDF files
+        neutron_files = endf_files_dir.glob(details['neutron']['endf_files'])
 
-    # Register with library
-    for p in sorted((args.destination).glob('*.h5')):
-        library.register_file(p)
+        with Pool() as pool:
+            results = []
+            neutron_files = sorted(neutron_files)
+            tracker = ProgressTracker(len(neutron_files), verb='Processed')
+            for filename in neutron_files:
+                func_args = (filename, args.destination, args.libver, args.temperatures)
+                r = pool.apply_async(
+                    process_neutron, func_args,
+                    callback=tracker.callback(filename.name),
+                    error_callback=tracker.callback(filename.name),
+                )
+                results.append(r)
+
+            for r in results:
+                r.wait()
+
+        # Register with library
+        for p in sorted((args.destination).glob('*.h5')):
+            library.register_file(p)
+
+    # ==============================================================================
+    # GENERATE HDF5 LIBRARY -- PHOTON FILES
+
+    if 'photon' in details:
+        photon_dir = endf_files_dir / 'photon'
+        pairs = photon_pairs(photon_dir.glob(details['photon']['photo_files']),
+                             photon_dir.glob(details['photon']['atom_files']))
+        photon_destination = args.destination / 'photon'
+        photon_destination.mkdir(parents=True, exist_ok=True)
+        tracker = ProgressTracker(len(pairs))
+        for photo_path, atom_path in pairs:
+            tracker.starting(f'{photo_path.name} {atom_path.name}')
+            data = openmc.data.IncidentPhoton.from_endf(photo_path, atom_path)
+            h5_file = photon_destination / f'{data.name}.h5'
+            data.export_to_hdf5(h5_file, 'w', libver=args.libver)
+            library.register_file(h5_file)
 
     # Write cross_sections.xml
     library.export_to_xml(args.destination / 'cross_sections.xml')
