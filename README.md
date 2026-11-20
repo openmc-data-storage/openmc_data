@@ -190,6 +190,7 @@ generate_branching_ratios \
     --neutron-dir tendl-2017-endf/neutron \
     --fispact-fluxes fns/Ag/2000exp_5min_fluxes \
     --chain chain_tendl_2017_endf80.xml \
+    --decay endf-b8.0-endf/decay --decay-pattern '*.endf' \
     --jobs 20 \
     -o branching_ratios_tendl_2017_fns.json
 
@@ -199,6 +200,14 @@ add_branching_ratios \
     -b branching_ratios_tendl_2017_fns.json \
     -o chain_tendl_2017_endf80_fns.xml
 ```
+
+The MF=8 section lists the excited states of each product by excitation energy
+but not by isomer number. Pass the decay sublibrary used for the chain with
+`--decay` so that each state is matched to the isomer with the closest
+excitation energy. Without it the states are numbered in order of energy, which
+mislabels an isomer whenever an evaluation lists a higher isomer without the
+lower one. JEFF-4.0 Ta181 capture, for example, only lists the 519.6 keV
+Ta182_m2 state, which ranking calls Ta182_m1.
 
 Most reactions store their isomeric production as cross sections in MF=10 and
 need no other data. The remainder store multiplicities in MF=9 which have to be
