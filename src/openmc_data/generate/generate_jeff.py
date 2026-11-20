@@ -85,7 +85,8 @@ def _prepare(details, archives, inputs, args):
         if args.download and not (archive.is_file() and checksum
                                   and _file_md5(archive) == checksum):
             download(details['base_url'] + name + details.get('url_suffix', ''),
-                     checksum=checksum, output_path=archives,
+                     checksum=checksum, as_browser=details.get('as_browser', False),
+                     output_path=archives,
                      output_filename=archive.name, timeout=60)
         if args.extract:
             if not archive.is_file():
