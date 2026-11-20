@@ -92,6 +92,7 @@ jeff_endf_details = {
             'base_url': 'https://data.oecd-nea.org/api/records/bh7jn-rm903/files/',
             'compressed_files': ['JEFF33-n.tgz'],
             'url_suffix': '/content',
+            'as_browser': True,  # NEA refuses the default urllib User-Agent
             'checksums': ['e540bbf95179257280c61acfa75c83de'],
             'pattern': '*.jeff33',
         },
@@ -99,6 +100,7 @@ jeff_endf_details = {
             'base_url': 'https://data.oecd-nea.org/api/records/3nm84-46r21/files/',
             'compressed_files': ['JEFF33-tsl.tgz'],
             'url_suffix': '/content',
+            'as_browser': True,  # NEA refuses the default urllib User-Agent
             'checksums': ['82a6df4cb802aa4a09b95309f7861c54'],
             'pairs': THERMAL_PAIRS_33,
         },
@@ -113,6 +115,7 @@ jeff_endf_details = {
             'base_url': 'https://data.oecd-nea.org/api/records/e9ajn-a3p20/files/',
             'compressed_files': ['JEFF40-Evaluations-Neutron-593.zip'],
             'url_suffix': '/content',
+            'as_browser': True,  # NEA refuses the default urllib User-Agent
             'checksums': ['51d00ee7bf1491d428f9b30a9782e41d'],
             'pattern': '*.jeff',
         },
@@ -120,6 +123,7 @@ jeff_endf_details = {
             'base_url': 'https://data.oecd-nea.org/api/records/scmva-nqh68/files/',
             'compressed_files': ['JEFF40-Evaluations-TSL.zip'],
             'url_suffix': '/content',
+            'as_browser': True,  # NEA refuses the default urllib User-Agent
             'checksums': ['13d22cd59f83368885ab2d86300b470a'],
             'pairs': THERMAL_PAIRS_40,
         },
