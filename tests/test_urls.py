@@ -129,14 +129,15 @@ def decay_urls():
                     base_urls = [base_urls]
                 for base_url in base_urls:
                     for file in value['compressed_files'] + value.get('updates', []):
-                        yield pytest.param(base_url + file,
+                        yield pytest.param(base_url + file + value.get('url_suffix', ''),
+                                           value.get('as_browser', False),
                                            id=f"{library}-{release}-{particle}-{file}")
 
 
 @pytest.mark.network
-@pytest.mark.parametrize('url', list(decay_urls()))
-def test_decay_urls(url):
-    check_url(url)
+@pytest.mark.parametrize('url,as_browser', list(decay_urls()))
+def test_decay_urls(url, as_browser):
+    check_url(url, as_browser=as_browser)
 
 
 # Validate every registry entry offline, including the URL not tested over HTTP.
@@ -145,8 +146,13 @@ def test_convert_url_registry(url, as_browser):
     validate_url(url)
 
 
-@pytest.mark.parametrize('url', list(h5_urls()) + list(xml_urls()) + list(decay_urls()))
+@pytest.mark.parametrize('url', list(h5_urls()) + list(xml_urls()))
 def test_url_registry(url):
+    validate_url(url)
+
+
+@pytest.mark.parametrize('url,as_browser', list(decay_urls()))
+def test_decay_url_registry(url, as_browser):
     validate_url(url)
 
 
