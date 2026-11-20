@@ -227,6 +227,8 @@ def isomer_targets(evaluation, mt, isomers=None):
     When ``isomers`` from the decay data are given, each excited state is
     instead matched to the isomer of that product with the closest excitation
     energy, as other libraries can list a higher isomer without the lower one.
+    Products whose decay data gives an isomer an unknown (zero) excitation
+    energy fall back to the ranking.
 
     Returns {LFS: (nuclide name, LMF)} where LMF is the file, 9 or 10, that
     holds the production data, or None when two states of a product match the
@@ -260,6 +262,10 @@ def isomer_targets(evaluation, mt, isomers=None):
         )
         z, a = divmod(za_product, 1000)
         known = (isomers or {}).get((z, a))
+        if known and any(energy <= 0.0 for energy in known.values()):
+            # decay files give an excitation energy of zero when it is not
+            # known, which cannot be matched against
+            known = None
         metastable = 0
         assigned = set()
         for _za, excitation, lmf, lfs in product_states:
