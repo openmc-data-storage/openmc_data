@@ -135,12 +135,18 @@ all_decay_release_details = {
         '5.0': {
             'neutron': {
                 'base_url': 'https://wwwndc.jaea.go.jp/ftpnd/ftp/JENDL/',
-                'compressed_files': ['jendl5-n.tar.gz', 'jendl5-n_upd1.tar.gz',
-                                        'jendl5-n_upd6.tar.gz', 'jendl5-n_upd7.tar.gz',
-                                        'jendl5-n_upd10.tar.gz', 'jendl5-n_upd11.tar.gz',
-                                        'jendl5-n_upd12.tar.gz'],
+                'compressed_files': ['jendl5-n.tar.gz'],
+                # Corrected evaluations, applied over jendl5-n in this order. See
+                # https://wwwndc.jaea.go.jp/jendl/j5/JENDL-5_Errata.html
+                'updates': ['jendl5-n_upd1.tar.gz',
+                            'jendl5-n_upd6.tar.gz',
+                            'jendl5-n_upd7.tar.gz',
+                            'jendl5-n_upd10.tar.gz',
+                            'jendl5-n_upd11.tar.gz',
+                            'jendl5-n_upd12.tar.gz',
+                            'jendl5-n_upd14.tar.gz',
+                            'jendl5-n_upd17.tar.gz'],
                 'endf_files': 'jendl5-n/*.dat',
-                'errata': ['jendl5-n_upd1/*.dat', 'jendl-n_upd6/*.dat', '*.dat'],
             },
             'decay': {
                 'base_url': ['https://wwwndc.jaea.go.jp/ftpnd/ftp/JENDL/'],

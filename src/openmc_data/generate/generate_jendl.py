@@ -12,7 +12,7 @@ from pathlib import Path
 from urllib.parse import urljoin
 
 import openmc.data
-from openmc_data import download, extract, process_neutron, state_download_size, all_release_details, ProgressTracker
+from openmc_data import apply_updates, download, extract, process_neutron, state_download_size, all_release_details, ProgressTracker
 
 
 class CustomFormatter(argparse.ArgumentDefaultsHelpFormatter,
@@ -76,7 +76,7 @@ def main():
 
     if args.download:
         state_download_size(details['compressed_file_size'], details['uncompressed_file_size'], 'GB')
-        for f in details['compressed_files']:
+        for f in details['compressed_files'] + details.get('updates', []):
             # Establish connection to URL
             download(
                 urljoin(details['base_url'], f),
@@ -92,11 +92,12 @@ def main():
             extraction_dir=endf_files_dir,
             del_compressed_file=args.cleanup
         )
-    for erratum in details["errata"]:
-        files = Path('.').rglob(erratum)
-        for p in files:
-            p.rename((endf_files_dir / details["endf_files"]).parent / p.name)
-            
+        update_archives = [download_path / f for f in details.get('updates', [])]
+        apply_updates(update_archives,
+                      (endf_files_dir / details['endf_files']).parent)
+        if args.cleanup:
+            for archive in update_archives:
+                archive.unlink(missing_ok=True)
 
     # ==============================================================================
     # GENERATE HDF5 LIBRARY -- NEUTRON FILES

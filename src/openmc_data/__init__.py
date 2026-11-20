@@ -18,6 +18,7 @@ __all__ = ["__version__"]
 
 from .utils import (
     ProgressTracker,
+    apply_updates,
     calculate_download_size,
     download,
     extract,
