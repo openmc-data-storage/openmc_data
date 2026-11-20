@@ -8,6 +8,7 @@ import warnings
 import zipfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from urllib.error import URLError
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
@@ -291,24 +292,43 @@ def download(
 
     """
 
+    if output_filename is None:
+        output_filename = Path(Path(urlparse(url).path).name)
+        print(f'Using default output_filename {output_filename}')
+
+    if output_path is None:
+        local_path = Path(output_filename)
+    else:
+        Path(output_path).mkdir(parents=True, exist_ok=True)
+        local_path = Path(output_path) / output_filename
+
+    # A file that matches its checksum needs no network access at all, which
+    # also lets a file saved by hand stand in for a server that refuses scripts
+    if checksum is not None and local_path.is_file() and _file_md5(local_path) == checksum:
+        print(f'Skipping {local_path}, already downloaded')
+        return local_path
+
     if as_browser:
         page = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     else:
         page = url
 
-    with urlopen(page, **kwargs) as response:
+    try:
+        response = urlopen(page, **kwargs)
+    except (URLError, OSError) as error:
+        return _manual_download(url, local_path, checksum, error)
+
+    with response:
+        # Bot protection often answers with a 200 status and an HTML page
+        # instead of the file, which would otherwise be saved as the archive
+        content_type = response.headers.get_content_type()
+        if content_type == 'text/html' and not urlparse(url).path.endswith(('.html', '.htm')):
+            return _manual_download(
+                url, local_path, checksum,
+                'the server sent a web page instead of the file')
+
         # Get file size from header
         file_size = response.length
-
-        if output_filename is None:
-            output_filename = Path(Path(urlparse(url).path).name)
-            print(f'Using default output_filename {output_filename}')
-
-        if output_path is None:
-            local_path = Path(output_filename)
-        else:
-            Path(output_path).mkdir(parents=True, exist_ok=True)
-            local_path = Path(output_path) / output_filename
 
         # Check if file already downloaded
         if file_size is not None and local_path.is_file():
@@ -341,10 +361,30 @@ def download(
     if checksum is not None:
         downloadsum = _file_md5(local_path)
         if downloadsum != checksum:
-            raise OSError("MD5 checksum for {} does not match. If this is "
-                          "your first time receiving this message, please "
-                          "re-run the script. Otherwise, please contact "
-                          "OpenMC developers by emailing "
-                          "openmc-users@googlegroups.com.".format(local_path))
+            raise OSError(_manual_download_message(
+                url, local_path, checksum,
+                f'the MD5 checksum of the downloaded file is {downloadsum}'))
 
     return local_path
+
+
+def _manual_download_message(url, local_path, checksum, reason):
+    message = (
+        f'Could not download {url} ({reason}).\n'
+        f'Download it in a web browser and save it as\n'
+        f'    {Path(local_path).resolve()}\n'
+        f'then run the same command again.'
+    )
+    if checksum is not None:
+        message += f' The file is expected to have the MD5 checksum {checksum}.'
+    return message
+
+
+def _manual_download(url, local_path, checksum, reason):
+    """Use a file saved by hand when the server refuses, or explain how to."""
+    local_path = Path(local_path)
+    if local_path.is_file() and checksum is None:
+        warnings.warn(f'Could not download {url} ({reason}), using the existing '
+                      f'file {local_path}, which could not be verified')
+        return local_path
+    raise OSError(_manual_download_message(url, local_path, checksum, reason))
