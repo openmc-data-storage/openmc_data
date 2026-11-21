@@ -50,6 +50,63 @@ all_chain_release_details = {
                     "url": "https://github.com/openmc-data-storage/openmc_data/raw/main/src/openmc_data/depletion/chain_endf_b8.1_pwr.xml"
                 }
             },
+            "FNS": {
+                "chain": {
+                    "url": "https://github.com/openmc-data-storage/openmc_data/raw/main/src/openmc_data/depletion/chain_endf_b8.1_fns.xml"
+                }
+            },
+        }
+    },
+    # The jeff and jendl chains use the neutron, decay and fission yield
+    # sublibraries of their own library, made with generate_jeff_chain and
+    # generate_jendl_chain. Their FNS branching ratios come from the isomeric
+    # production data of the same library, as do the endf b8.1 FNS ratios.
+    "jeff": {
+        "4.0": {
+            "None": {
+                "chain": {
+                    "url": "https://github.com/openmc-data-storage/openmc_data/raw/main/src/openmc_data/depletion/chain_jeff_4.0.xml"
+                }
+            },
+            "SFR": {
+                "chain": {
+                    "url": "https://github.com/openmc-data-storage/openmc_data/raw/main/src/openmc_data/depletion/chain_jeff_4.0_sfr.xml"
+                }
+            },
+            "PWR": {
+                "chain": {
+                    "url": "https://github.com/openmc-data-storage/openmc_data/raw/main/src/openmc_data/depletion/chain_jeff_4.0_pwr.xml"
+                }
+            },
+            "FNS": {
+                "chain": {
+                    "url": "https://github.com/openmc-data-storage/openmc_data/raw/main/src/openmc_data/depletion/chain_jeff_4.0_fns.xml"
+                }
+            }
+        }
+    },
+    "jendl": {
+        "5.0": {
+            "None": {
+                "chain": {
+                    "url": "https://github.com/openmc-data-storage/openmc_data/raw/main/src/openmc_data/depletion/chain_jendl_5.0.xml"
+                }
+            },
+            "SFR": {
+                "chain": {
+                    "url": "https://github.com/openmc-data-storage/openmc_data/raw/main/src/openmc_data/depletion/chain_jendl_5.0_sfr.xml"
+                }
+            },
+            "PWR": {
+                "chain": {
+                    "url": "https://github.com/openmc-data-storage/openmc_data/raw/main/src/openmc_data/depletion/chain_jendl_5.0_pwr.xml"
+                }
+            },
+            "FNS": {
+                "chain": {
+                    "url": "https://github.com/openmc-data-storage/openmc_data/raw/main/src/openmc_data/depletion/chain_jendl_5.0_fns.xml"
+                }
+            }
         }
     },
     # The tendl chains use decay data and neutron induced fission yields from
