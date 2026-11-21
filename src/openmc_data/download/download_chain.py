@@ -37,18 +37,19 @@ parser.add_argument(
 parser.add_argument(
     "-r",
     "--release",
-    choices=["b7.1", "b8.0", "b8.1", "2017", "2019", "2025"],
+    choices=["b7.1", "b8.0", "b8.1", "2017", "2019", "2025", "4.0", "5.0"],
     default="2019",
     help="The nuclear data library release version. The currently supported "
-         "options are b7.1, b8.0 and b8.1 for endf and 2017, 2019 and 2025 for "
-         "tendl.",
+         "options are b7.1, b8.0 and b8.1 for endf, 2017, 2019 and 2025 for "
+         "tendl, 4.0 for jeff and 5.0 for jendl.",
 )
 parser.add_argument(
     "-l",
     "--library",
-    choices=["endf", "tendl"],
+    choices=["endf", "jeff", "jendl", "tendl"],
     default="tendl",
-    help="The nuclear data library. The currently supported options are endf and tendl",
+    help="The nuclear data library. The currently supported options are endf, "
+         "jeff, jendl and tendl",
 )
 parser.add_argument(
     "-b",
@@ -58,11 +59,13 @@ parser.add_argument(
     help="The branching ratios applied to the chain file. None, SFR (sodium "
          "fast reactor) and PWR (pressurized water reactor) are available for "
          "every library and release. FNS (fusion neutron source) is available "
-         "for the tendl releases, with branching ratios for the production of "
-         "metastable states collapsed from the TENDL isomeric production data "
-         "with a fusion spectrum. FNS-ORIGEN is an earlier tendl 2017 and 2019 "
+         "for the tendl releases, endf b8.1, jeff 4.0 and jendl 5.0, with "
+         "branching ratios for the production of metastable states collapsed "
+         "from the library's own isomeric production data with a fusion "
+         "spectrum. FNS-ORIGEN is an earlier tendl 2017 and 2019 "
          "chain whose branching ratios come from ORIGEN rather than from TENDL. "
-         "The tendl chains use decay data and neutron induced fission yields "
+         "The jeff and jendl chains use only their own library. The tendl "
+         "chains use decay data and neutron induced fission yields "
          "from ENDF/B-VIII.0. There is an option to use JEFF 3.3 if you "
          "generate your own chain file with the generate_tendl_chain command "
          "line tool.",

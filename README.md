@@ -230,9 +230,29 @@ in series.
 
 | Script name | Library | Release | Branching options|
 |-|-|-|-|
-|download_chain | ENDF/B | VII.1<br>VIII.0<br>VIII.1 | None<br>SFR<br>PWR |
+|download_chain | ENDF/B | VII.1<br>VIII.0 | None<br>SFR<br>PWR |
+|download_chain | ENDF/B | VIII.1 | None<br>SFR<br>PWR<br>FNS |
+|download_chain | JEFF | 4.0 | None<br>SFR<br>PWR<br>FNS |
+|download_chain | JENDL | 5.0 | None<br>SFR<br>PWR<br>FNS |
 |download_chain | TENDL | 2017<br>2019 | None<br>SFR<br>PWR<br>FNS<br>FNS-ORIGEN |
 |download_chain | TENDL | 2025 | None<br>SFR<br>PWR<br>FNS |
+
+The JEFF-4.0 and JENDL-5.0 chains are made with `generate_jeff_chain` and
+`generate_jendl_chain` and take their neutron, decay and fission yield data from
+their own library only, as do the ENDF/B chains. Their FNS branching ratios come
+from the isomeric production data of the same library, with the decay data of
+the same library passed to `generate_branching_ratios --decay`.
+
+| Chain | Nuclides | FNS reaction types | FNS branched channels | Size |
+|-|-|-|-|-|
+| ENDF/B-VIII.1 | 3820 | 30 | 235 | 28 MB |
+| JEFF-4.0 | 3851 | 29 | 2747 | 9 MB |
+| JENDL-5.0 | 4070 | 28 | 2325 | 66 MB |
+
+ENDF/B-VIII.1 has isomeric production data for far fewer reactions than JEFF-4.0,
+JENDL-5.0 or TENDL, so its FNS chain splits fewer channels. The JENDL-5.0 chains
+are larger because its decay sublibrary holds more, and more detailed, decay
+radiation spectra.
 
 All the TENDL chains are made with `generate_tendl_chain` using decay data and
 neutron induced fission yields from ENDF/B-VIII.0, so the releases can be
