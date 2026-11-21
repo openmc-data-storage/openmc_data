@@ -66,9 +66,27 @@ def test_product_without_isomers_in_decay_data_is_ranked(module):
     assert names(module.isomer_targets(TA182, 102, isomers)) == {0: "Ta182", 2: "Ta182_m1"}
 
 
-def test_two_states_matching_one_isomer_is_ambiguous(module):
-    evaluation = mf8([(73182, 0.0, 0), (73182, 500000.0, 1), (73182, 519577.0, 2)])
-    assert module.isomer_targets(evaluation, 102, TA182_ISOMERS) is None
+def test_state_without_an_isomer_in_decay_data_is_ground(module):
+    # Tb156 as TENDL-2025 gives it: the 88.4 keV state is Tb156_m2 and the
+    # 200.1 keV state has no isomer in the ENDF/B-VIII.0 decay data
+    evaluation = mf8([(65156, 0.0, 0), (65156, 88400.0, 3), (65156, 200100.0, 9)])
+    isomers = {(65, 156): {1: 69600.0, 2: 88400.0}}
+    targets = module.isomer_targets(evaluation, 102, isomers)
+    assert names(targets) == {0: "Tb156", 3: "Tb156_m2", 9: "Tb156"}
+
+
+def test_nearest_state_takes_a_shared_isomer(module):
+    # Tl186 in TENDL-2025: states at 120 and 494 keV, one 374 keV isomer
+    evaluation = mf8([(81186, 0.0, 0), (81186, 120000.0, 1), (81186, 494000.0, 2)])
+    isomers = {(81, 186): {1: 374000.0}}
+    targets = module.isomer_targets(evaluation, 102, isomers)
+    assert names(targets) == {0: "Tl186", 1: "Tl186", 2: "Tl186_m1"}
+
+
+def test_rates_of_states_counted_as_ground_are_summed(module):
+    targets = {0: ("Tb156", 10), 3: ("Tb156_m2", 10), 9: ("Tb156", 10)}
+    ratios = module.ratios_by_target(targets, {0: 2.0, 3: 1.0, 9: 1.0})
+    assert ratios == pytest.approx({"Tb156": 0.75, "Tb156_m2": 0.25})
 
 
 def test_several_isomers_are_matched_by_energy(module):

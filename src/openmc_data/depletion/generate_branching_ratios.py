@@ -227,12 +227,14 @@ def isomer_targets(evaluation, mt, isomers=None):
     When ``isomers`` from the decay data are given, each excited state is
     instead matched to the isomer of that product with the closest excitation
     energy, as other libraries can list a higher isomer without the lower one.
-    Products whose decay data gives an isomer an unknown (zero) excitation
-    energy fall back to the ranking.
+    When several states are closest to the same isomer, the nearest of them
+    takes it and the others, which the decay data has no isomer for and so the
+    chain cannot hold, are counted as the ground state. Products whose decay
+    data gives an isomer an unknown (zero) excitation energy fall back to the
+    ranking.
 
     Returns {LFS: (nuclide name, LMF)} where LMF is the file, 9 or 10, that
-    holds the production data, or None when two states of a product match the
-    same isomer.
+    holds the production data. Several states can map to the same nuclide.
     """
     from openmc.data import gnds_name
     from openmc.data.endf import get_cont_record, get_head_record, get_list_record
@@ -267,20 +269,34 @@ def isomer_targets(evaluation, mt, isomers=None):
             # known, which cannot be matched against
             known = None
         metastable = 0
-        assigned = set()
+        claims = {}
         for _za, excitation, lmf, lfs in product_states:
             if excitation <= 0.0:
                 state = 0
             elif known:
                 state = min(known, key=lambda m: abs(known[m] - excitation))
+                claims.setdefault(state, []).append((abs(known[state] - excitation), lfs))
             else:
                 metastable += 1
                 state = metastable
-            if state in assigned:
-                return None
-            assigned.add(state)
             targets[lfs] = (gnds_name(z, a, state), lmf)
+        # TENDL can list a metastable state that the decay data does not have,
+        # such as Tb156 at 200.1 keV next to the 88.4 keV Tb156_m2, and both
+        # are closest to the same isomer
+        for claimants in claims.values():
+            for _distance, lfs in sorted(claimants)[1:]:
+                targets[lfs] = (gnds_name(z, a, 0), targets[lfs][1])
     return targets
+
+
+def ratios_by_target(targets, rates):
+    """Sum the reaction rates into each final state to branching ratios."""
+    total = sum(rates.values())
+    ratios = {}
+    for lfs, rate in rates.items():
+        name = targets[lfs][0]
+        ratios[name] = ratios.get(name, 0.0) + rate / total
+    return ratios
 
 
 def production_data(evaluation, mf, mt):
@@ -422,11 +438,6 @@ def process_file(path):
             continue
         reaction = mt_to_reaction[mt]
         targets = isomer_targets(evaluation, mt, _state["isomers"])
-        if targets is None:
-            skipped.append(
-                ("two states match the same isomer", f"{parent} {reaction}")
-            )
-            continue
 
         # only reactions that make more than one state of a product branch
         if len({name for name, _lmf in targets.values()}) < 2:
@@ -464,7 +475,7 @@ def process_file(path):
             skipped.append(("zero reaction rate for this flux", f"{parent} {reaction}"))
             continue
 
-        ratios = {targets[lfs][0]: rate / total for lfs, rate in rates.items()}
+        ratios = ratios_by_target(targets, rates)
 
         if in_chain is not None:
             missing = ({parent} | set(ratios)) - in_chain.keys()
