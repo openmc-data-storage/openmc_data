@@ -364,12 +364,16 @@ class CrossSections:
 
 
 def chain_nuclides():
-    """Return the set of nuclide names in the chain file, or None."""
+    """Return {nuclide name: set of its reaction types} for the chain file, or
+    None when no chain was given."""
     if args.chain is None:
         return None
     import openmc.deplete
 
-    return {nuclide.name for nuclide in openmc.deplete.Chain.from_xml(args.chain).nuclides}
+    return {
+        nuclide.name: {reaction.type for reaction in nuclide.reactions}
+        for nuclide in openmc.deplete.Chain.from_xml(args.chain).nuclides
+    }
 
 
 # state shared with the worker processes, set by init_worker
@@ -463,7 +467,7 @@ def process_file(path):
         ratios = {targets[lfs][0]: rate / total for lfs, rate in rates.items()}
 
         if in_chain is not None:
-            missing = ({parent} | set(ratios)) - in_chain
+            missing = ({parent} | set(ratios)) - in_chain.keys()
             if missing:
                 skipped.append(
                     (
@@ -471,6 +475,14 @@ def process_file(path):
                         f"{parent} {reaction} ({', '.join(sorted(missing))})",
                     )
                 )
+                continue
+            # Chain files only hold reactions with an MF=3 cross section, but
+            # an evaluation can give isomeric production in MF=10 for one that
+            # has none, such as Tm170 (n,3np) in ENDF/B-VIII.1. A ratio for a
+            # reaction the chain lacks cannot be applied, and when no parent
+            # has the reaction add_branching_ratios fails
+            if reaction not in in_chain[parent]:
+                skipped.append(("reaction not in chain file", f"{parent} {reaction}"))
                 continue
 
         ratios_by_reaction[reaction] = ratios
