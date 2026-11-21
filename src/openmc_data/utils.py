@@ -149,20 +149,34 @@ def process_neutron(path, output_dir, libver, temperatures=None):
     data.export_to_hdf5(h5_file, 'w', libver=libver)
 
 
-def process_thermal(path_neutron, path_thermal, output_dir, libver):
+def process_thermal(path_neutron, path_thermal, output_dir, libver, name=None):
     """Process ENDF thermal scattering sublibrary file into HDF5 and write into a
-    specified output directory."""
+    specified output directory.
+
+    ``name`` is the OpenMC name of the material, such as c_H_in_H2O. Without it
+    the name is guessed from the label in the ENDF file, which OpenMC matches
+    loosely, so materials it does not know can share a name or fail to process.
+    """
     _require_openmc()
     print(f'Converting: {path_thermal}')
+    kwargs = {}
+    if name is not None:
+        # the same table name, ZAIDs and mixing number that OpenMC uses for a
+        # material it recognises
+        from openmc.data.njoy import _THERMAL_DATA
+        table = _THERMAL_DATA[name]
+        kwargs = {'table_name': table.name, 'zaids': table.zaids, 'nmix': table.nmix}
     try:
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', UserWarning)
             data = openmc.data.ThermalScattering.from_njoy(
-                path_neutron, path_thermal
+                path_neutron, path_thermal, **kwargs
             )
     except Exception as e:
         print(path_neutron, path_thermal, e)
         raise
+    if name is not None:
+        data.name = name
     h5_file = output_dir / f'{data.name}.h5'
     print(f'Writing {h5_file} ...')
     data.export_to_hdf5(h5_file, 'w', libver=libver)
