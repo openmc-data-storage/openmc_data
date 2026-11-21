@@ -207,7 +207,11 @@ but not by isomer number. Pass the decay sublibrary used for the chain with
 excitation energy. Without it the states are numbered in order of energy, which
 mislabels an isomer whenever an evaluation lists a higher isomer without the
 lower one. JEFF-4.0 Ta181 capture, for example, only lists the 519.6 keV
-Ta182_m2 state, which ranking calls Ta182_m1.
+Ta182_m2 state, which ranking calls Ta182_m1. When an evaluation lists a
+metastable state that the decay data has no isomer for, such as the 200.1 keV
+Tb156 state in TENDL next to the 88.4 keV Tb156_m2, the isomer goes to the
+nearest state and the other is counted as the ground state, as the chain has no
+nuclide for it.
 
 Most reactions store their isomeric production as cross sections in MF=10 and
 need no other data. The remainder store multiplicities in MF=9 which have to be
