@@ -249,9 +249,9 @@ the same library passed to `generate_branching_ratios --decay`.
 
 | Chain | Nuclides | FNS reaction types | FNS branched channels | Size |
 |-|-|-|-|-|
-| ENDF/B-VIII.1 | 3820 | 30 | 235 | 28 MB |
-| JEFF-4.0 | 3851 | 29 | 2747 | 9 MB |
-| JENDL-5.0 | 4070 | 28 | 2325 | 66 MB |
+| ENDF/B-VIII.1 | 3820 | 30 | 236 | 28 MB |
+| JEFF-4.0 | 3851 | 29 | 2742 | 9 MB |
+| JENDL-5.0 | 4070 | 28 | 2328 | 66 MB |
 
 ENDF/B-VIII.1 has isomeric production data for far fewer reactions than JEFF-4.0,
 JENDL-5.0 or TENDL, so its FNS chain splits fewer channels. The JENDL-5.0 chains
@@ -276,7 +276,7 @@ values. Counts below are for TENDL 2017.
 | None | none | 0 | |
 | SFR<br>PWR | `(n,gamma)` only | 101 | [Serpent default isomeric branching ratios](https://serpent.vtt.fi/mediawiki/index.php?title=Default_isomeric_branching_ratios) |
 | FNS-ORIGEN | 15 reaction types | 2355 | ORIGEN |
-| FNS | 35 reaction types | 15616 | the TENDL files themselves |
+| FNS | 35 reaction types | 14692 | the TENDL files themselves |
 
 The reactor options only ever split capture. For a fusion spectrum the threshold
 reactions matter most, and in the FNS chains `(n,gamma)` is only the fourth
