@@ -19,6 +19,9 @@ from openmc_data import (
 REPO_RAW_PREFIX = "https://github.com/openmc-data-storage/openmc_data/raw/main/"
 REPO_ROOT = Path(__file__).resolve().parent.parent
 UNTESTED_URL = "https://nds.iaea.org/fendl/data/neutron/fendl-FENDL-3.2c-neutron-endf.zip"
+# hosts that answer scripted requests with a 200 status and a web page in place
+# of the file, so their files have to be downloaded in a browser
+BROWSER_ONLY_HOSTS = {"wwwndc.jaea.go.jp"}
 
 
 def validate_url(url):
@@ -36,6 +39,12 @@ def validate_url(url):
         assert local_path.is_file(), f"{url} points at {local_path} which is missing"
 
 
+def served_web_page(url, response):
+    """True when a response is an HTML page but the url is not for one."""
+    content_type = response.headers.get("Content-Type", "").split(";")[0].strip().lower()
+    return content_type == "text/html" and not urlsplit(url).path.endswith((".html", ".htm"))
+
+
 def check_url(url, attempts=4, as_browser=False):
     """Asserts that a url is usable, retrying transient failures.
 
@@ -49,6 +58,10 @@ def check_url(url, attempts=4, as_browser=False):
     other URL is fetched with a bounded, streamed GET; HTTP failures, including
     other Cloudflare challenges, fail. Each URL is a separate test so a blocked
     host cannot prevent the other libraries from being checked.
+
+    Bot protection can also answer with a 200 status and a web page instead of
+    the file, so a successful response that is an HTML page for a URL that is
+    not one fails, except for BROWSER_ONLY_HOSTS where it is skipped.
     """
     if url == UNTESTED_URL:
         pytest.skip(f"{url}: Cloudflare challenge blocks the automated check; this URL is not tested")
@@ -67,8 +80,13 @@ def check_url(url, attempts=4, as_browser=False):
             with requests.get(url, stream=True, headers=headers, timeout=(10, 30)) as response:
                 status_code = response.status_code
                 if status_code in (200, 206):
-                    return
-                error = f"HTTP {status_code}"
+                    if not served_web_page(url, response):
+                        return
+                    if urlsplit(url).hostname in BROWSER_ONLY_HOSTS:
+                        pytest.skip(f"{url}: the host sends scripts a web page; download it in a browser")
+                    error = "a web page instead of the file"
+                else:
+                    error = f"HTTP {status_code}"
         except requests.RequestException as exc:
             error = str(exc)
     pytest.fail(f"{url} returned {error} on {attempts} attempts")
@@ -224,6 +242,31 @@ def test_success_closes_response(http_response, status):
     get.assert_called_once_with('https://example.org/data', stream=True,
                                 headers={'User-Agent': 'Mozilla/5.0'}, timeout=(10, 30))
     response.__exit__.assert_called_once()
+
+
+@pytest.mark.parametrize('content_type', ['text/html', 'text/html; charset=utf-8'])
+def test_web_page_instead_of_file_fails(http_response, content_type):
+    _, response = http_response
+    response.headers = {'Content-Type': content_type}
+    with pytest.raises(pytest.fail.Exception, match='web page instead of the file'):
+        check_url('https://example.org/data.tar.gz')
+
+
+def test_web_page_from_browser_only_host_is_skipped(http_response):
+    _, response = http_response
+    response.headers = {'Content-Type': 'text/html'}
+    with pytest.raises(pytest.skip.Exception, match='download it in a browser'):
+        check_url('https://wwwndc.jaea.go.jp/ftpnd/ftp/JENDL/jendl5-pa.tar.gz')
+
+
+@pytest.mark.parametrize('url, content_type', [
+    ('https://example.org/data.tar.gz', 'application/gzip'),
+    ('https://example.org/index.html', 'text/html'),
+])
+def test_file_or_html_url_passes(http_response, url, content_type):
+    _, response = http_response
+    response.headers = {'Content-Type': content_type}
+    check_url(url)
 
 
 def test_only_exact_fendl_url_is_not_tested(http_response):
