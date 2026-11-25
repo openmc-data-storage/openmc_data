@@ -221,7 +221,7 @@ def _parser():
         epilog=f"Available neutron archive temperatures (K), by release: {choices}",
     )
     parser.add_argument("-r", "--release", choices=RELEASES, default="4.0")
-    parser.add_argument("-t", "--temperatures", nargs="+", help="Neutron archive temperatures in K; default: all available for the release")
+    parser.add_argument("-t", "--temperatures", nargs="+", help="Neutron archive temperatures in K, e.g. 293 for the 293.6 K data; default: all available for the release")
     parser.add_argument("-d", "--destination", type=Path, help="Direct output directory; default: jeff-<release>-hdf5")
     parser.add_argument("--libver", choices=("earliest", "latest"), default="latest")
     for option, default, help_text in (

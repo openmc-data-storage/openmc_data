@@ -76,33 +76,6 @@ for neutron data; thermal scattering data keep the evaluation's own temperatures
 |convert_jeff | JEFF | 3.2 (n, s(a,b))<br>3.3 (n, s(a,b))<br>4.0 (n, s(a,b)) (default) | 3.2: 293, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 1800<br>3.3: 293, 600, 900, 1200, 1500, 1800<br>4.0: 0.1, 293, 300, 600, 900, 1200, 1500, 1800<br>(all by default; select with `-t`) |
 |convert_tendl | TENDL | 2015 (n)<br>2017 (n)<br>2019 (n)<br>2021 (n) | 2015: 293.16<br>2017, 2019, 2021: 293.6 |
 
-#### JEFF ACE conversion
-
-`convert_jeff -r 3.3 -t 600 900 --destination jeff-hot` converts neutron and
-thermal ACE data without NJOY or a 293 K base. Defaults: release 4.0, all neutron
-temperatures, `--libver latest`. Available neutron archive temperatures:
-
-| Release | Neutron archive temperatures (K) |
-| --- | --- |
-| 3.2 | 293, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 1800 |
-| 3.3 | 293, 600, 900, 1200, 1500, 1800 |
-| 4.0 | 0.1, 293, 300, 600, 900, 1200, 1500, 1800 |
-
-Select the 4.0 archive containing 293.6 K data with `-t 293`. **All native thermal
-temperatures** are retained, including the 1 K UO2 pairs. **JEFF-4.0 supplies only
-the public 12-case/316-table thermal subset**, not the full TSL library.
-Unknown thermal aliases retain their identity with a `c_` prefix and warning.
-
-Output HDF5/XML goes directly into `--destination` (default `jeff-<release>-hdf5`),
-staged until conversion succeeds; existing files and name/temperature collisions fail.
-Downloads require multiple GB. `--no-download --no-extract` reuses working-directory
-caches `jeff-<release>-download` and `jeff-<release>-ace`; `--cleanup` removes both
-only after success. Metastable corrections never edit cached ACE files.
-Every discovered nuclide must have every selected neutron temperature; 3.3 also
-requires its 20 thermal groups. Caches cannot reveal nuclides absent at all temperatures.
-
-See `convert_jeff --help` for all options.
-
 ### Generate cross sections
 
 | Script name | Library | Release | Neutron temperatures (K) |
