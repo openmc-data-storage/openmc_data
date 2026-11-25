@@ -3,9 +3,10 @@
 """
 Convert ENDF/B-VII.1 ACE data from the MCNP6 distribution into an HDF5 library
 that can be used by OpenMC. This assumes that you have a directory containing
-subdirectories 'endf71x' and 'ENDF71SaB'. Optionally, if a recent photoatomic
-library (e.g., eprdata14) is available, it can also be converted using the
---photon argument.
+subdirectories 'endf71x' and 'ENDF71SaB'. Only the ENDF/B neutron and thermal
+scattering data are converted; photoatomic data from other libraries
+(e.g. eprdata) are not added. To use them, convert them separately and combine
+the cross_sections.xml files.
 """
 
 import argparse
@@ -15,7 +16,7 @@ import sys
 
 import openmc.data
 
-from openmc_data import ProgressTracker
+from openmc_data import ProgressTracker, add_provenance
 
 
 # Make sure Python version is sufficient
@@ -38,8 +39,6 @@ parser.add_argument('--libver', choices=['earliest', 'latest'],
                     default='earliest', help="Output HDF5 versioning. Use "
                     "'earliest' for backwards compatibility or 'latest' for "
                     "performance")
-parser.add_argument('-p', '--photon', type=Path,
-                    help='Path to photoatomic data library (eprdata12 or later)')
 parser.add_argument('mcnpdata', type=Path,
                     help='Directory containing endf71x and ENDF71SaB')
 args = parser.parse_args()
@@ -49,8 +48,6 @@ def main():
 
     # Check arguments to make sure they're valid
     assert args.mcnpdata.is_dir(), 'mcnpdata argument must be a directory'
-    if args.photon is not None:
-        assert args.photon.is_file(), 'photon argument must be an existing file'
 
     # Get a list of all ACE files
     endf71x = list(args.mcnpdata.glob('endf71x/*/*.7??nc'))
@@ -85,7 +82,7 @@ def main():
         tables[p.stem].append(p)
 
     # Create output directory if it doesn't exist
-    (args.destination / 'photon').mkdir(parents=True, exist_ok=True)
+    args.destination.mkdir(parents=True, exist_ok=True)
 
     library = openmc.data.DataLibrary()
 
@@ -116,26 +113,9 @@ def main():
         # Register with library
         library.register_file(h5_file)
 
-    # Handle photoatomic data
-    if args.photon is not None:
-        lib = openmc.data.ace.Library(args.photon)
-
-        tracker = ProgressTracker(len(lib.tables))
-        for table in lib.tables:
-            # Convert first temperature for the table
-            tracker.starting(table.name)
-            data = openmc.data.IncidentPhoton.from_ace(table)
-
-            # Export HDF5 file
-            h5_file = args.destination / 'photon' / f'{data.name}.h5'
-            print(f'Writing {h5_file}...')
-            data.export_to_hdf5(h5_file, 'w', libver=args.libver)
-
-            # Register with library
-            library.register_file(h5_file)
-
     # Write cross_sections.xml
     library.export_to_xml(args.destination / 'cross_sections.xml')
+    add_provenance(args.destination / 'cross_sections.xml', 'ENDF/B-VII.1 (MCNP endf71x)')
 
 
 if __name__ == '__main__':

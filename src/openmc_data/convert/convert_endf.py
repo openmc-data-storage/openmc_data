@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 import openmc.data
-from openmc_data import download, extract, all_release_details, get_file_types, calculate_download_size, ProgressTracker
+from openmc_data import add_provenance, download, extract, all_release_details, get_file_types, calculate_download_size, ProgressTracker
 
 # Make sure Python version is sufficient
 assert sys.version_info >= (3, 6), "Python 3.6+ is required"
@@ -187,6 +187,7 @@ def main():
     # Write cross_sections.xml
     print("Writing ", args.destination / "cross_sections.xml")
     library.export_to_xml(args.destination / "cross_sections.xml")
+    add_provenance(args.destination / "cross_sections.xml", "ENDF/B-VII.1")
 
 
 if __name__ == "__main__":

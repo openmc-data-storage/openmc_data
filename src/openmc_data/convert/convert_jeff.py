@@ -16,7 +16,7 @@ import shutil
 from tempfile import TemporaryDirectory
 import warnings
 
-from openmc_data import ProgressTracker, all_release_details, download, extract
+from openmc_data import ProgressTracker, add_provenance, all_release_details, download, extract
 
 
 RELEASES = ("3.2", "3.3", "4.0")
@@ -293,6 +293,7 @@ def main(argv=None):
             del data
             library.register_file(output)
         library.export_to_xml(stage / "cross_sections.xml")
+        add_provenance(stage / "cross_sections.xml", f"JEFF-{args.release}")
         for name in groups:
             (stage / f"{name}.h5").replace(destination / f"{name}.h5")
         (stage / "cross_sections.xml").replace(destination / "cross_sections.xml")

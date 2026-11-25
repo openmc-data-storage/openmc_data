@@ -80,6 +80,17 @@ A few categories of scripts are available:
 
 ## Produce Cross Section Files
 
+Each generate and convert script produces data from one evaluated library only.
+Photon or other data missing from that library are not filled in from another
+library. To combine libraries, for example JEFF neutron data with ENDF/B photon
+data, run the scripts separately and combine the `cross_sections.xml` files.
+
+Each `cross_sections.xml` written by these scripts starts with an XML comment
+that records the data source, the number of entries of each type, the
+openmc_data version and script, and any evaluations taken from another library.
+OpenMC ignores XML comments, so the comment does not change how the library
+loads. `openmc.data.DataLibrary` drops comments when it rewrites a file.
+
 ### Convert cross sections
 
 | Script name | Library | Release | Processed by |
@@ -156,6 +167,41 @@ substitutions.
 |convert_fendl| FENDL | 2.1<br>3.0<br>3.1a<br>3.1d<br>3.2 |  | [openmc.org 3.2](https://anl.box.com/shared/static/3cb7jetw7tmxaw6nvn77x6c578jnm2ey.xz) | :heavy_check_mark: |  |  |
 |generate_jendl| JENDL | 4.0 |  |  |  | :heavy_check_mark: |  |
 |convert_tendl| TENDL | 2015<br>2017<br>2019<br>2021|  |  | :heavy_check_mark: |  |  | -->
+
+### Combine libraries
+
+The generate and convert scripts never mix libraries, so photon data for a
+neutron-only library (JEFF, TENDL) come from a separate run. `combine_libraries`
+then merges the `cross_sections.xml` files. Libraries are listed in order of
+preference: everything from the first is used, and a later library only adds
+entries the earlier ones lack. Give the photon library as a photon-only library,
+otherwise its neutron and thermal entries would also fill gaps in the first.
+
+JEFF-4.0 neutron and thermal scattering data with ENDF/B-VIII.1 photon data:
+
+```bash
+generate_jeff -r 4.0                     # writes jeff-4.0-hdf5/
+generate_endf -r viii.1 -p photon        # writes endfb-viii.1-hdf5/ (photon only)
+combine_libraries \
+    -l jeff-4.0-hdf5/cross_sections.xml endfb-viii.1-hdf5/cross_sections.xml \
+    -o jeff-4.0-endfb-viii.1-photon.xml
+```
+
+TENDL-2025 neutron data with ENDF/B-VIII.1 photon data:
+
+```bash
+generate_tendl -r 2025                   # writes tendl-2025-hdf5/
+generate_endf -r viii.1 -p photon        # writes endfb-viii.1-hdf5/ (photon only)
+combine_libraries \
+    -l tendl-2025-hdf5/cross_sections.xml endfb-viii.1-hdf5/cross_sections.xml \
+    -o tendl-2025-endfb-viii.1-photon.xml
+```
+
+Without `-d` the combined XML is written to the current directory and points at
+the original files. With `-d <directory>` the HDF5 files are copied there too.
+The combined XML records, as a comment, how many entries of each type came from
+which library. Point OpenMC at it with `openmc.config['cross_sections']` or
+`OPENMC_CROSS_SECTIONS`.
 
 ## Produce Depletion Chain files
 

@@ -16,7 +16,7 @@ from pathlib import Path
 from shutil import rmtree, copy, copyfileobj
 
 import openmc.data
-from openmc_data import download, process_neutron, process_thermal, state_download_size, ProgressTracker
+from openmc_data import add_provenance, download, process_neutron, process_thermal, state_download_size, ProgressTracker
 
 # Make sure Python version is sufficient
 assert sys.version_info >= (3, 6), "Python 3.6+ is required"
@@ -504,6 +504,7 @@ def main():
 
     # Write cross_sections.xml
     library.export_to_xml(args.destination / 'cross_sections.xml')
+    add_provenance(args.destination / 'cross_sections.xml', f'ENDF/B-{args.release.upper()}')
 
 
 if __name__ == '__main__':
