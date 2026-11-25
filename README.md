@@ -20,34 +20,6 @@ The package is distributed on [PYPI](https://pypi.org/project/openmc-data/) and 
 pip install openmc_data
 ```
 
-# Testing
-
-Install the test dependencies with `python -m pip install '.[tests]'`, then run
-the offline suite with `python -m pytest -q -rs tests -m 'not network and not integration'`.
-Tests stay in the flat [tests](tests) directory: [test_utils.py](tests/test_utils.py)
-covers shared utilities, [test_urls.py](tests/test_urls.py) covers registry
-validation, HTTP helper regressions and marked live URL checks, and script-specific
-tests belong in files named test_&lt;script&gt;.py alongside them. Use pytest's
-`tmp_path` for generated test artifacts rather than writing into the repository.
-
-The `network` marker identifies live external URL checks; `integration` identifies
-data download and processing tests. Pull requests and pushes run offline tests
-and CLI help checks in [test_package.yml](.github/workflows/test_package.yml), and
-offline URL syntax and repository-file checks in
-[test_urls.yml](.github/workflows/test_urls.yml), without compiling OpenMC for the
-URL jobs. Live URL checks run nightly or manually in a separate job of that same
-workflow. Full, multi-GB processing runs only through the required script choice
-in the manual [test_processing.yml](.github/workflows/test_processing.yml) workflow.
-
-Exactly one URL is explicitly **not tested over HTTP** because of its Cloudflare
-challenge:
-<https://nds.iaea.org/fendl/data/neutron/fendl-FENDL-3.2c-neutron-endf.zip>.
-Its syntax is still checked offline. Other HTTP errors, including IAEA and
-Cloudflare 403 responses, remain failures, not skips or expected failures.
-Nightly/manual external health checks may remain red until blocked IAEA and
-obsolete OECD URLs are restored; passing offline checks does not establish that
-downloads are available.
-
 # Usage
 
 Once installed several scripts are available in your terminal that are able to
@@ -93,12 +65,16 @@ loads. `openmc.data.DataLibrary` drops comments when it rewrites a file.
 
 ### Convert cross sections
 
-| Script name | Library | Release |
-|-|-|-|
-|convert_endf | ENDF/B | VII.1 |
-|convert_fendl | FENDL | 3.2c<br>3.2b<br>3.2a<br>3.2<br>3.1d<br>3.1a<br>3.1<br>3.0<br>2.1 |
-|convert_jeff | JEFF | 3.2<br>3.3<br>4.0 (default) |
-|convert_tendl | TENDL | 2015<br>2017<br>2019<br>2021 |
+In the convert and generate tables, each release lists the data it produces:
+n = neutron, g = photon (gamma), s(a,b) = thermal scattering. Temperatures are
+for neutron data; thermal scattering data keep the evaluation's own temperatures.
+
+| Script name | Library | Release | Neutron temperatures (K) |
+|-|-|-|-|
+|convert_endf | ENDF/B | VII.1 (n, g, s(a,b)) | 293.6 |
+|convert_fendl | FENDL | 3.2c (n, g)<br>3.2b (n, g)<br>3.2a (n, g)<br>3.2 (n, g)<br>3.1d (n, g)<br>3.1a (n, g)<br>3.1 (n, g)<br>3.0 (n, g)<br>2.1 (n, g) | as in the ACE files |
+|convert_jeff | JEFF | 3.2 (n, s(a,b))<br>3.3 (n, s(a,b))<br>4.0 (n, s(a,b)) (default) | 3.2: 293, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 1800<br>3.3: 293, 600, 900, 1200, 1500, 1800<br>4.0: 0.1, 293, 300, 600, 900, 1200, 1500, 1800<br>(all by default; select with `-t`) |
+|convert_tendl | TENDL | 2015 (n)<br>2017 (n)<br>2019 (n)<br>2021 (n) | as in the ACE files |
 
 #### JEFF ACE conversion
 
@@ -129,14 +105,14 @@ See `convert_jeff --help` for all options.
 
 ### Generate cross sections
 
-| Script name | Library | Release |
-|-|-|-|
-| generate_cendl | CENDL | 3.1<br>3.2 |
-| generate_endf | ENDF/B | VII.1<br>VIII.0<br>VIII.1 |
-| generate_fendl | FENDL | 3.2c<br>3.2b<br>3.2a<br>3.2<br>3.1d<br>3.1a<br>3.0 |
-| generate_jendl | JENDL | 4.0<br>5.0 (neutron, thermal scattering and photon) |
-| generate_jeff | JEFF | 3.3\*<br>4.0 (neutron and thermal scattering) |
-| generate_tendl | TENDL | 2023<br>2025 |
+| Script name | Library | Release | Neutron temperatures (K) |
+|-|-|-|-|
+| generate_cendl | CENDL | 3.1 (n)<br>3.2 (n) | 293.6 |
+| generate_endf | ENDF/B | VII.1 (n, g, s(a,b))<br>VIII.0 (n, g, s(a,b))<br>VIII.1 (n, g, s(a,b)) | 250, 293.6, 600, 900, 1200, 2500<br>(default; change with `--temperatures`) |
+| generate_fendl | FENDL | 3.2c (n)<br>3.2b (n)<br>3.2a (n)<br>3.2 (n)<br>3.1d (n)<br>3.1a (n)<br>3.0 (n) | 293.6 |
+| generate_jendl | JENDL | 4.0 (n)<br>5.0 (n, g, s(a,b)) | 250, 293.6, 600, 900, 1200, 2500<br>(default; change with `--temperatures`) |
+| generate_jeff | JEFF | 3.3\* (n, s(a,b))<br>4.0 (n, s(a,b)) | 250, 293.6, 600, 900, 1200, 2500<br>(default; change with `--temperatures`) |
+| generate_tendl | TENDL | 2023 (n)<br>2025 (n) | 293.6 |
 
 \* `generate_jeff -r 3.3` substitutes TENDL-2019 evaluations for C13 and O17, because
 the JEFF 3.3 evaluations of these nuclides have defective MF=6 data. The C13 and O17
@@ -356,3 +332,31 @@ the resolved resonance range where the isomeric ratio is small.
 | add_branching_ratios | Adds branching ratios to a preexisting chain file, for any reaction present in the JSON file provided. |
 | reduce_chain | |
 | combine_libraries | Combines multiple cross_section.xml files into a single cross_section.xml. |
+
+# Testing
+
+Install the test dependencies with `python -m pip install '.[tests]'`, then run
+the offline suite with `python -m pytest -q -rs tests -m 'not network and not integration'`.
+Tests stay in the flat [tests](tests) directory: [test_utils.py](tests/test_utils.py)
+covers shared utilities, [test_urls.py](tests/test_urls.py) covers registry
+validation, HTTP helper regressions and marked live URL checks, and script-specific
+tests belong in files named test_&lt;script&gt;.py alongside them. Use pytest's
+`tmp_path` for generated test artifacts rather than writing into the repository.
+
+The `network` marker identifies live external URL checks; `integration` identifies
+data download and processing tests. Pull requests and pushes run offline tests
+and CLI help checks in [test_package.yml](.github/workflows/test_package.yml), and
+offline URL syntax and repository-file checks in
+[test_urls.yml](.github/workflows/test_urls.yml), without compiling OpenMC for the
+URL jobs. Live URL checks run nightly or manually in a separate job of that same
+workflow. Full, multi-GB processing runs only through the required script choice
+in the manual [test_processing.yml](.github/workflows/test_processing.yml) workflow.
+
+Exactly one URL is explicitly **not tested over HTTP** because of its Cloudflare
+challenge:
+<https://nds.iaea.org/fendl/data/neutron/fendl-FENDL-3.2c-neutron-endf.zip>.
+Its syntax is still checked offline. Other HTTP errors, including IAEA and
+Cloudflare 403 responses, remain failures, not skips or expected failures.
+Nightly/manual external health checks may remain red until blocked IAEA and
+obsolete OECD URLs are restored; passing offline checks does not establish that
+downloads are available.
