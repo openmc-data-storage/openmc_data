@@ -15,9 +15,13 @@ https://github.com/openmc-dev/data/blob/master/generate_jeff.py
 Additional temperature-split PuO2/UO2/Zy4 evaluations are excluded.
 Full-library NJOY qualification has not been performed.
 
-JEFF 3.3 C13/O17 use individual IAEA TENDL-2019 replacements without editing
-originals. ZIP CRCs and ENDF targets are checked (no published MD5). If IAEA
+JEFF 3.3 only: the C13 and O17 neutron files in the output are TENDL-2019
+data, not JEFF. The JEFF 3.3 evaluations of these two nuclides have defective
+MF=6 data, so individual IAEA TENDL-2019 evaluations are processed in their
+place (the downloaded JEFF files are not edited). A warning is issued for each
+substitution. ZIP CRCs and ENDF targets are checked (no published MD5). If IAEA
 blocks automated access, manually cache the archives; blocked downloads fail.
+JEFF 4.0 has no substitutions.
 
 Output uses particle subdirectories and relative XML paths. Isolated workers
 stage and validate outputs before publication; only current outputs are
@@ -254,6 +258,7 @@ def main(argv=None):
             prepared.append(particle)
 
         tasks = []
+        substituted = []
         if 'neutron' in required:
             neutrons = _index(inputs / 'neutron', details['neutron']['pattern'])
         if 'neutron' in particles:
@@ -265,7 +270,9 @@ def main(argv=None):
                         _prepare(replacement, archives / group, inputs / group, args)
                         prepared.append(group)
                         selected[name] = _replacement(replacement, inputs / group)
-                        print(f'Using TENDL-2019 replacement for {name}')
+                        substituted.append(name)
+                        warnings.warn(f'{name} is substituted with TENDL-2019 data; its HDF5 '
+                                      'output is not JEFF data', stacklevel=2)
             tasks.extend(('neutron', (path,)) for path in selected.values())
         if 'thermal' in particles:
             thermal = _index(inputs / 'thermal', details['neutron']['pattern'],
@@ -281,6 +288,8 @@ def main(argv=None):
                     if enabled and (root / group).exists():
                         shutil.rmtree(root / group)
     print(f'Wrote {destination / "cross_sections.xml"}')
+    if substituted:
+        print(f'Not JEFF data: {", ".join(substituted)} were substituted with TENDL-2019')
 
 
 if __name__ == '__main__':
