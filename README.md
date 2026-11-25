@@ -12,6 +12,16 @@ providing command line tools that process and download nuclear data automaticall
 
 You should have already installed OpenMC, see the [docs](https://docs.openmc.org/en/stable/quickinstall.html) for installation instructions.
 
+Some scripts (mainly the generate scripts) require [NJOY](https://github.com/njoy/NJOY2016) to be installed and
+added to your path.
+NJOY can be pip installed from the unofficial wheels in the
+[shimwell/wheels](https://github.com/shimwell/wheels) repository, which puts the
+`njoy` executable on your path:
+
+```bash
+python -m pip install --extra-index-url https://shimwell.github.io/wheels njoy2016
+```
+
 # Installation
 
 The package is distributed on [PYPI](https://pypi.org/project/openmc-data/) and can be installed with pip.
@@ -31,43 +41,31 @@ For example:
 
 ```convert_endf --help```
 
-Some scripts (mainly the generate scripts) require [NJOY](https://github.com/njoy/NJOY2016) to be installed and
-added to your path.
-
-A few categories of scripts are available:
-<ul>
-<li>Scripts that produce h5 cross section files:</li>
-<ul>
-    <li>Convert ACE files to h5 files</li>
-    <li>Generate h5 file from ENDF files</li>
-    <li>Download h5 files</li>
-</ul>
-<li>Scripts that produce xml chain files:</li>
-<ul>
-    <li>Generate xml chain files from ENDF files:</li>
-    <li>Download xml chain files:</li>
-</ul>
-<li>Other scripts that don't fall into either category.</li>
-</ul>
-
 ## Produce Cross Section Files
-
-Each generate and convert script produces data from one evaluated library only.
-Photon or other data missing from that library are not filled in from another
-library. To combine libraries, for example JEFF neutron data with ENDF/B photon
-data, run the scripts separately and combine the `cross_sections.xml` files.
-
-Each `cross_sections.xml` written by these scripts starts with an XML comment
-that records the data source, the number of entries of each type, the
-openmc_data version and script, and any evaluations taken from another library.
-OpenMC ignores XML comments, so the comment does not change how the library
-loads. `openmc.data.DataLibrary` drops comments when it rewrites a file.
-
-### Convert cross sections
 
 In the convert and generate tables, each release lists the data it produces:
 n = neutron, g = photon (gamma), s(a,b) = thermal scattering. Temperatures are
 for neutron data; thermal scattering data keep the evaluation's own temperatures.
+
+### Download cross sections
+
+| Script name | Library | Release | Neutron temperatures (K) |
+|-|-|-|-|
+| download_endf | ENDF/B | VII.1<br>VIII.0<br>VIII.1  | 250, 293.6, 600, 900, 1200, 2500 |
+| download_jeff | JEFF | 3.3<br>4.0 | 250, 293.6, 600, 900, 1200, 2500 |
+| download_tendl | TENDL | 2019<br>2021  | 293.6 |
+
+<!-- | Script name | Library | Release | Download available | Downloads ACE files and convert to HDF5 | Downloads ENDF files and convert to HDF5 | Convert local ACE files |
+|-|-|-|-|-|-|-|
+|generate_cendl| CENDL | 3.1<br>3.2 |  |  | :heavy_check_mark: |  |
+|generate_endf| ENDF/B | VII.1 | [openmc.org](https://anl.box.com/shared/static/9igk353zpy8fn9ttvtrqgzvw1vtejoz6.xz) |  | :heavy_check_mark: |  |
+|convert_endf| ENDF/B | VII.1 | [openmc.org](https://anl.box.com/shared/static/9igk353zpy8fn9ttvtrqgzvw1vtejoz6.xz) | :heavy_check_mark: | :heavy_check_mark: |  |
+|generate_endf| ENDF/B | VIII.0 | [openmc.org](https://anl.box.com/shared/static/uhbxlrx7hvxqw27psymfbhi7bx7s6u6a.xz) |  | :heavy_check_mark: |  |
+|convert_fendl| FENDL | 2.1<br>3.0<br>3.1a<br>3.1d<br>3.2 | [openmc.org 3.2](https://anl.box.com/shared/static/3cb7jetw7tmxaw6nvn77x6c578jnm2ey.xz) | :heavy_check_mark: |  |  |
+|generate_jendl| JENDL | 4.0 |  |  | :heavy_check_mark: |  |
+|convert_tendl| TENDL | 2015<br>2017<br>2019<br>2021|  | :heavy_check_mark: |  |  | -->
+
+### Convert cross sections
 
 | Script name | Library | Release | Neutron temperatures (K) |
 |-|-|-|-|
@@ -91,25 +89,6 @@ for neutron data; thermal scattering data keep the evaluation's own temperatures
 the JEFF 3.3 evaluations of these nuclides have defective MF=6 data. The C13 and O17
 files in the output are therefore TENDL-2019 data, not JEFF. JEFF 4.0 has no
 substitutions.
-
-
-### Download cross sections
-
-| Script name | Library | Release | Neutron temperatures (K) |
-|-|-|-|-|
-| download_endf | ENDF/B | VII.1<br>VIII.0<br>VIII.1  | 250, 293.6, 600, 900, 1200, 2500 |
-| download_jeff | JEFF | 3.3<br>4.0 | 250, 293.6, 600, 900, 1200, 2500 |
-| download_tendl | TENDL | 2019<br>2021  | 293.6 |
-
-<!-- | Script name | Library | Release | Download available | Downloads ACE files and convert to HDF5 | Downloads ENDF files and convert to HDF5 | Convert local ACE files |
-|-|-|-|-|-|-|-|
-|generate_cendl| CENDL | 3.1<br>3.2 |  |  | :heavy_check_mark: |  |
-|generate_endf| ENDF/B | VII.1 | [openmc.org](https://anl.box.com/shared/static/9igk353zpy8fn9ttvtrqgzvw1vtejoz6.xz) |  | :heavy_check_mark: |  |
-|convert_endf| ENDF/B | VII.1 | [openmc.org](https://anl.box.com/shared/static/9igk353zpy8fn9ttvtrqgzvw1vtejoz6.xz) | :heavy_check_mark: | :heavy_check_mark: |  |
-|generate_endf| ENDF/B | VIII.0 | [openmc.org](https://anl.box.com/shared/static/uhbxlrx7hvxqw27psymfbhi7bx7s6u6a.xz) |  | :heavy_check_mark: |  |
-|convert_fendl| FENDL | 2.1<br>3.0<br>3.1a<br>3.1d<br>3.2 | [openmc.org 3.2](https://anl.box.com/shared/static/3cb7jetw7tmxaw6nvn77x6c578jnm2ey.xz) | :heavy_check_mark: |  |  |
-|generate_jendl| JENDL | 4.0 |  |  | :heavy_check_mark: |  |
-|convert_tendl| TENDL | 2015<br>2017<br>2019<br>2021|  | :heavy_check_mark: |  |  | -->
 
 ### Combine libraries
 
@@ -146,7 +125,45 @@ The combined XML records, as a comment, how many entries of each type came from
 which library. Point OpenMC at it with `openmc.config['cross_sections']` or
 `OPENMC_CROSS_SECTIONS`.
 
+Each `cross_sections.xml` written by the generate, convert and combine scripts starts with an XML comment
+that records the data source, the number of entries of each type, the
+openmc_data version and script, and any evaluations taken from another library.
+OpenMC ignores XML comments, so the comment does not change how the library
+loads. `openmc.data.DataLibrary` drops comments when it rewrites a file.
+
 ## Produce Depletion Chain files
+
+### Download chain files
+
+| Script name | Library | Release | Branching options|
+|-|-|-|-|
+|download_chain | ENDF/B | VII.1<br>VIII.0 | None<br>SFR<br>PWR |
+|download_chain | ENDF/B | VIII.1 | None<br>SFR<br>PWR<br>FNS |
+|download_chain | JEFF | 4.0 | None<br>SFR<br>PWR<br>FNS |
+|download_chain | JENDL | 5.0 | None<br>SFR<br>PWR<br>FNS |
+|download_chain | TENDL | 2017<br>2019 | None<br>SFR<br>PWR<br>FNS<br>FNS-ORIGEN |
+|download_chain | TENDL | 2025 | None<br>SFR<br>PWR<br>FNS |
+
+The JEFF-4.0 and JENDL-5.0 chains are made with `generate_jeff_chain` and
+`generate_jendl_chain` and take their neutron, decay and fission yield data from
+their own library only, as do the ENDF/B chains. Their FNS branching ratios come
+from the isomeric production data of the same library, with the decay data of
+the same library passed to `generate_branching_ratios --decay`.
+
+| Chain | Nuclides | FNS reaction types | FNS branched channels | Size |
+|-|-|-|-|-|
+| ENDF/B-VIII.1 | 3820 | 30 | 236 | 28 MB |
+| JEFF-4.0 | 3851 | 29 | 2742 | 9 MB |
+| JENDL-5.0 | 4070 | 28 | 2328 | 66 MB |
+
+ENDF/B-VIII.1 has isomeric production data for far fewer reactions than JEFF-4.0,
+JENDL-5.0 or TENDL, so its FNS chain splits fewer channels. The JENDL-5.0 chains
+are larger because its decay sublibrary holds more, and more detailed, decay
+radiation spectra.
+
+All the TENDL chains are made with `generate_tendl_chain` using decay data and
+neutron induced fission yields from ENDF/B-VIII.0, so the releases can be
+compared against one another.
 
 ### Generate chain files
 
@@ -165,6 +182,13 @@ PWR are added with `add_branching_ratios` and the bundled
 are made from the library's own isomeric production data with
 `generate_branching_ratios` and added with `add_branching_ratios`, as shown below.
 
+<!-- | Sctipt name | Library | Release | Download available | Download ENDF files and generates XML chain files |
+|-|-|-|-|-|
+|generate_endf71_chain_casl|ENDF/B|-|[https://github.com/openmc-dev/data/tree/master/depletion](https://github.com/openmc-dev/data/tree/master/depletion)|:heavy_check_mark:|
+|generate_endf_chain|ENDF/B|-|[https://github.com/openmc-dev/data/tree/master/depletion](https://github.com/openmc-dev/data/tree/master/depletion)|:heavy_check_mark:|
+|generate_serpent_fissq|-|-|[https://github.com/openmc-dev/data/tree/master/depletion](https://github.com/openmc-dev/data/tree/master/depletion)|:heavy_check_mark:|
+|generate_tendl_chain|TENDL|2019<br>2021|[https://github.com/openmc-dev/data/tree/master/depletion](https://github.com/openmc-dev/data/tree/master/depletion)|:heavy_check_mark:| -->
+
 ### Branching ratios for metastable states
 
 Reactions can produce either the ground state or a metastable state of a
@@ -176,7 +200,37 @@ neutron flux that you provide. The one group branching ratio is reaction rate
 weighted, which is the weighting that preserves the production rate of each
 isomer in a single energy group chain.
 
-The JSON file produced is in the same format as the `branching_ratios_pwr.json`
+FNS (fusion neutron source) adds branching ratios for the production of
+metastable states, which makes a chain suitable for activation calculations
+of fusion neutron spectra. They are produced with `generate_branching_ratios`
+from the isomeric production data in the library's own neutron files, collapsed with a
+spectrum from the [IAEA CoNDERC FNS benchmark](https://nds.iaea.org/conderc/fusion/).
+
+The branching options differ in which reactions they cover, not only in the
+values. Counts below are for TENDL 2017.
+
+| Branching option | Reactions covered | Branched channels | Ratios come from |
+|-|-|-|-|
+| None | none | 0 | |
+| SFR<br>PWR | `(n,gamma)` only | 101 | [Serpent default isomeric branching ratios](https://serpent.vtt.fi/mediawiki/index.php?title=Default_isomeric_branching_ratios) |
+| FNS-ORIGEN | 15 reaction types | 2355 | ORIGEN |
+| FNS | 35 reaction types | 14692 | the TENDL files themselves |
+
+The reactor options only ever split capture. For a fusion spectrum the threshold
+reactions matter most, and in the FNS chains `(n,gamma)` is only the fourth
+largest group behind `(n,na)`, `(n,3He)` and `(n,2n)`, so SFR and PWR leave out
+most of what an activation calculation needs.
+
+FNS-ORIGEN is an earlier TENDL 2017 and 2019 chain hosted on the
+[openmc_activator](https://github.com/jbae11/openmc_activator) repository, whose
+branching ratios are derived from ORIGEN data rather than from TENDL. It is kept
+available for comparison, but the FNS chains are the TENDL only option and the
+two can differ substantially. For Ag107 capture to Ag108_m1 under a fusion
+spectrum, for example, FNS gives 0.056 against FNS-ORIGEN's 0.348, because the
+FNS value is reaction rate weighted and the majority of the capture rate sits in
+the resolved resonance range where the isomeric ratio is small.
+
+The JSON file written by `generate_branching_ratios` is in the same format as the `branching_ratios_pwr.json`
 and `branching_ratios_sfr.json` files, so it can be applied to a chain file with
 `add_branching_ratios`.
 
@@ -229,75 +283,6 @@ ratios by less than 0.2%.
 Use `--jobs` to process files in parallel. A whole TENDL library is about 2800
 evaluations and takes roughly half an hour with `--jobs 20`, against many hours
 in series.
-
-### Download chain files
-
-| Script name | Library | Release | Branching options|
-|-|-|-|-|
-|download_chain | ENDF/B | VII.1<br>VIII.0 | None<br>SFR<br>PWR |
-|download_chain | ENDF/B | VIII.1 | None<br>SFR<br>PWR<br>FNS |
-|download_chain | JEFF | 4.0 | None<br>SFR<br>PWR<br>FNS |
-|download_chain | JENDL | 5.0 | None<br>SFR<br>PWR<br>FNS |
-|download_chain | TENDL | 2017<br>2019 | None<br>SFR<br>PWR<br>FNS<br>FNS-ORIGEN |
-|download_chain | TENDL | 2025 | None<br>SFR<br>PWR<br>FNS |
-
-The JEFF-4.0 and JENDL-5.0 chains are made with `generate_jeff_chain` and
-`generate_jendl_chain` and take their neutron, decay and fission yield data from
-their own library only, as do the ENDF/B chains. Their FNS branching ratios come
-from the isomeric production data of the same library, with the decay data of
-the same library passed to `generate_branching_ratios --decay`.
-
-| Chain | Nuclides | FNS reaction types | FNS branched channels | Size |
-|-|-|-|-|-|
-| ENDF/B-VIII.1 | 3820 | 30 | 236 | 28 MB |
-| JEFF-4.0 | 3851 | 29 | 2742 | 9 MB |
-| JENDL-5.0 | 4070 | 28 | 2328 | 66 MB |
-
-ENDF/B-VIII.1 has isomeric production data for far fewer reactions than JEFF-4.0,
-JENDL-5.0 or TENDL, so its FNS chain splits fewer channels. The JENDL-5.0 chains
-are larger because its decay sublibrary holds more, and more detailed, decay
-radiation spectra.
-
-All the TENDL chains are made with `generate_tendl_chain` using decay data and
-neutron induced fission yields from ENDF/B-VIII.0, so the releases can be
-compared against one another.
-
-FNS (fusion neutron source) adds branching ratios for the production of
-metastable states, which makes these chains suitable for activation calculations
-of fusion neutron spectra. They are produced with `generate_branching_ratios`
-from the isomeric production data in the TENDL files themselves, collapsed with a
-spectrum from the [IAEA CoNDERC FNS benchmark](https://nds.iaea.org/conderc/fusion/).
-
-The branching options differ in which reactions they cover, not only in the
-values. Counts below are for TENDL 2017.
-
-| Branching option | Reactions covered | Branched channels | Ratios come from |
-|-|-|-|-|
-| None | none | 0 | |
-| SFR<br>PWR | `(n,gamma)` only | 101 | [Serpent default isomeric branching ratios](https://serpent.vtt.fi/mediawiki/index.php?title=Default_isomeric_branching_ratios) |
-| FNS-ORIGEN | 15 reaction types | 2355 | ORIGEN |
-| FNS | 35 reaction types | 14692 | the TENDL files themselves |
-
-The reactor options only ever split capture. For a fusion spectrum the threshold
-reactions matter most, and in the FNS chains `(n,gamma)` is only the fourth
-largest group behind `(n,na)`, `(n,3He)` and `(n,2n)`, so SFR and PWR leave out
-most of what an activation calculation needs.
-
-FNS-ORIGEN is an earlier TENDL 2017 and 2019 chain hosted on the
-[openmc_activator](https://github.com/jbae11/openmc_activator) repository, whose
-branching ratios are derived from ORIGEN data rather than from TENDL. It is kept
-available for comparison, but the FNS chains are the TENDL only option and the
-two can differ substantially. For Ag107 capture to Ag108_m1 under a fusion
-spectrum, for example, FNS gives 0.056 against FNS-ORIGEN's 0.348, because the
-FNS value is reaction rate weighted and the majority of the capture rate sits in
-the resolved resonance range where the isomeric ratio is small.
-
-<!-- | Sctipt name | Library | Release | Download available | Download ENDF files and generates XML chain files |
-|-|-|-|-|-|
-|generate_endf71_chain_casl|ENDF/B|-|[https://github.com/openmc-dev/data/tree/master/depletion](https://github.com/openmc-dev/data/tree/master/depletion)|:heavy_check_mark:|
-|generate_endf_chain|ENDF/B|-|[https://github.com/openmc-dev/data/tree/master/depletion](https://github.com/openmc-dev/data/tree/master/depletion)|:heavy_check_mark:|
-|generate_serpent_fissq|-|-|[https://github.com/openmc-dev/data/tree/master/depletion](https://github.com/openmc-dev/data/tree/master/depletion)|:heavy_check_mark:|
-|generate_tendl_chain|TENDL|2019<br>2021|[https://github.com/openmc-dev/data/tree/master/depletion](https://github.com/openmc-dev/data/tree/master/depletion)|:heavy_check_mark:| -->
 
 ## Other scripts
 
