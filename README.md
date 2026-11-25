@@ -72,9 +72,9 @@ for neutron data; thermal scattering data keep the evaluation's own temperatures
 | Script name | Library | Release | Neutron temperatures (K) |
 |-|-|-|-|
 |convert_endf | ENDF/B | VII.1 (n, g, s(a,b)) | 293.6 |
-|convert_fendl | FENDL | 3.2c (n, g)<br>3.2b (n, g)<br>3.2a (n, g)<br>3.2 (n, g)<br>3.1d (n, g)<br>3.1a (n, g)<br>3.1 (n, g)<br>3.0 (n, g)<br>2.1 (n, g) | as in the ACE files |
+|convert_fendl | FENDL | 3.2c (n, g)<br>3.2b (n, g)<br>3.2a (n, g)<br>3.2 (n, g)<br>3.1d (n, g)<br>3.1a (n, g)<br>3.1 (n, g)<br>3.0 (n, g)<br>2.1 (n, g) | 3.2c, 3.2b, 3.2a, 3.2: 293.6<br>3.1d, 3.1a, 3.1, 3.0: not yet confirmed<br>2.1: 300 |
 |convert_jeff | JEFF | 3.2 (n, s(a,b))<br>3.3 (n, s(a,b))<br>4.0 (n, s(a,b)) (default) | 3.2: 293, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 1800<br>3.3: 293, 600, 900, 1200, 1500, 1800<br>4.0: 0.1, 293, 300, 600, 900, 1200, 1500, 1800<br>(all by default; select with `-t`) |
-|convert_tendl | TENDL | 2015 (n)<br>2017 (n)<br>2019 (n)<br>2021 (n) | as in the ACE files |
+|convert_tendl | TENDL | 2015 (n)<br>2017 (n)<br>2019 (n)<br>2021 (n) | 2015: 293.16<br>2017, 2019, 2021: 293.6 |
 
 #### JEFF ACE conversion
 
@@ -177,14 +177,20 @@ which library. Point OpenMC at it with `openmc.config['cross_sections']` or
 
 ### Generate chain files
 
-| Script name | Library | Release |
-|-|-|-|
-|generate_endf_chain | ENDF/B | VII.1<br>VIII.0<br>VIII.1  |
-|generate_jeff_chain | JEFF | 3.3<br>4.0 (default) |
-|generate_jendl_chain | JENDL | 5.0 |
-|generate_tendl_chain | TENDL | 2015<br>2017<br>2019<br>2021<br>2023<br>2025 |
-|generate_serpent_fissq | |  |
-|generate_endf71_chain_casl | ENDF/B |  |
+| Script name | Library | Release | Branching options |
+|-|-|-|-|
+|generate_endf_chain | ENDF/B | VII.1<br>VIII.0<br>VIII.1  | None<br>SFR<br>PWR<br>FNS |
+|generate_jeff_chain | JEFF | 3.3<br>4.0 (default) | None<br>SFR<br>PWR<br>FNS |
+|generate_jendl_chain | JENDL | 5.0 | None<br>SFR<br>PWR<br>FNS |
+|generate_tendl_chain | TENDL | 2015<br>2017<br>2019<br>2021<br>2023<br>2025 | None<br>SFR<br>PWR<br>FNS |
+|generate_serpent_fissq | |  |  |
+|generate_endf71_chain_casl | ENDF/B |  | None<br>SFR<br>PWR |
+
+The generate scripts write the chain without branching ratios (None). SFR and
+PWR are added with `add_branching_ratios` and the bundled
+`branching_ratios_sfr.json` and `branching_ratios_pwr.json`. FNS branching ratios
+are made from the library's own isomeric production data with
+`generate_branching_ratios` and added with `add_branching_ratios`, as shown below.
 
 ### Branching ratios for metastable states
 
