@@ -12,7 +12,7 @@ from pathlib import Path
 from urllib.parse import urljoin
 
 import openmc.data
-from openmc_data import apply_updates, download, extract, process_neutron, process_thermal, state_download_size, all_release_details, ProgressTracker
+from openmc_data import add_provenance, apply_updates, download, extract, process_neutron, process_thermal, state_download_size, all_release_details, ProgressTracker
 
 
 class CustomFormatter(argparse.ArgumentDefaultsHelpFormatter,
@@ -250,6 +250,7 @@ def main(argv=None):
 
     # Write cross_sections.xml
     library.export_to_xml(args.destination / 'cross_sections.xml')
+    add_provenance(args.destination / 'cross_sections.xml', f'JENDL-{args.release}')
 
 
 if __name__ == '__main__':

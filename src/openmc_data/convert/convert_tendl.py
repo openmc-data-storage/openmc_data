@@ -11,7 +11,7 @@ from pathlib import Path
 from urllib.parse import urljoin
 
 import openmc.data
-from openmc_data import download, extract, calculate_download_size, all_release_details, get_file_types, ProgressTracker
+from openmc_data import add_provenance, download, extract, calculate_download_size, all_release_details, get_file_types, ProgressTracker
 
 
 # Make sure Python version is sufficient
@@ -165,6 +165,7 @@ def main():
 
     # Write cross_sections.xml
     library.export_to_xml(args.destination / "cross_sections.xml")
+    add_provenance(args.destination / "cross_sections.xml", f"TENDL-{args.release}")
 
 
 if __name__ == "__main__":

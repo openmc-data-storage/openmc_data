@@ -13,7 +13,7 @@ import sys
 
 import openmc.data
 
-from openmc_data import ProgressTracker
+from openmc_data import ProgressTracker, add_provenance
 
 
 # Make sure Python version is sufficient
@@ -107,6 +107,7 @@ def main():
 
     # Write cross_sections.xml
     library.export_to_xml(args.destination / 'cross_sections.xml')
+    add_provenance(args.destination / 'cross_sections.xml', 'ENDF/B-VIII.0 (LANL lib80x)')
 
 
 if __name__ == '__main__':

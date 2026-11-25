@@ -47,7 +47,7 @@ import shutil
 from tempfile import TemporaryDirectory
 import warnings
 
-from openmc_data import download, extract, process_neutron, process_thermal, ProgressTracker
+from openmc_data import add_provenance, download, extract, process_neutron, process_thermal, ProgressTracker
 from openmc_data.urls_jeff import jeff_endf_details, jeff33_replacements
 from openmc_data.utils import _file_md5
 
@@ -170,7 +170,7 @@ def _process_task(particle, paths, output, libver, temperatures):
         raise RuntimeError(f'Failed processing {particle}: {paths}') from exc
 
 
-def _generate(tasks, destination, args):
+def _generate(tasks, destination, args, notes=()):
     import openmc.data
 
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -213,6 +213,7 @@ def _generate(tasks, destination, args):
         for entry, relative in zip(root.findall('library'), outputs):
             entry.set('path', relative.as_posix())
         tree.write(manifest, encoding='utf-8', xml_declaration=True)
+        add_provenance(manifest, f'JEFF-{args.release}', notes)
 
         destination.mkdir(parents=True, exist_ok=True)
         # Old data remain untouched on processing/validation failure. Once publishing
@@ -281,7 +282,8 @@ def main(argv=None):
                          for n, t in details['thermal']['pairs'])
         if not tasks:
             raise ValueError('No evaluations selected for generation')
-        _generate(tasks, destination, args)
+        _generate(tasks, destination, args,
+                  [f'Not JEFF data: {name} replaced with TENDL-2019' for name in substituted])
         if args.cleanup:
             for group in prepared:
                 for root, enabled in ((archives, args.download), (inputs, args.extract)):

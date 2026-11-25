@@ -14,7 +14,7 @@ from textwrap import dedent
 from urllib.parse import urljoin
 
 import openmc.data
-from openmc_data import download, all_release_details, calculate_download_size, get_file_types, ProgressTracker
+from openmc_data import add_provenance, download, all_release_details, calculate_download_size, get_file_types, ProgressTracker
 
 
 class CustomFormatter(
@@ -291,6 +291,7 @@ def main():
     # Write cross_sections.xml
     print("Writing ", args.destination / "cross_sections.xml")
     library.export_to_xml(args.destination / "cross_sections.xml")
+    add_provenance(args.destination / "cross_sections.xml", f"FENDL-{args.release}")
 
     # Print any warnings
     for warning in output_warnings:
