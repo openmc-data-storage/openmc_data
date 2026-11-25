@@ -48,10 +48,6 @@ jobs:
           cd ..
           pip install .
 
-      # Convert scripts that require MCNP nuclear data are not tested because
-      # the CI doesn't contain that nuclear data.
-      # convert_lib80x.py convert_mcnp70.py convert_mcnp71.py files are not tested here
-
       - name: test default convert_fendl
         if: inputs.script == 'convert_fendl'
         run: |
