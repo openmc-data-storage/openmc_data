@@ -104,11 +104,6 @@ jeff_endf_details = {
             'checksums': ['82a6df4cb802aa4a09b95309f7861c54'],
             'pairs': THERMAL_PAIRS_33,
         },
-        'photon': {
-            'base_url': 'https://www.nndc.bnl.gov/endf-b8.0/zips/',
-            'compressed_files': ['ENDF-B-VIII.0_photoat.zip', 'ENDF-B-VIII.0_atomic_relax.zip'],
-            'checksums': ['d49f5b54be278862e1ce742ccd94f5c0', 'e04d50098cb2a7e4fe404ec4071611cc'],
-        },
     },
     '4.0': {
         'neutron': {
@@ -126,12 +121,6 @@ jeff_endf_details = {
             'as_browser': True,  # NEA refuses the default urllib User-Agent
             'checksums': ['13d22cd59f83368885ab2d86300b470a'],
             'pairs': THERMAL_PAIRS_40,
-        },
-        'photon': {
-            'base_url': 'https://www.nndc.bnl.gov/endf-releases/releases/B-VIII.1/',
-            'compressed_files': ['photoat/photoat-version.VIII.1.tar.gz',
-                                 'atomic_relax/atomic_relax-version.VIII.1.tar.gz'],
-            'checksums': ['97083fc0d867849260e97cabcc15aaa9', '93ecd523d1c8858da969dca7c91eea52'],
         },
     },
 }

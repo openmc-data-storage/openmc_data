@@ -5,8 +5,9 @@ Requires njoy on PATH. Example:
     generate_jeff -r 4.0 -p neutron --temperatures 293.6 600 --jobs 4
 
 Thermal scattering uses native temperatures, not --temperatures. Thermal-only
-runs fetch neutron inputs without generating neutron HDF5. Photon supplements
-use ENDF/B-VIII.0 for JEFF 3.3 and VIII.1 for 4.0.
+runs fetch neutron inputs without generating neutron HDF5. No photon data
+are generated: the JEFF sources used here have no photo-atomic data, and
+photon data from other libraries are not substituted.
 
 NEA sources and published MD5s are in openmc_data.urls_jeff. Supported thermal
 pairs are the 20 legacy 3.3 pairs and 128 upstream 4.0 pairs from:
@@ -27,7 +28,7 @@ Destination, download and ENDF directories must not overlap. Cache particle
 subdirectories hold original archive basenames and nested inputs; 3.3
 replacements use replacements/6-C-13g and replacements/8-O-17g beneath each
 cache root. --no-download extracts cached archives, checking published MD5s.
-With --no-download --no-extract, local neutron/photon subsets are allowed;
+With --no-download --no-extract, local neutron subsets are allowed;
 thermal runs require every mapped pair. --cleanup removes selected caches
 only after success and only for enabled stages. --use-tmpdir is ignored with
 a warning for reused inputs or explicit cache roots.
@@ -57,8 +58,8 @@ def _parser():
     parser.add_argument('-r', '--release', choices=['3.3', '4.0'], default='4.0',
                         help='JEFF release')
     parser.add_argument('-d', '--destination', type=Path, help='Output directory (default: jeff-RELEASE-hdf5)')
-    parser.add_argument('-p', '--particles', nargs='+', choices=['neutron', 'thermal', 'photon'],
-                        default=['neutron', 'thermal', 'photon'], help='Data types to generate')
+    parser.add_argument('-p', '--particles', nargs='+', choices=['neutron', 'thermal'],
+                        default=['neutron', 'thermal'], help='Data types to generate')
     parser.add_argument('--temperatures', nargs='+', type=float,
                         default=[250.0, 293.6, 600.0, 900.0, 1200.0, 2500.0],
                         help='Neutron temperatures in kelvin (thermal uses native temperatures)')
@@ -149,26 +150,14 @@ def _replacement(details, directory):
     return paths[0]
 
 
-def _photon_pairs(directory):
-    photo = {name[len('photoat-'):]: path for name, path in _index(directory, 'photoat-*.endf').items()}
-    atom = {name[len('atom-'):]: path for name, path in _index(directory, 'atom-*.endf').items()}
-    if photo.keys() != atom.keys():
-        raise ValueError(f'Unpaired photon evaluations: {sorted(photo.keys() ^ atom.keys())}')
-    return [(photo[key], atom[key]) for key in sorted(photo)]
-
-
 def _process_task(particle, paths, output, libver, temperatures):
     """Each task has its own output directory, so name collisions cannot overwrite data."""
     output.mkdir(parents=True)
     try:
         if particle == 'neutron':
             process_neutron(paths[0], output, libver, temperatures)
-        elif particle == 'thermal':
-            process_thermal(*paths, output, libver)
         else:
-            import openmc.data
-            data = openmc.data.IncidentPhoton.from_endf(*paths)
-            data.export_to_hdf5(output / f'{data.name}.h5', 'w', libver=libver)
+            process_thermal(*paths, output, libver)
         files = list(output.glob('*.h5'))
         if len(files) != 1 or not files[0].stat().st_size:
             raise RuntimeError(f'Expected one nonempty HDF5 output in {output}')
@@ -242,7 +231,7 @@ def main(argv=None):
     if len({round(t) for t in args.temperatures}) != len(args.temperatures):
         parser.error('--temperatures must have distinct rounded kelvin values (OpenMC HDF5 labels)')
     particles = set(args.particles)
-    required = [p for p in ('neutron', 'thermal', 'photon')
+    required = [p for p in ('neutron', 'thermal')
                 if p in particles or (p == 'neutron' and 'thermal' in particles)]
     details = jeff_endf_details[args.release]
     destination = (args.destination or Path(f'jeff-{args.release}-hdf5')).resolve()
@@ -283,8 +272,6 @@ def main(argv=None):
                              allow_duplicates=True)
             tasks.extend(('thermal', (_required(neutrons, n), _required(thermal, t)))
                          for n, t in details['thermal']['pairs'])
-        if 'photon' in particles:
-            tasks.extend(('photon', pair) for pair in _photon_pairs(inputs / 'photon'))
         if not tasks:
             raise ValueError('No evaluations selected for generation')
         _generate(tasks, destination, args)
