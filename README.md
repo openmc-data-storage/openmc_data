@@ -20,34 +20,6 @@ The package is distributed on [PYPI](https://pypi.org/project/openmc-data/) and 
 pip install openmc_data
 ```
 
-# Testing
-
-Install the test dependencies with `python -m pip install '.[tests]'`, then run
-the offline suite with `python -m pytest -q -rs tests -m 'not network and not integration'`.
-Tests stay in the flat [tests](tests) directory: [test_utils.py](tests/test_utils.py)
-covers shared utilities, [test_urls.py](tests/test_urls.py) covers registry
-validation, HTTP helper regressions and marked live URL checks, and script-specific
-tests belong in files named test_&lt;script&gt;.py alongside them. Use pytest's
-`tmp_path` for generated test artifacts rather than writing into the repository.
-
-The `network` marker identifies live external URL checks; `integration` identifies
-data download and processing tests. Pull requests and pushes run offline tests
-and CLI help checks in [test_package.yml](.github/workflows/test_package.yml), and
-offline URL syntax and repository-file checks in
-[test_urls.yml](.github/workflows/test_urls.yml), without compiling OpenMC for the
-URL jobs. Live URL checks run nightly or manually in a separate job of that same
-workflow. Full, multi-GB processing runs only through the required script choice
-in the manual [test_processing.yml](.github/workflows/test_processing.yml) workflow.
-
-Exactly one URL is explicitly **not tested over HTTP** because of its Cloudflare
-challenge:
-<https://nds.iaea.org/fendl/data/neutron/fendl-FENDL-3.2c-neutron-endf.zip>.
-Its syntax is still checked offline. Other HTTP errors, including IAEA and
-Cloudflare 403 responses, remain failures, not skips or expected failures.
-Nightly/manual external health checks may remain red until blocked IAEA and
-obsolete OECD URLs are restored; passing offline checks does not establish that
-downloads are available.
-
 # Usage
 
 Once installed several scripts are available in your terminal that are able to
@@ -93,50 +65,27 @@ loads. `openmc.data.DataLibrary` drops comments when it rewrites a file.
 
 ### Convert cross sections
 
-| Script name | Library | Release |
-|-|-|-|
-|convert_endf | ENDF/B | VII.1 |
-|convert_fendl | FENDL | 3.2c<br>3.2b<br>3.2a<br>3.2<br>3.1d<br>3.1a<br>3.1<br>3.0<br>2.1 |
-|convert_jeff | JEFF | 3.2<br>3.3<br>4.0 (default) |
-|convert_tendl | TENDL | 2015<br>2017<br>2019<br>2021 |
+In the convert and generate tables, each release lists the data it produces:
+n = neutron, g = photon (gamma), s(a,b) = thermal scattering. Temperatures are
+for neutron data; thermal scattering data keep the evaluation's own temperatures.
 
-#### JEFF ACE conversion
-
-`convert_jeff -r 3.3 -t 600 900 --destination jeff-hot` converts neutron and
-thermal ACE data without NJOY or a 293 K base. Defaults: release 4.0, all neutron
-temperatures, `--libver latest`. Available neutron archive temperatures:
-
-| Release | Neutron archive temperatures (K) |
-| --- | --- |
-| 3.2 | 293, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 1800 |
-| 3.3 | 293, 600, 900, 1200, 1500, 1800 |
-| 4.0 | 0.1, 293, 300, 600, 900, 1200, 1500, 1800 |
-
-Select the 4.0 archive containing 293.6 K data with `-t 293`. **All native thermal
-temperatures** are retained, including the 1 K UO2 pairs. **JEFF-4.0 supplies only
-the public 12-case/316-table thermal subset**, not the full TSL library.
-Unknown thermal aliases retain their identity with a `c_` prefix and warning.
-
-Output HDF5/XML goes directly into `--destination` (default `jeff-<release>-hdf5`),
-staged until conversion succeeds; existing files and name/temperature collisions fail.
-Downloads require multiple GB. `--no-download --no-extract` reuses working-directory
-caches `jeff-<release>-download` and `jeff-<release>-ace`; `--cleanup` removes both
-only after success. Metastable corrections never edit cached ACE files.
-Every discovered nuclide must have every selected neutron temperature; 3.3 also
-requires its 20 thermal groups. Caches cannot reveal nuclides absent at all temperatures.
-
-See `convert_jeff --help` for all options.
+| Script name | Library | Release | Neutron temperatures (K) |
+|-|-|-|-|
+|convert_endf | ENDF/B | VII.1 (n, g, s(a,b)) | 293.6 |
+|convert_fendl | FENDL | 3.2c (n, g)<br>3.2b (n, g)<br>3.2a (n, g)<br>3.2 (n, g)<br>3.1d (n, g)<br>3.1a (n, g)<br>3.1 (n, g)<br>3.0 (n, g)<br>2.1 (n, g) | 3.2c, 3.2b, 3.2a, 3.2: 293.6<br>3.1d, 3.1a, 3.1, 3.0: not yet confirmed<br>2.1: 300 |
+|convert_jeff | JEFF | 3.2 (n, s(a,b))<br>3.3 (n, s(a,b))<br>4.0 (n, s(a,b)) (default) | 3.2: 293, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 1800<br>3.3: 293, 600, 900, 1200, 1500, 1800<br>4.0: 0.1, 293, 300, 600, 900, 1200, 1500, 1800<br>(all by default; select with `-t`) |
+|convert_tendl | TENDL | 2015 (n)<br>2017 (n)<br>2019 (n)<br>2021 (n) | 2015: 293.16<br>2017, 2019, 2021: 293.6 |
 
 ### Generate cross sections
 
-| Script name | Library | Release |
-|-|-|-|
-| generate_cendl | CENDL | 3.1<br>3.2 |
-| generate_endf | ENDF/B | VII.1<br>VIII.0<br>VIII.1 |
-| generate_fendl | FENDL | 3.2c<br>3.2b<br>3.2a<br>3.2<br>3.1d<br>3.1a<br>3.0 |
-| generate_jendl | JENDL | 4.0<br>5.0 (neutron, thermal scattering and photon) |
-| generate_jeff | JEFF | 3.3\*<br>4.0 (neutron and thermal scattering) |
-| generate_tendl | TENDL | 2023<br>2025 |
+| Script name | Library | Release | Neutron temperatures (K) |
+|-|-|-|-|
+| generate_cendl | CENDL | 3.1 (n)<br>3.2 (n) | 293.6 |
+| generate_endf | ENDF/B | VII.1 (n, g, s(a,b))<br>VIII.0 (n, g, s(a,b))<br>VIII.1 (n, g, s(a,b)) | 250, 293.6, 600, 900, 1200, 2500<br>(default; change with `--temperatures`) |
+| generate_fendl | FENDL | 3.2c (n)<br>3.2b (n)<br>3.2a (n)<br>3.2 (n)<br>3.1d (n)<br>3.1a (n)<br>3.0 (n) | 293.6 |
+| generate_jendl | JENDL | 4.0 (n)<br>5.0 (n, g, s(a,b)) | 250, 293.6, 600, 900, 1200, 2500<br>(default; change with `--temperatures`) |
+| generate_jeff | JEFF | 3.3\* (n, s(a,b))<br>4.0 (n, s(a,b)) | 250, 293.6, 600, 900, 1200, 2500<br>(default; change with `--temperatures`) |
+| generate_tendl | TENDL | 2023 (n)<br>2025 (n) | 293.6 |
 
 \* `generate_jeff -r 3.3` substitutes TENDL-2019 evaluations for C13 and O17, because
 the JEFF 3.3 evaluations of these nuclides have defective MF=6 data. The C13 and O17
@@ -201,14 +150,20 @@ which library. Point OpenMC at it with `openmc.config['cross_sections']` or
 
 ### Generate chain files
 
-| Script name | Library | Release |
-|-|-|-|
-|generate_endf_chain | ENDF/B | VII.1<br>VIII.0<br>VIII.1  |
-|generate_jeff_chain | JEFF | 3.3<br>4.0 (default) |
-|generate_jendl_chain | JENDL | 5.0 |
-|generate_tendl_chain | TENDL | 2015<br>2017<br>2019<br>2021<br>2023<br>2025 |
-|generate_serpent_fissq | |  |
-|generate_endf71_chain_casl | ENDF/B |  |
+| Script name | Library | Release | Branching options |
+|-|-|-|-|
+|generate_endf_chain | ENDF/B | VII.1<br>VIII.0<br>VIII.1  | None<br>SFR<br>PWR<br>FNS |
+|generate_jeff_chain | JEFF | 3.3<br>4.0 (default) | None<br>SFR<br>PWR<br>FNS |
+|generate_jendl_chain | JENDL | 5.0 | None<br>SFR<br>PWR<br>FNS |
+|generate_tendl_chain | TENDL | 2015<br>2017<br>2019<br>2021<br>2023<br>2025 | None<br>SFR<br>PWR<br>FNS |
+|generate_serpent_fissq | |  |  |
+|generate_endf71_chain_casl | ENDF/B |  | None<br>SFR<br>PWR |
+
+The generate scripts write the chain without branching ratios (None). SFR and
+PWR are added with `add_branching_ratios` and the bundled
+`branching_ratios_sfr.json` and `branching_ratios_pwr.json`. FNS branching ratios
+are made from the library's own isomeric production data with
+`generate_branching_ratios` and added with `add_branching_ratios`, as shown below.
 
 ### Branching ratios for metastable states
 
@@ -356,3 +311,31 @@ the resolved resonance range where the isomeric ratio is small.
 | add_branching_ratios | Adds branching ratios to a preexisting chain file, for any reaction present in the JSON file provided. |
 | reduce_chain | |
 | combine_libraries | Combines multiple cross_section.xml files into a single cross_section.xml. |
+
+# Testing
+
+Install the test dependencies with `python -m pip install '.[tests]'`, then run
+the offline suite with `python -m pytest -q -rs tests -m 'not network and not integration'`.
+Tests stay in the flat [tests](tests) directory: [test_utils.py](tests/test_utils.py)
+covers shared utilities, [test_urls.py](tests/test_urls.py) covers registry
+validation, HTTP helper regressions and marked live URL checks, and script-specific
+tests belong in files named test_&lt;script&gt;.py alongside them. Use pytest's
+`tmp_path` for generated test artifacts rather than writing into the repository.
+
+The `network` marker identifies live external URL checks; `integration` identifies
+data download and processing tests. Pull requests and pushes run offline tests
+and CLI help checks in [test_package.yml](.github/workflows/test_package.yml), and
+offline URL syntax and repository-file checks in
+[test_urls.yml](.github/workflows/test_urls.yml), without compiling OpenMC for the
+URL jobs. Live URL checks run nightly or manually in a separate job of that same
+workflow. Full, multi-GB processing runs only through the required script choice
+in the manual [test_processing.yml](.github/workflows/test_processing.yml) workflow.
+
+Exactly one URL is explicitly **not tested over HTTP** because of its Cloudflare
+challenge:
+<https://nds.iaea.org/fendl/data/neutron/fendl-FENDL-3.2c-neutron-endf.zip>.
+Its syntax is still checked offline. Other HTTP errors, including IAEA and
+Cloudflare 403 responses, remain failures, not skips or expected failures.
+Nightly/manual external health checks may remain red until blocked IAEA and
+obsolete OECD URLs are restored; passing offline checks does not establish that
+downloads are available.
