@@ -14,6 +14,13 @@ You should have already installed OpenMC, see the [docs](https://docs.openmc.org
 
 Some scripts (mainly the generate scripts) require [NJOY](https://github.com/njoy/NJOY2016) to be installed and
 added to your path.
+NJOY can be pip installed from the unofficial wheels in the
+[shimwell/wheels](https://github.com/shimwell/wheels) repository, which puts the
+`njoy` executable on your path:
+
+```bash
+python -m pip install --extra-index-url https://shimwell.github.io/wheels njoy2016
+```
 
 # Installation
 
