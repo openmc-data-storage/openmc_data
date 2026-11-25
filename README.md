@@ -95,10 +95,7 @@ loads. `openmc.data.DataLibrary` drops comments when it rewrites a file.
 
 | Script name | Library | Release |
 |-|-|-|
-|convert_mcnp70 | ENDF/B | VII.0 |
-|convert_mcnp71 | ENDF/B | VII.1 |
 |convert_endf | ENDF/B | VII.1 |
-|convert_lib80x | ENDF/B | VIII.0 |
 |convert_fendl | FENDL | 3.2c<br>3.2b<br>3.2a<br>3.2<br>3.1d<br>3.1a<br>3.1<br>3.0<br>2.1 |
 |convert_jeff | JEFF | 3.2<br>3.3<br>4.0 (default) |
 |convert_tendl | TENDL | 2015<br>2017<br>2019<br>2021 |
@@ -158,11 +155,8 @@ substitutions.
 <!-- | Script name | Library | Release | Download available | Downloads ACE files and convert to HDF5 | Downloads ENDF files and convert to HDF5 | Convert local ACE files |
 |-|-|-|-|-|-|-|
 |generate_cendl| CENDL | 3.1<br>3.2 |  |  | :heavy_check_mark: |  |
-|convert_mcnp70| ENDF/B | VII.0 | [openmc.org](https://anl.box.com/shared/static/t25g7g6v0emygu50lr2ych1cf6o7454b.xz) |  |  | :heavy_check_mark: |
-|convert_mcnp71| ENDF/B | VII.1 | [openmc.org](https://anl.box.com/shared/static/d359skd2w6wrm86om2997a1bxgigc8pu.xz) |  |  | :heavy_check_mark: |
 |generate_endf| ENDF/B | VII.1 | [openmc.org](https://anl.box.com/shared/static/9igk353zpy8fn9ttvtrqgzvw1vtejoz6.xz) |  | :heavy_check_mark: |  |
 |convert_endf| ENDF/B | VII.1 | [openmc.org](https://anl.box.com/shared/static/9igk353zpy8fn9ttvtrqgzvw1vtejoz6.xz) | :heavy_check_mark: | :heavy_check_mark: |  |
-|convert_lib80x| ENDF/B | VIII.0 | [openmc.org](https://anl.box.com/shared/static/nd7p4jherolkx4b1rfaw5uqp58nxtstr.xz) |  |  | :heavy_check_mark: |
 |generate_endf| ENDF/B | VIII.0 | [openmc.org](https://anl.box.com/shared/static/uhbxlrx7hvxqw27psymfbhi7bx7s6u6a.xz) |  | :heavy_check_mark: |  |
 |convert_fendl| FENDL | 2.1<br>3.0<br>3.1a<br>3.1d<br>3.2 | [openmc.org 3.2](https://anl.box.com/shared/static/3cb7jetw7tmxaw6nvn77x6c578jnm2ey.xz) | :heavy_check_mark: |  |  |
 |generate_jendl| JENDL | 4.0 |  |  | :heavy_check_mark: |  |
