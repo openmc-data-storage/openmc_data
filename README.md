@@ -93,14 +93,14 @@ loads. `openmc.data.DataLibrary` drops comments when it rewrites a file.
 
 ### Convert cross sections
 
-| Script name | Library | Release | Processed by |
-|-|-|-|-|
-|convert_mcnp70 | ENDF/B | VII.0 | LANL |
-|convert_mcnp71 | ENDF/B | VII.1 | LANL |
-|convert_endf | ENDF/B | VII.1 | NNDC |
-|convert_lib80x | ENDF/B | VIII.0 | LANL |
+| Script name | Library | Release |
+|-|-|-|
+|convert_mcnp70 | ENDF/B | VII.0 |
+|convert_mcnp71 | ENDF/B | VII.1 |
+|convert_endf | ENDF/B | VII.1 |
+|convert_lib80x | ENDF/B | VIII.0 |
 |convert_fendl | FENDL | 3.2c<br>3.2b<br>3.2a<br>3.2<br>3.1d<br>3.1a<br>3.1<br>3.0<br>2.1 |
-|convert_jeff | JEFF | 3.2<br>3.3<br>4.0 (default) | OECD/NEA |
+|convert_jeff | JEFF | 3.2<br>3.3<br>4.0 (default) |
 |convert_tendl | TENDL | 2015<br>2017<br>2019<br>2021 |
 
 #### JEFF ACE conversion
@@ -132,14 +132,14 @@ See `convert_jeff --help` for all options.
 
 ### Generate cross sections
 
-| Script name | Library | Release | Processed by |
-|-|-|-|-|
-| generate_cendl | CENDL | 3.1<br>3.2 |  |
-| generate_endf | ENDF/B | VII.1<br>VIII.0<br>VIII.1 | NNDC |
-| generate_fendl | FENDL | 3.2c<br>3.2b<br>3.2a<br>3.2<br>3.1d<br>3.1a<br>3.0 | |
-| generate_jendl | JENDL | 4.0<br>5.0 (neutron, thermal scattering and photon) | NJOY |
-| generate_jeff | JEFF | 3.3\*<br>4.0 (neutron and thermal scattering) | NJOY |
-| generate_tendl | TENDL | 2023<br>2025 | |
+| Script name | Library | Release |
+|-|-|-|
+| generate_cendl | CENDL | 3.1<br>3.2 |
+| generate_endf | ENDF/B | VII.1<br>VIII.0<br>VIII.1 |
+| generate_fendl | FENDL | 3.2c<br>3.2b<br>3.2a<br>3.2<br>3.1d<br>3.1a<br>3.0 |
+| generate_jendl | JENDL | 4.0<br>5.0 (neutron, thermal scattering and photon) |
+| generate_jeff | JEFF | 3.3\*<br>4.0 (neutron and thermal scattering) |
+| generate_tendl | TENDL | 2023<br>2025 |
 
 \* `generate_jeff -r 3.3` substitutes TENDL-2019 evaluations for C13 and O17, because
 the JEFF 3.3 evaluations of these nuclides have defective MF=6 data. The C13 and O17
@@ -149,24 +149,24 @@ substitutions.
 
 ### Download cross sections
 
-| Script name | Library | Release | Processed by | Neutron temperatures (K) |
-|-|-|-|-|-|
-| download_endf | ENDF/B | VII.1<br>VIII.0<br>VIII.1  | NNDC | 250, 293.6, 600, 900, 1200, 2500 |
-| download_jeff | JEFF | 3.3<br>4.0 | OpenMC development team | 250, 293.6, 600, 900, 1200, 2500 |
-| download_tendl | TENDL | 2019<br>2021  |  | 293.6 |
+| Script name | Library | Release | Neutron temperatures (K) |
+|-|-|-|-|
+| download_endf | ENDF/B | VII.1<br>VIII.0<br>VIII.1  | 250, 293.6, 600, 900, 1200, 2500 |
+| download_jeff | JEFF | 3.3<br>4.0 | 250, 293.6, 600, 900, 1200, 2500 |
+| download_tendl | TENDL | 2019<br>2021  | 293.6 |
 
-<!-- | Script name | Library | Release | Processed by | Download available | Downloads ACE files and convert to HDF5 | Downloads ENDF files and convert to HDF5 | Convert local ACE files |
-|-|-|-|-|-|-|-|-|
-|generate_cendl| CENDL | 3.1<br>3.2 |  |  |  | :heavy_check_mark: |  |
-|convert_mcnp70| ENDF/B | VII.0 | LANL | [openmc.org](https://anl.box.com/shared/static/t25g7g6v0emygu50lr2ych1cf6o7454b.xz) |  |  | :heavy_check_mark: |
-|convert_mcnp71| ENDF/B | VII.1 | LANL | [openmc.org](https://anl.box.com/shared/static/d359skd2w6wrm86om2997a1bxgigc8pu.xz) |  |  | :heavy_check_mark: |
-|generate_endf| ENDF/B | VII.1 | NNDC | [openmc.org](https://anl.box.com/shared/static/9igk353zpy8fn9ttvtrqgzvw1vtejoz6.xz) |  | :heavy_check_mark: |  |
-|convert_endf| ENDF/B | VII.1 | NNDC | [openmc.org](https://anl.box.com/shared/static/9igk353zpy8fn9ttvtrqgzvw1vtejoz6.xz) | :heavy_check_mark: | :heavy_check_mark: |  |
-|convert_lib80x| ENDF/B | VIII.0 | LANL | [openmc.org](https://anl.box.com/shared/static/nd7p4jherolkx4b1rfaw5uqp58nxtstr.xz) |  |  | :heavy_check_mark: |
-|generate_endf| ENDF/B | VIII.0 | NNDC | [openmc.org](https://anl.box.com/shared/static/uhbxlrx7hvxqw27psymfbhi7bx7s6u6a.xz) |  | :heavy_check_mark: |  |
-|convert_fendl| FENDL | 2.1<br>3.0<br>3.1a<br>3.1d<br>3.2 |  | [openmc.org 3.2](https://anl.box.com/shared/static/3cb7jetw7tmxaw6nvn77x6c578jnm2ey.xz) | :heavy_check_mark: |  |  |
-|generate_jendl| JENDL | 4.0 |  |  |  | :heavy_check_mark: |  |
-|convert_tendl| TENDL | 2015<br>2017<br>2019<br>2021|  |  | :heavy_check_mark: |  |  | -->
+<!-- | Script name | Library | Release | Download available | Downloads ACE files and convert to HDF5 | Downloads ENDF files and convert to HDF5 | Convert local ACE files |
+|-|-|-|-|-|-|-|
+|generate_cendl| CENDL | 3.1<br>3.2 |  |  | :heavy_check_mark: |  |
+|convert_mcnp70| ENDF/B | VII.0 | [openmc.org](https://anl.box.com/shared/static/t25g7g6v0emygu50lr2ych1cf6o7454b.xz) |  |  | :heavy_check_mark: |
+|convert_mcnp71| ENDF/B | VII.1 | [openmc.org](https://anl.box.com/shared/static/d359skd2w6wrm86om2997a1bxgigc8pu.xz) |  |  | :heavy_check_mark: |
+|generate_endf| ENDF/B | VII.1 | [openmc.org](https://anl.box.com/shared/static/9igk353zpy8fn9ttvtrqgzvw1vtejoz6.xz) |  | :heavy_check_mark: |  |
+|convert_endf| ENDF/B | VII.1 | [openmc.org](https://anl.box.com/shared/static/9igk353zpy8fn9ttvtrqgzvw1vtejoz6.xz) | :heavy_check_mark: | :heavy_check_mark: |  |
+|convert_lib80x| ENDF/B | VIII.0 | [openmc.org](https://anl.box.com/shared/static/nd7p4jherolkx4b1rfaw5uqp58nxtstr.xz) |  |  | :heavy_check_mark: |
+|generate_endf| ENDF/B | VIII.0 | [openmc.org](https://anl.box.com/shared/static/uhbxlrx7hvxqw27psymfbhi7bx7s6u6a.xz) |  | :heavy_check_mark: |  |
+|convert_fendl| FENDL | 2.1<br>3.0<br>3.1a<br>3.1d<br>3.2 | [openmc.org 3.2](https://anl.box.com/shared/static/3cb7jetw7tmxaw6nvn77x6c578jnm2ey.xz) | :heavy_check_mark: |  |  |
+|generate_jendl| JENDL | 4.0 |  |  | :heavy_check_mark: |  |
+|convert_tendl| TENDL | 2015<br>2017<br>2019<br>2021|  | :heavy_check_mark: |  |  | -->
 
 ### Combine libraries
 
